@@ -1,0 +1,194 @@
+<?php
+
+use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\AuthController;
+use App\Http\Controllers\DashboardController;
+use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Api\WhatsAppController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\Auth\PasswordResetController;
+use App\Http\Controllers\WhatsAppQueueController;
+use App\Http\Controllers\UnpaidRegistrationsController;
+
+Route::get('/', function () {
+    return view('welcome-simple'); // Using simple version for debugging
+});
+
+// Original complex version
+Route::get('/welcome-complex', function () {
+    return view('welcome');
+});
+
+// Test route
+Route::get('/test', function () {
+    return '<h1>Test berhasil!</h1><p>Laravel berjalan dengan baik.</p>';
+});
+
+// Simple test route
+Route::get('/test-simple', function () {
+    return view('test-simple');
+});
+
+// Debug route for WhatsApp API
+Route::get('/debug/whatsapp/{number?}', function($number = '628114000805') {
+    try {
+        $controller = new \App\Http\Controllers\Api\WhatsAppController();
+        $request = new \Illuminate\Http\Request();
+        $request->merge(['number' => $number]);
+        
+        $response = $controller->checkNumber($request);
+        
+        return response()->json([
+            'debug' => true,
+            'test_number' => $number,
+            'controller_response' => $response->getData()
+        ], 200, [], JSON_PRETTY_PRINT);
+        
+    } catch (\Exception $e) {
+        return response()->json([
+            'debug' => true,
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ], 500, [], JSON_PRETTY_PRINT);
+    }
+});
+
+// Authentication Routes
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+
+Route::post('/register', [AuthController::class, 'register']);
+
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+
+Route::post('/login', [AuthController::class, 'login']);
+Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
+
+// Password Reset Routes
+Route::get('/password/reset', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset', [PasswordResetController::class, 'sendResetLink'])->name('password.reset.send');
+Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetPasswordForm'])->name('password.reset.form');
+Route::post('/password/reset/update', [PasswordResetController::class, 'resetPassword'])->name('password.reset.update');
+
+// Test route for debugging username check
+Route::get('/api/test-username/{number}', function($number) {
+    $user = \App\Models\User::where('whatsapp_number', $number)->first();
+    return response()->json([
+        'number' => $number,
+        'found' => !!$user,
+        'user' => $user ? [
+            'email' => $user->email,
+            'name' => $user->name,
+            'whatsapp_number' => $user->whatsapp_number
+        ] : null
+    ]);
+});
+
+// WhatsApp verification routes
+Route::post('/api/verify-whatsapp', [AuthController::class, 'verifyWhatsapp']);
+Route::post('/api/confirm-payment', [AuthController::class, 'confirmPayment']);
+Route::post('/api/check-whatsapp-number', [WhatsAppController::class, 'checkNumber']);
+
+// API routes for checking status
+Route::get('/api/check-verification/{userId}', function($userId) {
+    $user = \App\Models\User::find($userId);
+    return response()->json(['verified' => $user ? $user->whatsapp_verified : false]);
+});
+
+Route::get('/api/check-payment/{userId}', function($userId) {
+    $user = \App\Models\User::find($userId);
+    return response()->json(['confirmed' => $user ? $user->payment_confirmed : false]);
+});
+
+// API Routes for Xendit webhook
+Route::prefix('api')->group(function () {
+    Route::post('/xendit/webhook', [App\Http\Controllers\Api\XenditWebhookController::class, 'handleWebhook'])
+        ->name('xendit.webhook');
+});
+
+// Payment success/failure pages
+Route::get('/payment/success', function () {
+    return view('payment.success');
+})->name('payment.success');
+
+Route::get('/payment/failed', function () {
+    return view('payment.failed');
+})->name('payment.failed');
+
+// Dashboard Routes (protected by auth middleware)
+Route::middleware('auth')->group(function () {
+    // Routes available for all authenticated users
+    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    
+    // Profile Routes - Available for all users
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    
+    // Admin Only Routes
+    Route::middleware('role:admin')->group(function () {
+        Route::get('/dashboard/profile', [DashboardController::class, 'profile'])->name('dashboard.profile');
+        Route::post('/dashboard/profile', [DashboardController::class, 'updateProfile']);
+        Route::get('/dashboard/users', [DashboardController::class, 'users'])->name('dashboard.users');
+        Route::get('/dashboard/whatsapp-verification', [DashboardController::class, 'whatsappVerification'])->name('dashboard.whatsapp');
+        Route::get('/dashboard/payment-confirmation', [DashboardController::class, 'paymentConfirmation'])->name('dashboard.payment');
+    });
+    
+    // Admin Settings Routes - Admin Only
+    Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
+        
+        // Jersey Sizes
+        Route::post('/settings/jersey-sizes', [SettingsController::class, 'storeJerseySize'])->name('settings.jersey-sizes.store');
+        Route::put('/settings/jersey-sizes/{jerseySize}', [SettingsController::class, 'updateJerseySize'])->name('settings.jersey-sizes.update');
+        Route::delete('/settings/jersey-sizes/{jerseySize}', [SettingsController::class, 'deleteJerseySize'])->name('settings.jersey-sizes.delete');
+        
+        // Race Categories
+        Route::post('/settings/race-categories', [SettingsController::class, 'storeRaceCategory'])->name('settings.race-categories.store');
+        Route::put('/settings/race-categories/{raceCategory}', [SettingsController::class, 'updateRaceCategory'])->name('settings.race-categories.update');
+        Route::delete('/settings/race-categories/{raceCategory}', [SettingsController::class, 'deleteRaceCategory'])->name('settings.race-categories.delete');
+        
+        // Blood Types
+        Route::post('/settings/blood-types', [SettingsController::class, 'storeBloodType'])->name('settings.blood-types.store');
+        Route::put('/settings/blood-types/{bloodType}', [SettingsController::class, 'updateBloodType'])->name('settings.blood-types.update');
+        Route::delete('/settings/blood-types/{bloodType}', [SettingsController::class, 'deleteBloodType'])->name('settings.blood-types.delete');
+        
+        // Event Sources
+        Route::post('/settings/event-sources', [SettingsController::class, 'storeEventSource'])->name('settings.event-sources.store');
+        Route::put('/settings/event-sources/{eventSource}', [SettingsController::class, 'updateEventSource'])->name('settings.event-sources.update');
+        Route::delete('/settings/event-sources/{eventSource}', [SettingsController::class, 'deleteEventSource'])->name('settings.event-sources.delete');
+        
+        // WhatsApp Queue Management
+        Route::get('/whatsapp-queue', [WhatsAppQueueController::class, 'index'])->name('whatsapp-queue.index');
+        Route::get('/whatsapp-queue/status', [WhatsAppQueueController::class, 'status'])->name('whatsapp-queue.status');
+        Route::post('/whatsapp-queue/clear', [WhatsAppQueueController::class, 'clear'])->name('whatsapp-queue.clear');
+        Route::post('/whatsapp-queue/force-process', [WhatsAppQueueController::class, 'forceProcess'])->name('whatsapp-queue.force-process');
+        Route::post('/whatsapp-queue/send-test', [WhatsAppQueueController::class, 'sendTest'])->name('whatsapp-queue.send-test');
+        
+        // Unpaid Registrations Management
+        Route::get('/unpaid-registrations', function() {
+            return view('admin.unpaid-registrations');
+        })->name('unpaid-registrations.index');
+        Route::get('/whatsapp-queue/unpaid-status', [WhatsAppQueueController::class, 'unpaidStatus'])->name('whatsapp-queue.unpaid-status');
+        Route::post('/whatsapp-queue/force-cleanup', [WhatsAppQueueController::class, 'forceCleanup'])->name('whatsapp-queue.force-cleanup');
+        Route::post('/whatsapp-queue/force-reminders', [WhatsAppQueueController::class, 'forceReminders'])->name('whatsapp-queue.force-reminders');
+    });
+});
+
+// Unpaid Registrations API routes
+Route::prefix('api/unpaid-registrations')->group(function () {
+    Route::get('stats', [UnpaidRegistrationsController::class, 'stats']);
+    Route::post('dry-run', [UnpaidRegistrationsController::class, 'dryRun']);
+    Route::post('send-reminders', [UnpaidRegistrationsController::class, 'sendReminders']);
+    Route::post('cleanup', [UnpaidRegistrationsController::class, 'cleanup']);
+    Route::post('process-all', [UnpaidRegistrationsController::class, 'processAll']);
+    Route::post('create-test-user', [UnpaidRegistrationsController::class, 'createTestUser']);
+    Route::post('create-test-batch', [UnpaidRegistrationsController::class, 'createTestBatch']);
+    Route::get('users', [UnpaidRegistrationsController::class, 'getUsers']);
+    Route::get('logs', [UnpaidRegistrationsController::class, 'getLogs']);
+    Route::get('jobs', [UnpaidRegistrationsController::class, 'getJobs']);
+});
+
+// Test routes
+Route::get('/test-debug', function () {
+    return view('test-debug');
+});

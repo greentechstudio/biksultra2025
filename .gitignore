@@ -1,0 +1,114 @@
+# Laravel specific
+/vendor/
+/node_modules/
+/public/hot
+/public/storage
+/storage/*.key
+/storage/app/public
+/storage/framework/cache/data/*
+/storage/framework/sessions/*
+/storage/framework/testing/*
+/storage/framework/views/*
+/storage/logs/*
+!storage/app/.gitkeep
+!storage/framework/.gitkeep
+!storage/framework/cache/.gitkeep
+!storage/framework/cache/data/.gitkeep
+!storage/framework/sessions/.gitkeep
+!storage/framework/testing/.gitkeep
+!storage/framework/views/.gitkeep
+!storage/logs/.gitkeep
+
+# Environment files
+.env
+.env.backup
+.env.production
+.phpunit.result.cache
+Homestead.json
+Homestead.yaml
+auth.json
+npm-debug.log
+yarn-error.log
+
+# IDE specific
+/.vscode
+/.idea
+*.swp
+*.swo
+*~
+
+# OS generated files
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Backup files
+*.bak
+*.backup
+*-old.*
+*-backup.*
+
+# Database files
+*.sqlite
+*.sqlite3
+/database/database.sqlite
+
+# Compiled files
+/public/js/app.js
+/public/css/app.css
+/public/mix-manifest.json
+
+# Test files (keep only necessary ones)
+/public/test-*.html
+/test-*.bat
+/test-*.php
+!test-whatsapp-queue.html
+!test-unpaid-cleanup.html
+!test-whatsapp-queue.bat
+!test-unpaid-cleanup.bat
+!test-whatsapp.php
+!test-xendit-endpoint.php
+!test-xendit-integration.php
+
+# Temporary files
+*.tmp
+*.temp
+/tmp/
+/temp/
+
+# Logs
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Custom files
+/public/promo.mp4
+/public/arifkendari-iot-developer.html
+/public/home.html
+/Expected/
+/debug-*.php
+/check-*.php
+/send-*.php
+/update-*.php
+
+# Windows specific
+*.bat
+!start-complete-system.bat
+!start-server.bat
+!setup-*.bat
+!test-whatsapp-queue.bat
+!test-unpaid-cleanup.bat
+!full-system-check.bat
+!check-system.bat
+
+# Documentation that should be kept
+!README.md
+!README-*.md
+!CHANGELOG.md
+!LICENSE.md
+!CONTRIBUTING.md
