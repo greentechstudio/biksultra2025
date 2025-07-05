@@ -5,10 +5,10 @@
     "description": "Dashboard Aplikasi Registrasi dengan WhatsApp Automation dan Payment Gateway Integration",
     "keywords": ["laravel", "framework", "whatsapp", "payment-gateway", "automation", "dashboard", "registration", "xendit"],
     "license": "MIT",
-    "homepage": "https://github.com/[username]/ASRRUN",
+    "homepage": "https://github.com/system112/asrrun",
     "support": {
-        "issues": "https://github.com/[username]/ASRRUN/issues",
-        "source": "https://github.com/[username]/ASRRUN"
+        "issues": "https://github.com/system112/asrrun/issues",
+        "source": "https://github.com/system112/asrrun"
     },
     "authors": [
         {

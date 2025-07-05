@@ -11,9 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
+    if (!Schema::hasColumn('users', 'whatsapp_number')) {
         Schema::table('users', function (Blueprint $table) {
             $table->string('whatsapp_number')->nullable()->after('phone');
         });
+    }
     }
 
     /**

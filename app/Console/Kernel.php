@@ -8,18 +8,23 @@ use Illuminate\Foundation\Console\Kernel as ConsoleKernel;
 class Kernel extends ConsoleKernel
 {
     /**
+     * Register custom Artisan commands.
+     */
+    protected $commands = [
+        \App\Console\Commands\ProcessUnpaidRegistrations::class,
+        \App\Console\Commands\RunScheduler::class,
+    ];
+
+    /**
      * Define the application's command schedule.
      */
     protected function schedule(Schedule $schedule): void
     {
-        // Send payment reminders every 5 minutes
-        // (The command will determine if a user needs a reminder based on 30-minute intervals)
         $schedule->command('registrations:process-unpaid', ['--reminders-only'])
             ->everyFiveMinutes()
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/payment-reminders.log'));
-        
-        // Cleanup unpaid registrations every 30 minutes
+
         $schedule->command('registrations:process-unpaid', ['--cleanup-only'])
             ->everyThirtyMinutes()
             ->withoutOverlapping()
@@ -32,7 +37,6 @@ class Kernel extends ConsoleKernel
     protected function commands(): void
     {
         $this->load(__DIR__.'/Commands');
-
         require base_path('routes/console.php');
     }
 }
