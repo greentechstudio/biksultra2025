@@ -18,6 +18,15 @@ class XenditService
         $this->baseUrl = config('xendit.base_url');
         $this->apiKey = config('xendit.secret_key');
         $this->webhookToken = config('xendit.webhook_token');
+        
+        // Validate required configurations
+        if (empty($this->apiKey)) {
+            throw new \Exception('Xendit secret key is not configured. Please set XENDIT_SECRET_KEY in your .env file.');
+        }
+        
+        if (empty($this->baseUrl)) {
+            throw new \Exception('Xendit base URL is not configured. Please set XENDIT_BASE_URL in your .env file.');
+        }
     }
 
     /**
@@ -26,6 +35,11 @@ class XenditService
     public function createInvoice(User $user, $amount = null, $description = 'Amazing Sultra Run Registration Fee')
     {
         try {
+            // Additional validation
+            if (empty($this->apiKey)) {
+                throw new \Exception('Xendit API key is not configured');
+            }
+            
             // Get amount from user's race category if not provided
             if ($amount === null) {
                 $amount = $user->registration_fee;
@@ -131,6 +145,11 @@ class XenditService
     public function getInvoice($invoiceId)
     {
         try {
+            // Additional validation
+            if (empty($this->apiKey)) {
+                throw new \Exception('Xendit API key is not configured');
+            }
+            
             $response = Http::withBasicAuth($this->apiKey, '')
                 ->get($this->baseUrl . '/v2/invoices/' . $invoiceId);
 
