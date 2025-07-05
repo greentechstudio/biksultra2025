@@ -103,6 +103,14 @@ Route::get('/api/check-payment/{userId}', function($userId) {
 Route::prefix('api')->group(function () {
     Route::post('/xendit/webhook', [App\Http\Controllers\Api\XenditWebhookController::class, 'handleWebhook'])
         ->name('xendit.webhook');
+    
+    // Payment status management
+    Route::get('/payment/status', [App\Http\Controllers\Api\PaymentStatusController::class, 'checkStatus'])
+        ->name('payment.status.check');
+    Route::post('/payment/status', [App\Http\Controllers\Api\PaymentStatusController::class, 'updateStatus'])
+        ->name('payment.status.update');
+    Route::get('/payment/pending', [App\Http\Controllers\Api\PaymentStatusController::class, 'getPendingPayments'])
+        ->name('payment.pending');
 });
 
 // Payment success/failure pages
