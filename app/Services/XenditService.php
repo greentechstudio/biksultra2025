@@ -188,8 +188,17 @@ class XenditService
             return true;
         }
         
-        $expectedSignature = hash_hmac('sha256', $rawBody, $this->webhookToken);
-        return hash_equals($expectedSignature, $signature);
+        // Log for debugging
+        Log::info('Webhook signature verification', [
+            'received_signature' => $signature,
+            'expected_token' => $this->webhookToken,
+            'signature_length' => strlen($signature ?? ''),
+            'token_length' => strlen($this->webhookToken)
+        ]);
+        
+        // Xendit uses simple token comparison, not HMAC
+        // The X-CALLBACK-TOKEN header should match our webhook token exactly
+        return hash_equals($this->webhookToken, $signature ?? '');
     }
 
     /**

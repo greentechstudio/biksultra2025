@@ -8,16 +8,19 @@ use Illuminate\Support\Facades\Hash;
 
 class CreateTestUser extends Command
 {
-    protected $signature = 'user:create-test';
+    protected $signature = 'user:create-test {--external-id= : Custom external ID for the user}';
     protected $description = 'Create a test user for webhook testing';
 
     public function handle()
     {
         $this->info('Creating test user for webhook testing...');
         
+        $externalId = $this->option('external-id') ?: 'AMAZING-REG-TEST-' . time();
+        $email = 'test.webhook.' . time() . '@example.com';
+        
         $user = User::create([
             'name' => 'Test User Webhook',
-            'email' => 'test.webhook@example.com',
+            'email' => $email,
             'password' => Hash::make('password'),
             'phone' => '628123456789',
             'whatsapp_number' => '628123456789',
@@ -33,7 +36,7 @@ class CreateTestUser extends Command
             'blood_type' => 'O',
             'occupation' => 'Tester',
             'event_source' => 'Test',
-            'xendit_external_id' => 'AMAZING-REG-TEST-' . time(),
+            'xendit_external_id' => $externalId,
             'xendit_invoice_id' => 'test-invoice-' . time(),
             'payment_requested_at' => now()
         ]);
