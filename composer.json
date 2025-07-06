@@ -1,21 +1,10 @@
 {
     "$schema": "https://getcomposer.org/schema.json",
-    "name": "asrrun/dashboard-app",
+    "name": "laravel/laravel",
     "type": "project",
-    "description": "Dashboard Aplikasi Registrasi dengan WhatsApp Automation dan Payment Gateway Integration",
-    "keywords": ["laravel", "framework", "whatsapp", "payment-gateway", "automation", "dashboard", "registration", "xendit"],
+    "description": "The skeleton application for the Laravel framework.",
+    "keywords": ["laravel", "framework"],
     "license": "MIT",
-    "homepage": "https://github.com/system112/asrrun",
-    "support": {
-        "issues": "https://github.com/system112/asrrun/issues",
-        "source": "https://github.com/system112/asrrun"
-    },
-    "authors": [
-        {
-            "name": "ASRRUN Team",
-            "email": "support@asrrun.com"
-        }
-    ],
     "require": {
         "php": "^8.2",
         "laravel/framework": "^12.0",
