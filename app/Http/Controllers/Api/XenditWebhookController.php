@@ -31,13 +31,15 @@ class XenditWebhookController extends Controller
 
             Log::info('Xendit webhook received', [
                 'headers' => $request->headers->all(),
-                'body' => $rawBody
+                'body' => $rawBody,
+                'signature' => $signature
             ]);
 
             // Verify webhook signature
             if (!$this->xenditService->verifyWebhookSignature($rawBody, $signature)) {
                 Log::warning('Invalid webhook signature', [
-                    'signature' => $signature,
+                    'received_signature' => $signature,
+                    'all_headers' => $request->headers->all(),
                     'body' => $rawBody
                 ]);
                 return response()->json(['error' => 'Invalid signature'], 401);

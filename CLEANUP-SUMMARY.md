@@ -1,5 +1,52 @@
 # File yang Dihapus - Cleanup Project
 
+## 🧹 CLEANUP TERBARU - July 6, 2025
+
+### **🔧 Test Files PowerShell - Dihapus**
+- ❌ test-webhook-debug.ps1
+- ❌ test-webhook-powershell.ps1
+
+### **🔧 Test Files Batch - Dihapus**
+- ❌ test-xendit-real.bat
+- ❌ test-xendit-webhook.bat
+- ❌ test-scheduler.bat (kosong)
+- ❌ test-whatsapp-auto-remove.bat (kosong)
+- ❌ test-unpaid-cleanup.bat
+- ❌ test-whatsapp-queue.bat
+- ❌ setup-github-repo.bat (kosong)
+
+### **🔧 Test Files PHP - Dihapus**
+- ❌ test-dashboard-stats.php
+- ❌ test-null-safety.php
+- ❌ test-registration-fee.php
+- ❌ test-whatsapp.php
+- ❌ test-xendit-config.php
+- ❌ test-xendit-endpoint.php
+- ❌ test-xendit-integration.php
+- ❌ check-webhook-status.php (kosong)
+- ❌ send-payment-notification.php (kosong)
+- ❌ update-payment-status.php (kosong)
+
+### **📚 Dokumentasi Redundant - Dihapus**
+- ❌ XENDIT-WEBHOOK-TUTORIAL.md
+- ❌ XENDIT-DASHBOARD-SETUP.md
+- ❌ xendit-dashboard-setup.bat
+- ❌ open-xendit-guide.bat
+- ❌ XENDIT-SETUP-COMPLETE.md
+
+### **🌐 File HTML Testing - Dihapus**
+- ❌ public/xendit-webhook-setup.html
+- ❌ public/test-unpaid-cleanup.html
+
+### **✅ File yang Dipertahankan**
+- ✅ test-webhook.bat (tool utama untuk testing webhook)
+- ✅ setup-xendit-webhook.bat (setup helper Xendit)
+- ✅ WEBHOOK-SIGNATURE-FIX.md (dokumentasi fix signature)
+- ✅ WEBHOOK-SETUP-GUIDE.md (panduan setup)
+- ✅ Artisan commands (TestXenditWebhook, CreateTestUser, CheckUserStatus)
+
+---
+
 ## Files Dihapus pada {{ date('Y-m-d H:i:s') }}
 
 ### Batch Files (.bat) - Dihapus
