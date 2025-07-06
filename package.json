@@ -1,19 +1,5 @@
 {
     "$schema": "https://json.schemastore.org/package.json",
-    "name": "asrrun-dashboard-app",
-    "version": "1.0.0",
-    "description": "Dashboard Aplikasi Registrasi dengan WhatsApp Automation dan Payment Gateway Integration",
-    "keywords": ["laravel", "whatsapp", "payment-gateway", "automation", "dashboard", "registration", "xendit"],
-    "homepage": "https://github.com/[username]/ASRRUN",
-    "bugs": {
-        "url": "https://github.com/[username]/ASRRUN/issues"
-    },
-    "repository": {
-        "type": "git",
-        "url": "git+https://github.com/[username]/ASRRUN.git"
-    },
-    "license": "MIT",
-    "author": "ASRRUN Team <support@asrrun.com>",
     "private": true,
     "type": "module",
     "scripts": {
