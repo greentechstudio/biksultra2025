@@ -13,30 +13,31 @@
     
     <div class="container">
         <div class="hero-content">
-            <h1>LIMITLESS<br>RUNNING<br>SPIRIT.</h1>
-            <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis.</p>
+            <h1>AMAZING<br>SULTRA<br>RUN.</h1>
+            <p>Melangkah, Maju Bersama</p>
             <button class="hero-btn">
-                JOIN RUNER CLUB
+                REGISTRASI SEKARANG
                 <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24">
                     <path d="M5 12h14m-7-7l7 7-7 7"/>
                 </svg>
             </button>
+            <p>Powered By : Energi Positif & Sini-Sana</p>
         </div>
 
         <div class="event-card">
             <div class="event-header">
                 <div class="event-label">Upcoming Event:</div>
-                <h3 class="event-title">TWILIGHT TRAIL RUN</h3>
+                <h3 class="event-title">AMAZING SULTRA RUN</h3>
             </div>
             
             <div class="event-details">
                 <div class="event-date">
                     <div class="detail-label">Date</div>
-                    <div class="detail-value">JAN 25, 2025</div>
+                    <div class="detail-value">SEP 7, 2025</div>
                 </div>
                 <div class="event-time">
                     <div class="detail-label">Start</div>
-                    <div class="detail-value small">08:00 PM</div>
+                    <div class="detail-value small">05:00 PM</div>
                 </div>
                 <div class="event-duration">
                     <div class="detail-label">Until</div>
@@ -45,7 +46,7 @@
             </div>
             
             <div class="event-note">
-                *Vestibulum efficitur gravida lobortis. Donec posuere enim nec, posuere urna.
+                *Pastikan .
             </div>
         </div>
     </div>
