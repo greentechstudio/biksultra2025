@@ -3,337 +3,432 @@
 @section('title', 'Register - Event Lari')
 
 @section('content')
-<div class="auth-card">
-    <div class="auth-header">
-        <h3><i class="fas fa-running me-2"></i>Registrasi Event Lari</h3>
-        <p class="mb-0">Daftar untuk mengikuti event lari</p>
-    </div>
-    
-    <div class="auth-body">
-        <form id="registrationForm" method="POST" action="{{ route('register') }}">
-            @csrf
-            
-            <!-- Basic Information -->
-            <div class="section-header">
-                <h5><i class="fas fa-user me-2"></i>Informasi Pribadi</h5>
-            </div>
-            
-            <div class="mb-3">
-                <label for="name" class="form-label">Nama Lengkap <span class="text-danger">*</span></label>
-                <input type="text" class="form-control @error('name') is-invalid @enderror" 
-                       id="name" name="name" value="{{ old('name') }}" required>
-                @error('name')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+<div class="w-full max-w-4xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
+        <!-- Header -->
+        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 text-center">
+            <h1 class="text-3xl font-bold mb-2">
+                <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+            </h1>
+            <p class="text-blue-100">Daftar untuk mengikuti event lari</p>
+        </div>
+        
+        <!-- Form Content -->
+        <div class="p-8">
+            <form id="registrationForm" method="POST" action="{{ route('register') }}" class="space-y-8">
+                @csrf
+                
+                <!-- Basic Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4">
+                            <i class="fas fa-user text-blue-600"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Informasi Pribadi</h2>
+                    </div>
+                    
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nama Lengkap <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('name') border-red-500 @enderror" 
+                                   id="name" name="name" value="{{ old('name') }}" required>
+                            @error('name')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-            <div class="mb-3">
-                <label for="gender" class="form-label">Jenis Kelamin <span class="text-danger">*</span></label>
-                <select class="form-control @error('gender') is-invalid @enderror" id="gender" name="gender" required>
-                    <option value="">Pilih Jenis Kelamin</option>
-                    <option value="Laki-laki" {{ old('gender') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                    <option value="Perempuan" {{ old('gender') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
-                </select>
-                @error('gender')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+                        <div>
+                            <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">
+                                Jenis Kelamin <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('gender') border-red-500 @enderror" 
+                                    id="gender" name="gender" required>
+                                <option value="">Pilih Jenis Kelamin</option>
+                                <option value="Laki-laki" {{ old('gender') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                                <option value="Perempuan" {{ old('gender') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                            </select>
+                            @error('gender')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
 
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="birth_place" class="form-label">Tempat Lahir <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('birth_place') is-invalid @enderror" 
-                           id="birth_place" name="birth_place" value="{{ old('birth_place') }}" required>
-                    @error('birth_place')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                        <div>
+                            <label for="birth_place" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tempat Lahir <span class="text-red-500">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('birth_place') border-red-500 @enderror" 
+                                   id="birth_place" name="birth_place" value="{{ old('birth_place') }}" required>
+                            @error('birth_place')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tanggal Lahir <span class="text-red-500">*</span>
+                            </label>
+                            <input type="date" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('birth_date') border-red-500 @enderror" 
+                                   id="birth_date" name="birth_date" value="{{ old('birth_date') }}" 
+                                   max="{{ date('Y-m-d', strtotime('-10 years')) }}" required>
+                            @error('birth_date')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-2 text-sm text-gray-600">Minimal umur 10 tahun</p>
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
+                            Alamat Lengkap <span class="text-red-500">*</span>
+                        </label>
+                        <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('address') border-red-500 @enderror" 
+                                  id="address" name="address" rows="3" required>{{ old('address') }}</textarea>
+                        @error('address')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="birth_date" class="form-label">Tanggal Lahir <span class="text-danger">*</span></label>
-                    <input type="date" class="form-control @error('birth_date') is-invalid @enderror" 
-                           id="birth_date" name="birth_date" value="{{ old('birth_date') }}" 
-                           max="{{ date('Y-m-d', strtotime('-10 years')) }}" required>
-                    @error('birth_date')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                    <div class="form-text">Minimal umur 10 tahun</div>
+
+                <!-- Race Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-yellow-100 rounded-full p-3 mr-4">
+                            <i class="fas fa-trophy text-yellow-600"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Informasi Lomba</h2>
+                    </div>
+
+                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div>
+                            <label for="race_category" class="block text-sm font-medium text-gray-700 mb-2">
+                                Kategori Lomba <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('race_category') border-red-500 @enderror" 
+                                    id="race_category" name="race_category" required>
+                                <option value="">Pilih Kategori</option>
+                                <option value="5K" {{ old('race_category') == '5K' ? 'selected' : '' }}>5K - Fun Run</option>
+                                <option value="10K" {{ old('race_category') == '10K' ? 'selected' : '' }}>10K - Challenge Run</option>
+                                <option value="21K" {{ old('race_category') == '21K' ? 'selected' : '' }}>21K - Half Marathon</option>
+                            </select>
+                            @error('race_category')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="jersey_size" class="block text-sm font-medium text-gray-700 mb-2">
+                                Ukuran Jersey <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('jersey_size') border-red-500 @enderror" 
+                                    id="jersey_size" name="jersey_size" required>
+                                <option value="">Pilih Ukuran</option>
+                                <option value="S" {{ old('jersey_size') == 'S' ? 'selected' : '' }}>S</option>
+                                <option value="M" {{ old('jersey_size') == 'M' ? 'selected' : '' }}>M</option>
+                                <option value="L" {{ old('jersey_size') == 'L' ? 'selected' : '' }}>L</option>
+                                <option value="XL" {{ old('jersey_size') == 'XL' ? 'selected' : '' }}>XL</option>
+                                <option value="XXL" {{ old('jersey_size') == 'XXL' ? 'selected' : '' }}>XXL</option>
+                            </select>
+                            @error('jersey_size')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
+
+                    <div class="mt-6">
+                        <label for="bib_name" class="block text-sm font-medium text-gray-700 mb-2">
+                            Nama BIB <span class="text-red-500">*</span>
+                        </label>
+                        <input type="text" 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('bib_name') border-red-500 @enderror" 
+                               id="bib_name" name="bib_name" value="{{ old('bib_name') }}" 
+                               placeholder="Nama yang akan tercetak di BIB" maxlength="20" required>
+                        @error('bib_name')
+                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                        @enderror
+                        <p class="mt-2 text-sm text-gray-600">
+                            <i class="fas fa-info-circle mr-1"></i>
+                            Nama yang akan dicetak di nomor BIB Anda (maksimal 20 karakter)
+                        </p>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label for="address" class="form-label">Alamat Lengkap <span class="text-danger">*</span></label>
-                <textarea class="form-control @error('address') is-invalid @enderror" 
-                          id="address" name="address" rows="3" required>{{ old('address') }}</textarea>
-                @error('address')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <!-- Race Information -->
-            <div class="section-header">
-                <h5><i class="fas fa-trophy me-2"></i>Informasi Lomba</h5>
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="race_category" class="form-label">Kategori Lomba <span class="text-danger">*</span></label>
-                    <select class="form-control @error('race_category') is-invalid @enderror" id="race_category" name="race_category" required>
-                        <option value="">Pilih Kategori</option>
-                        @foreach($raceCategories as $category)
-                            <option value="{{ $category->name }}" {{ old('race_category') == $category->name ? 'selected' : '' }}>
-                                {{ $category->name }} ({{ $category->description }}) - Rp {{ number_format($category->price, 0, ',', '.') }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('race_category')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+                <!-- Ticket Type Information -->
+                <div class="bg-blue-50 rounded-lg p-6 hidden" id="ticketInfo">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-blue-100 rounded-full p-3 mr-4">
+                            <i class="fas fa-ticket-alt text-blue-600"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Informasi Tiket</h2>
+                    </div>
+                    
+                    <div class="bg-white rounded-lg p-6 shadow-sm">
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <div class="ticket-type-info">
+                                    <h3 class="text-lg font-semibold text-gray-800 ticket-type-name">-</h3>
+                                    <p class="text-2xl font-bold text-green-600 ticket-price">Rp 0</p>
+                                    <div class="ticket-quota">
+                                        <small class="text-gray-600">Kuota tersisa: <span class="remaining-quota font-semibold">-</span></small>
+                                    </div>
+                                </div>
+                            </div>
+                            <div>
+                                <div class="countdown-timer">
+                                    <h3 class="text-lg font-semibold text-gray-800 mb-2">Sisa Waktu:</h3>
+                                    <div class="timer-display flex space-x-1">
+                                        <div class="flex flex-col items-center">
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded timer-days">0</span>
+                                            <span class="text-xs text-gray-600">hari</span>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded timer-hours">0</span>
+                                            <span class="text-xs text-gray-600">jam</span>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded timer-minutes">0</span>
+                                            <span class="text-xs text-gray-600">menit</span>
+                                        </div>
+                                        <div class="flex flex-col items-center">
+                                            <span class="bg-red-500 text-white px-2 py-1 rounded timer-seconds">0</span>
+                                            <span class="text-xs text-gray-600">detik</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                 </div>
-                <div class="col-md-6 mb-3">
-                    <label for="jersey_size" class="form-label">Ukuran Jersey <span class="text-danger">*</span></label>
-                    <select class="form-control @error('jersey_size') is-invalid @enderror" id="jersey_size" name="jersey_size" required>
-                        <option value="">Pilih Ukuran</option>
-                        @foreach($jerseySizes as $size)
-                            <option value="{{ $size->code }}" {{ old('jersey_size') == $size->code ? 'selected' : '' }}>
-                                {{ $size->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('jersey_size')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
+
+                <!-- Contact Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-green-100 rounded-full p-3 mr-4">
+                            <i class="fas fa-phone text-green-600"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Informasi Kontak</h2>
+                    </div>
+                    
+                    <div class="space-y-6">
+                        <div>
+                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
+                                Email <span class="text-red-500">*</span>
+                            </label>
+                            <input type="email" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('email') border-red-500 @enderror" 
+                                   id="email" name="email" value="{{ old('email') }}" required>
+                            @error('email')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="whatsapp_number" class="block text-sm font-medium text-gray-700 mb-2">
+                                No Kontak WhatsApp <span class="text-red-500">*</span>
+                                <small class="text-gray-500">(akan divalidasi otomatis)</small>
+                            </label>
+                            <div class="flex">
+                                <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg">
+                                    +62
+                                </span>
+                                <input type="text" 
+                                       class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('whatsapp_number') border-red-500 @enderror" 
+                                       id="whatsapp_number" name="whatsapp_number" value="{{ old('whatsapp_number') }}" 
+                                       placeholder="8114000805" required>
+                            </div>
+                            @error('whatsapp_number')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-2 text-sm text-gray-600">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Masukkan nomor tanpa awalan 0 atau +62. Contoh: 8114000805 (awalan akan dihapus otomatis)
+                            </p>
+                            <!-- WhatsApp validation status -->
+                            <div id="whatsapp-validation-status" class="mt-2"></div>
+                        </div>
+
+                        <div>
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                                Nomor HP Alternatif
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('phone') border-red-500 @enderror" 
+                                   id="phone" name="phone" value="{{ old('phone') }}" 
+                                   placeholder="Contoh: 081234567890">
+                            @error('phone')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="emergency_contact_1" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Kontak Darurat 1 <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('emergency_contact_1') border-red-500 @enderror" 
+                                       id="emergency_contact_1" name="emergency_contact_1" value="{{ old('emergency_contact_1') }}" 
+                                       placeholder="Nama & No HP" required>
+                                @error('emergency_contact_1')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="emergency_contact_2" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Kontak Darurat 2
+                                </label>
+                                <input type="text" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('emergency_contact_2') border-red-500 @enderror" 
+                                       id="emergency_contact_2" name="emergency_contact_2" value="{{ old('emergency_contact_2') }}" 
+                                       placeholder="Nama & No HP">
+                                @error('emergency_contact_2')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <div class="mb-3">
-                <label for="bib_name" class="form-label">Nama BIB <span class="text-danger">*</span></label>
-                <input type="text" class="form-control @error('bib_name') is-invalid @enderror" 
-                       id="bib_name" name="bib_name" value="{{ old('bib_name') }}" 
-                       placeholder="Nama yang akan tercetak di BIB" maxlength="20" required>
-                @error('bib_name')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-                <div class="form-text">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Nama yang akan dicetak di nomor BIB Anda (maksimal 20 karakter)
+                <!-- Additional Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-purple-100 rounded-full p-3 mr-4">
+                            <i class="fas fa-info-circle text-purple-600"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Informasi Tambahan</h2>
+                    </div>
+
+                    <div class="space-y-6">
+                        <div>
+                            <label for="group_community" class="block text-sm font-medium text-gray-700 mb-2">
+                                Group Lari/Komunitas/Instansi
+                            </label>
+                            <input type="text" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('group_community') border-red-500 @enderror" 
+                                   id="group_community" name="group_community" value="{{ old('group_community') }}" 
+                                   placeholder="Nama komunitas/instansi (opsional)">
+                            @error('group_community')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="blood_type" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Golongan Darah <span class="text-red-500">*</span>
+                                </label>
+                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('blood_type') border-red-500 @enderror" 
+                                        id="blood_type" name="blood_type" required>
+                                    <option value="">Pilih Golongan Darah</option>
+                                    @foreach($bloodTypes as $type)
+                                        <option value="{{ $type->name }}" {{ old('blood_type') == $type->name ? 'selected' : '' }}>
+                                            {{ $type->name }}
+                                        </option>
+                                    @endforeach
+                                </select>
+                                @error('blood_type')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                            <div>
+                                <label for="occupation" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Pekerjaan <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('occupation') border-red-500 @enderror" 
+                                       id="occupation" name="occupation" value="{{ old('occupation') }}" required>
+                                @error('occupation')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
+                        </div>
+
+                        <div>
+                            <label for="medical_history" class="block text-sm font-medium text-gray-700 mb-2">
+                                Riwayat Penyakit
+                            </label>
+                            <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('medical_history') border-red-500 @enderror" 
+                                      id="medical_history" name="medical_history" rows="3" 
+                                      placeholder="Sebutkan riwayat penyakit yang relevan (opsional)">{{ old('medical_history') }}</textarea>
+                            @error('medical_history')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+
+                        <div>
+                            <label for="event_source" class="block text-sm font-medium text-gray-700 mb-2">
+                                Tau Event Ini Darimana? <span class="text-red-500">*</span>
+                            </label>
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('event_source') border-red-500 @enderror" 
+                                    id="event_source" name="event_source" required>
+                                <option value="">Pilih Sumber Informasi</option>
+                                @foreach($eventSources as $source)
+                                    <option value="{{ $source->name }}" {{ old('event_source') == $source->name ? 'selected' : '' }}>
+                                        {{ $source->name }}
+                                    </option>
+                                @endforeach
+                            </select>
+                            @error('event_source')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                        </div>
+                    </div>
                 </div>
-            </div>
 
-            <!-- Contact Information -->
-            <div class="section-header">
-                <h5><i class="fas fa-phone me-2"></i>Informasi Kontak</h5>
-            </div>
-            
-            <div class="mb-3">
-                <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                       id="email" name="email" value="{{ old('email') }}" required>
-                @error('email')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
+                <!-- Account Information -->
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <div class="flex items-center mb-6">
+                        <div class="bg-indigo-100 rounded-full p-3 mr-4">
+                            <i class="fas fa-key text-indigo-600"></i>
+                        </div>
+                        <h2 class="text-xl font-semibold text-gray-800">Informasi Akun</h2>
+                    </div>
+                    
+                    <!-- Password Auto-Generation Info -->
+                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                        <div class="flex items-start">
+                            <i class="fas fa-magic text-blue-600 mt-1 mr-3"></i>
+                            <div>
+                                <h4 class="font-semibold text-blue-800 mb-2">Password Otomatis</h4>
+                                <p class="text-blue-700 text-sm">
+                                    Sistem akan membuat password yang aman dan mengirimkannya ke WhatsApp Anda setelah registrasi.
+                                </p>
+                                <p class="text-blue-600 text-xs mt-1">
+                                    Format password: 2 huruf + 4 angka (contoh: ab1234)
+                                </p>
+                            </div>
+                        </div>
+                    </div>
 
-            <div class="mb-3">
-                <label for="whatsapp_number" class="form-label">
-                    No Kontak WhatsApp <span class="text-danger">*</span>
-                    <small class="text-muted">(akan divalidasi otomatis)</small>
-                </label>
-                <div class="input-group">
-                    <span class="input-group-text">+62</span>
-                    <input type="text" class="form-control @error('whatsapp_number') is-invalid @enderror" 
-                           id="whatsapp_number" name="whatsapp_number" value="{{ old('whatsapp_number') }}" 
-                           placeholder="81234567890" required>
+                    <!-- Hidden fields for auto password -->
+                    <input type="hidden" name="use_random_password" value="1">
+                    <input type="hidden" name="password_type" value="simple">
                 </div>
-                @error('whatsapp_number')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-                <div class="form-text">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Masukkan nomor tanpa awalan 0 atau +62. Contoh: 81234567890 (awalan akan dihapus otomatis)
+
+                <!-- Submit Button -->
+                <div class="text-center">
+                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                        <i class="fas fa-running mr-2"></i>Daftar Event Lari
+                    </button>
+                    
+                    <p class="mt-4 text-sm text-gray-600">
+                        <i class="fas fa-info-circle mr-1"></i>
+                        Setelah registrasi, password akan dikirim ke WhatsApp Anda untuk login
+                    </p>
+                    
+                    <p class="mt-4 text-center text-gray-600">
+                        Sudah punya akun? 
+                        <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">Login di sini</a>
+                    </p>
                 </div>
-                <!-- WhatsApp validation status will be inserted here by JavaScript -->
-            </div>
-
-            <div class="mb-3">
-                <label for="phone" class="form-label">Nomor HP Alternatif</label>
-                <input type="text" class="form-control @error('phone') is-invalid @enderror" 
-                       id="phone" name="phone" value="{{ old('phone') }}" 
-                       placeholder="Contoh: 081234567890">
-                @error('phone')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="emergency_contact_1" class="form-label">Kontak Darurat 1 <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('emergency_contact_1') is-invalid @enderror" 
-                           id="emergency_contact_1" name="emergency_contact_1" value="{{ old('emergency_contact_1') }}" 
-                           placeholder="Nama & No HP" required>
-                    @error('emergency_contact_1')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="emergency_contact_2" class="form-label">Kontak Darurat 2</label>
-                    <input type="text" class="form-control @error('emergency_contact_2') is-invalid @enderror" 
-                           id="emergency_contact_2" name="emergency_contact_2" value="{{ old('emergency_contact_2') }}" 
-                           placeholder="Nama & No HP">
-                    @error('emergency_contact_2')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-
-            <!-- Additional Information -->
-            <div class="section-header">
-                <h5><i class="fas fa-info-circle me-2"></i>Informasi Tambahan</h5>
-            </div>
-
-            <div class="mb-3">
-                <label for="group_community" class="form-label">Group Lari/Komunitas/Instansi</label>
-                <input type="text" class="form-control @error('group_community') is-invalid @enderror" 
-                       id="group_community" name="group_community" value="{{ old('group_community') }}" 
-                       placeholder="Nama komunitas/instansi (opsional)">
-                @error('group_community')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="row">
-                <div class="col-md-6 mb-3">
-                    <label for="blood_type" class="form-label">Golongan Darah <span class="text-danger">*</span></label>
-                    <select class="form-control @error('blood_type') is-invalid @enderror" id="blood_type" name="blood_type" required>
-                        <option value="">Pilih Golongan Darah</option>
-                        @foreach($bloodTypes as $type)
-                            <option value="{{ $type->name }}" {{ old('blood_type') == $type->name ? 'selected' : '' }}>
-                                {{ $type->name }}
-                            </option>
-                        @endforeach
-                    </select>
-                    @error('blood_type')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="col-md-6 mb-3">
-                    <label for="occupation" class="form-label">Pekerjaan <span class="text-danger">*</span></label>
-                    <input type="text" class="form-control @error('occupation') is-invalid @enderror" 
-                           id="occupation" name="occupation" value="{{ old('occupation') }}" required>
-                    @error('occupation')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-            </div>
-
-            <div class="mb-3">
-                <label for="medical_history" class="form-label">Riwayat Penyakit</label>
-                <textarea class="form-control @error('medical_history') is-invalid @enderror" 
-                          id="medical_history" name="medical_history" rows="3" 
-                          placeholder="Sebutkan riwayat penyakit yang relevan (opsional)">{{ old('medical_history') }}</textarea>
-                @error('medical_history')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <div class="mb-3">
-                <label for="event_source" class="form-label">Tau Event Ini Darimana? <span class="text-danger">*</span></label>
-                <select class="form-control @error('event_source') is-invalid @enderror" id="event_source" name="event_source" required>
-                    <option value="">Pilih Sumber Informasi</option>
-                    @foreach($eventSources as $source)
-                        <option value="{{ $source->name }}" {{ old('event_source') == $source->name ? 'selected' : '' }}>
-                            {{ $source->name }}
-                        </option>
-                    @endforeach
-                </select>
-                @error('event_source')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-
-            <!-- Account Information -->
-            <div class="section-header">
-                <h5><i class="fas fa-key me-2"></i>Informasi Akun</h5>
-            </div>
-            
-            <div class="mb-3">
-                <label for="password" class="form-label">Password <span class="text-danger">*</span></label>
-                <input type="password" class="form-control @error('password') is-invalid @enderror" 
-                       id="password" name="password" required>
-                @error('password')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                @enderror
-            </div>
-            
-            <div class="mb-3">
-                <label for="password_confirmation" class="form-label">Konfirmasi Password <span class="text-danger">*</span></label>
-                <input type="password" class="form-control" id="password_confirmation" name="password_confirmation" required>
-                <div class="form-text">Minimum 8 karakter</div>
-            </div>
-            
-            <div class="d-grid">
-                <button type="submit" class="btn btn-primary btn-lg">
-                    <i class="fas fa-running me-2"></i>Daftar Event Lari
-                </button>
-            </div>
-            
-            <div class="text-center mt-3">
-                <small class="text-muted">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Setelah registrasi, Anda akan diarahkan ke WhatsApp untuk konfirmasi dan pembayaran
-                </small>
-            </div>
-            
-            <div class="text-center mt-2">
-                <p class="mb-0">Sudah punya akun? 
-                    <a href="{{ route('login') }}" class="text-decoration-none">Login di sini</a>
-                </p>
-            </div>
-        </form>
+            </form>
+        </div>
     </div>
 </div>
-
-<style>
-.section-header {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
-    padding: 12px 15px;
-    margin: 20px -20px 15px -20px;
-    border-radius: 8px;
-}
-
-.section-header h5 {
-    margin: 0;
-    font-size: 1rem;
-    font-weight: 600;
-}
-
-.text-danger {
-    color: #dc3545 !important;
-}
-
-.form-control:focus {
-    border-color: #667eea;
-    box-shadow: 0 0 0 0.2rem rgba(102, 126, 234, 0.25);
-}
-
-.btn-primary {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    border: none;
-    padding: 12px 20px;
-    font-weight: 600;
-}
-
-.btn-primary:hover {
-    background: linear-gradient(135deg, #5a6fd8 0%, #6a4190 100%);
-    transform: translateY(-2px);
-    box-shadow: 0 4px 12px rgba(102, 126, 234, 0.3);
-}
-
-.auth-card {
-    max-width: 800px;
-    margin: 0 auto;
-}
-</style>
 
 <script>
 document.addEventListener('DOMContentLoaded', function() {
@@ -368,10 +463,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
         requiredFields.forEach(field => {
             if (!field.value.trim()) {
-                field.classList.add('is-invalid');
+                field.classList.add('border-red-500');
+                field.classList.remove('border-gray-300');
                 hasError = true;
             } else {
-                field.classList.remove('is-invalid');
+                field.classList.remove('border-red-500');
+                field.classList.add('border-gray-300');
             }
         });
 
@@ -383,7 +480,8 @@ document.addEventListener('DOMContentLoaded', function() {
             const age = Math.floor((today - birth) / (365.25 * 24 * 60 * 60 * 1000));
             
             if (age < 10) {
-                birthDate.classList.add('is-invalid');
+                birthDate.classList.add('border-red-500');
+                birthDate.classList.remove('border-gray-300');
                 hasError = true;
                 alert('Minimal umur 10 tahun untuk mengikuti event ini.');
             }
@@ -400,25 +498,26 @@ document.addEventListener('DOMContentLoaded', function() {
     inputs.forEach(input => {
         input.addEventListener('blur', function() {
             if (this.hasAttribute('required') && !this.value.trim()) {
-                this.classList.add('is-invalid');
+                this.classList.add('border-red-500');
+                this.classList.remove('border-gray-300');
             } else {
-                this.classList.remove('is-invalid');
+                this.classList.remove('border-red-500');
+                this.classList.add('border-gray-300');
             }
         });
     });
 
     // WhatsApp number validation
     const whatsappInput = document.getElementById('whatsapp_number');
-    const whatsappStatus = document.createElement('div');
-    whatsappStatus.className = 'mt-2';
-    whatsappInput.parentNode.appendChild(whatsappStatus);
+    const whatsappStatus = document.getElementById('whatsapp-validation-status');
+    const submitBtn = form.querySelector('button[type="submit"]');
 
     let validationTimeout;
     let lastValidatedNumber = '';
     let isValidWhatsApp = false;
 
+    // Format WhatsApp number input and auto-validate
     whatsappInput.addEventListener('input', function() {
-        clearTimeout(validationTimeout);
         let phoneNumber = this.value.trim();
         
         // Auto-remove leading 0 or +62
@@ -438,30 +537,30 @@ document.addEventListener('DOMContentLoaded', function() {
         this.value = phoneNumber;
         
         // Reset validation state
-        this.classList.remove('is-valid', 'is-invalid');
+        this.classList.remove('border-green-500', 'border-red-500');
+        this.classList.add('border-gray-300');
         isValidWhatsApp = false;
+        whatsappStatus.innerHTML = '';
         
-        if (phoneNumber.length < 9) {
-            whatsappStatus.innerHTML = '';
-            return;
+        // Auto-validate if number is long enough
+        if (phoneNumber.length >= 9) {
+            clearTimeout(validationTimeout);
+            validationTimeout = setTimeout(() => {
+                validateWhatsAppNumber(phoneNumber);
+            }, 1000); // Wait 1 second after user stops typing
         }
+        
+        // Update submit button state
+        updateSubmitButton();
+    });
 
-        if (phoneNumber === lastValidatedNumber) {
-            return; // Already validated this number
-        }
-
-        // Show loading
-        whatsappStatus.innerHTML = `
-            <div class="text-info">
-                <i class="fas fa-spinner fa-spin me-1"></i>
-                Memeriksa nomor WhatsApp...
-            </div>
-        `;
-
-        // Delay validation to avoid too many requests
-        validationTimeout = setTimeout(() => {
+    // Auto-validate on blur (when user leaves the field)
+    whatsappInput.addEventListener('blur', function() {
+        const phoneNumber = this.value.trim();
+        if (phoneNumber.length >= 9 && phoneNumber !== lastValidatedNumber) {
+            clearTimeout(validationTimeout);
             validateWhatsAppNumber(phoneNumber);
-        }, 1500);
+        }
     });
 
     // Handle paste event to clean up pasted content
@@ -481,106 +580,630 @@ document.addEventListener('DOMContentLoaded', function() {
             // Only allow numeric input
             phoneNumber = phoneNumber.replace(/\D/g, '');
             this.value = phoneNumber;
+            
+            // Auto-validate if number is long enough
+            if (phoneNumber.length >= 9) {
+                clearTimeout(validationTimeout);
+                validationTimeout = setTimeout(() => {
+                    validateWhatsAppNumber(phoneNumber);
+                }, 1000);
+            }
         }, 10);
     });
 
-    async function validateWhatsAppNumber(phoneNumber) {
-        try {
-            // Format phone number (phoneNumber sudah dibersihkan dari 0 dan +62)
-            let formattedNumber = phoneNumber.replace(/\D/g, ''); // Remove non-digits
-            
-            // Add 62 prefix for Indonesia
-            if (formattedNumber.startsWith('8')) {
-                formattedNumber = '62' + formattedNumber;
-            } else if (!formattedNumber.startsWith('62')) {
-                formattedNumber = '62' + formattedNumber;
-            }
-
-            console.log('Validating WhatsApp number:', formattedNumber);
-
-            const response = await fetch('/api/check-whatsapp-number', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
-                },
-                body: JSON.stringify({
-                    number: formattedNumber
-                })
-            });
-
-            if (!response.ok) {
-                console.error(`HTTP error! status: ${response.status}`);
-                throw new Error(`HTTP error! status: ${response.status}`);
-            }
-
-            const result = await response.json();
-            lastValidatedNumber = phoneNumber;
-
-            console.log('WhatsApp validation result:', result);
-            console.log('Raw API response in result:', result.raw_response);
-
-            if (result.success) {
-                if (result.hasWhatsapp) {
-                    whatsappStatus.innerHTML = `
-                        <div class="text-success">
-                            <i class="fas fa-check-circle me-1"></i>
-                            ${result.message || 'Nomor WhatsApp valid dan aktif'}
-                        </div>
-                    `;
-                    whatsappInput.classList.remove('is-invalid');
-                    whatsappInput.classList.add('is-valid');
-                    isValidWhatsApp = true;
-                } else {
-                    whatsappStatus.innerHTML = `
-                        <div class="text-warning">
-                            <i class="fas fa-exclamation-triangle me-1"></i>
-                            ${result.message || 'Nomor tidak terdaftar di WhatsApp'}
-                        </div>
-                    `;
-                    whatsappInput.classList.remove('is-valid');
-                    whatsappInput.classList.add('is-invalid');
-                    isValidWhatsApp = false;
-                }
-            } else {
-                whatsappStatus.innerHTML = `
-                    <div class="text-danger">
-                        <i class="fas fa-times-circle me-1"></i>
-                        ${result.message || 'Gagal memverifikasi nomor'}
-                    </div>
-                `;
-                isValidWhatsApp = false;
-            }
-        } catch (error) {
-            console.error('WhatsApp validation error:', error);
-            whatsappStatus.innerHTML = `
-                <div class="text-muted">
-                    <i class="fas fa-info-circle me-1"></i>
-                    Tidak dapat memverifikasi nomor saat ini. Anda tetap dapat melanjutkan pendaftaran.
-                </div>
-            `;
-            isValidWhatsApp = null; // Allow form submission despite validation failure
+    // Validate WhatsApp number function
+    function validateWhatsAppNumber(phoneNumber) {
+        if (!phoneNumber || phoneNumber.length < 9) {
+            showValidationStatus('error', 'Nomor WhatsApp tidak valid');
+            return;
         }
-    }
 
-    // Add form validation before submit
-    const registrationForm = document.getElementById('registrationForm');
-    if (registrationForm) {
-        registrationForm.addEventListener('submit', function(e) {
-            const whatsappNumber = whatsappInput.value.trim();
-            
-            if (whatsappNumber && isValidWhatsApp === false) {
-                e.preventDefault();
-                alert('Mohon pastikan nomor WhatsApp yang Anda masukkan valid dan terdaftar di WhatsApp.');
-                whatsappInput.focus();
-                return false;
+        // Show loading state
+        showValidationStatus('loading', 'Memvalidasi nomor WhatsApp...');
+
+        // Format to full international format
+        const fullNumber = '62' + phoneNumber;
+        
+        // Make API call to validate
+        fetch('{{ route("validate-whatsapp") }}', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': '{{ csrf_token() }}'
+            },
+            body: JSON.stringify({
+                whatsapp_number: fullNumber
+            })
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success && data.valid) {
+                isValidWhatsApp = true;
+                lastValidatedNumber = phoneNumber;
+                whatsappInput.classList.add('border-green-500');
+                whatsappInput.classList.remove('border-red-500', 'border-gray-300');
+                showValidationStatus('success', 'Nomor WhatsApp valid dan terdaftar');
+            } else if (data.success && !data.valid) {
+                isValidWhatsApp = false;
+                whatsappInput.classList.add('border-red-500');
+                whatsappInput.classList.remove('border-green-500', 'border-gray-300');
+                showValidationStatus('error', data.message || 'Nomor WhatsApp tidak valid atau tidak terdaftar');
+            } else {
+                // If API responds but validation fails, check if it's a service error or invalid number
+                if (data.success === false) {
+                    // True service error (timeout, connection failed) - allow with warning
+                    isValidWhatsApp = true;
+                    lastValidatedNumber = phoneNumber;
+                    whatsappInput.classList.add('border-yellow-500');
+                    whatsappInput.classList.remove('border-red-500', 'border-green-500', 'border-gray-300');
+                    showValidationStatus('warning', 'Service WhatsApp tidak tersedia. Registrasi tetap dapat dilanjutkan.');
+                } else {
+                    // Other errors - block registration
+                    isValidWhatsApp = false;
+                    whatsappInput.classList.add('border-red-500');
+                    whatsappInput.classList.remove('border-green-500', 'border-gray-300', 'border-yellow-500');
+                    showValidationStatus('error', data.message || 'Nomor WhatsApp tidak valid');
+                }
             }
-            
-            // Additional validation can be added here
-            return true;
+        })
+        .catch(error => {
+            console.error('Validation error:', error);
+            // Network/connection errors - block registration to be safe
+            isValidWhatsApp = false;
+            whatsappInput.classList.add('border-red-500');
+            whatsappInput.classList.remove('border-green-500', 'border-gray-300', 'border-yellow-500');
+            showValidationStatus('error', 'Validasi WhatsApp gagal. Silakan coba lagi.');
+        })
+        .finally(() => {
+            updateSubmitButton();
         });
     }
 
+    // Show validation status
+    function showValidationStatus(type, message) {
+        let className = '';
+        let icon = '';
+        
+        switch(type) {
+            case 'loading':
+                className = 'bg-blue-50 border border-blue-200 text-blue-800';
+                icon = 'fas fa-spinner fa-spin';
+                break;
+            case 'success':
+                className = 'bg-green-50 border border-green-200 text-green-800';
+                icon = 'fas fa-check-circle';
+                break;
+            case 'warning':
+                className = 'bg-yellow-50 border border-yellow-200 text-yellow-800';
+                icon = 'fas fa-exclamation-triangle';
+                break;
+            case 'error':
+                className = 'bg-red-50 border border-red-200 text-red-800';
+                icon = 'fas fa-exclamation-circle';
+                break;
+        }
+        
+        whatsappStatus.innerHTML = `
+            <div class="${className} px-4 py-2 rounded-lg">
+                <i class="${icon} mr-2"></i>${message}
+            </div>
+        `;
+    }
+
+    // Update submit button state
+    function updateSubmitButton() {
+        updateSubmitButtonState();
+    }
+
+    // Handle form submission with reCAPTCHA and WhatsApp validation
+    form.addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        // Check if WhatsApp number is definitively invalid (not just service down)
+        const phoneNumber = whatsappInput.value.trim();
+        if (phoneNumber.length >= 9 && !isValidWhatsApp && 
+            whatsappInput.classList.contains('border-red-500')) {
+            alert('Nomor WhatsApp tidak valid atau tidak terdaftar. Silakan periksa kembali nomor yang Anda masukkan.');
+            if (phoneNumber !== lastValidatedNumber) {
+                validateWhatsAppNumber(phoneNumber);
+            }
+            return;
+        }
+        
+        // Disable submit button
+        submitBtn.disabled = true;
+        submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
+        submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        
+        // Execute reCAPTCHA
+        if (typeof grecaptcha !== 'undefined') {
+            grecaptcha.ready(function() {
+                grecaptcha.execute('{{ config("services.recaptcha.site_key") }}', {action: 'register'}).then(function(token) {
+                    // Add reCAPTCHA token to form
+                    let recaptchaInput = document.querySelector('input[name="g-recaptcha-response"]');
+                    if (!recaptchaInput) {
+                        recaptchaInput = document.createElement('input');
+                        recaptchaInput.type = 'hidden';
+                        recaptchaInput.name = 'g-recaptcha-response';
+                        form.appendChild(recaptchaInput);
+                    }
+                    recaptchaInput.value = token;
+                    
+                    // Submit form via API
+                    submitRegistration();
+                }).catch(function(error) {
+                    console.error('reCAPTCHA error:', error);
+                    alert('Gagal memverifikasi reCAPTCHA. Silakan coba lagi.');
+                    
+                    // Re-enable submit button
+                    submitBtn.disabled = false;
+                    submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                });
+            });
+        } else {
+            // If reCAPTCHA not loaded, submit anyway
+            submitRegistration();
+        }
+    });
+
+    // Submit registration via API
+    function submitRegistration() {
+        const formData = new FormData(form);
+        
+        // Prepare data with proper field mapping
+        const data = {
+            name: formData.get('name'),
+            email: formData.get('email'),
+            phone: formData.get('whatsapp_number'), // API expects 'phone' field, use whatsapp number
+            category: formData.get('race_category'), // Backend expects 'category' not 'race_category'
+            
+            // Additional fields (may not be processed by basic API but keeping for completeness)
+            bib_name: formData.get('bib_name'),
+            gender: formData.get('gender'),
+            birth_place: formData.get('birth_place'),
+            birth_date: formData.get('birth_date'),
+            address: formData.get('address'),
+            jersey_size: formData.get('jersey_size'),
+            whatsapp_number: formData.get('whatsapp_number'),
+            emergency_contact_1: formData.get('emergency_contact_1'),
+            emergency_contact_2: formData.get('emergency_contact_2'),
+            group_community: formData.get('group_community'),
+            blood_type: formData.get('blood_type'),
+            occupation: formData.get('occupation'),
+            medical_history: formData.get('medical_history'),
+            event_source: formData.get('event_source')
+        };
+
+        // Debug: log the data being sent
+        console.log('Sending registration data:', data);
+        
+        // Validate required fields before sending
+        if (!data.name || !data.email || !data.phone || !data.category) {
+            alert('Mohon lengkapi semua field yang wajib diisi (Nama, Email, WhatsApp, Kategori).');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            return;
+        }
+
+        fetch('/api/register', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(data)
+        })
+        .then(response => response.json())
+        .then(data => {
+            if (data.success) {
+                alert('Registrasi berhasil! Nomor registrasi: ' + data.data.registration_number + 
+                      '\n\nSilakan login dengan email dan password yang telah dikirim ke WhatsApp Anda.');
+                // Redirect to login page
+                window.location.href = '/login';
+            } else {
+                alert('Registrasi gagal: ' + data.message);
+                submitBtn.disabled = false;
+                submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            }
+        })
+        .catch(error => {
+            console.error('Registration error:', error);
+            alert('Terjadi kesalahan saat registrasi. Silakan coba lagi.');
+            submitBtn.disabled = false;
+            submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        });
+    }
+
+    // Load reCAPTCHA script
+    const script = document.createElement('script');
+    script.src = 'https://www.google.com/recaptcha/api.js?render={{ config("services.recaptcha.site_key") }}';
+    document.head.appendChild(script);
+
+    // Enhanced ticket functionality with auto-refresh and quota monitoring
+    const raceCategorySelect = document.getElementById('race_category');
+    const ticketInfoSection = document.getElementById('ticketInfo');
+    let currentTicketData = null;
+    let isLoadingTicketInfo = false;
+    let countdownInterval = null;
+    let quotaRefreshInterval = null;
+    let currentSelectedCategory = null;
+    let isQuotaAvailable = true;
+
+    // Handle race category change
+    if (raceCategorySelect) {
+        raceCategorySelect.addEventListener('change', function() {
+            const category = this.value;
+            
+            // Clear any existing intervals
+            if (countdownInterval) {
+                clearInterval(countdownInterval);
+                countdownInterval = null;
+            }
+            if (quotaRefreshInterval) {
+                clearInterval(quotaRefreshInterval);
+                quotaRefreshInterval = null;
+            }
+            
+            currentSelectedCategory = category;
+            
+            if (category) {
+                fetchTicketInfo(category);
+                // Start quota auto-refresh every 5 seconds
+                startQuotaAutoRefresh(category);
+            } else {
+                hideTicketInfo();
+                currentSelectedCategory = null;
+            }
+        });
+    }
+
+    // Start quota auto-refresh every 5 seconds
+    function startQuotaAutoRefresh(category) {
+        if (quotaRefreshInterval) {
+            clearInterval(quotaRefreshInterval);
+        }
+        
+        quotaRefreshInterval = setInterval(() => {
+            if (currentSelectedCategory === category) {
+                refreshQuotaOnly(category);
+            }
+        }, 5000); // Update every 5 seconds
+    }
+
+    // Light API request to refresh only quota information
+    function refreshQuotaOnly(category) {
+        if (!category || isLoadingTicketInfo) return;
+        
+        fetch(`/api/ticket-info?category=${encodeURIComponent(category)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.available && data.ticket_type) {
+                // Update quota display only
+                updateQuotaDisplay(data.ticket_type);
+                
+                // Check if quota is available
+                const remainingQuota = parseInt(data.ticket_type.remaining_quota) || 0;
+                isQuotaAvailable = remainingQuota > 0;
+                
+                // Update submit button state
+                updateSubmitButtonState();
+            } else {
+                // Quota might be exhausted
+                isQuotaAvailable = false;
+                updateSubmitButtonState();
+            }
+        })
+        .catch(error => {
+            console.error('Error refreshing quota:', error);
+        });
+    }
+
+    // Update quota display with color coding
+    function updateQuotaDisplay(ticketType) {
+        const quotaElement = document.querySelector('.remaining-quota');
+        if (!quotaElement) return;
+        
+        const remainingQuota = parseInt(ticketType.remaining_quota) || 0;
+        const totalQuota = parseInt(ticketType.total_quota) || 1;
+        const percentage = (remainingQuota / totalQuota) * 100;
+        
+        quotaElement.textContent = remainingQuota;
+        
+        // Color coding based on quota percentage
+        const quotaContainer = quotaElement.parentElement;
+        quotaContainer.classList.remove('text-green-600', 'text-orange-600', 'text-red-600', 'text-blue-600');
+        
+        if (remainingQuota === 0) {
+            quotaContainer.classList.add('text-red-600');
+            quotaElement.innerHTML = '<strong>HABIS</strong>';
+        } else if (percentage > 25) {
+            quotaContainer.classList.add('text-green-600');
+        } else if (percentage > 10) {
+            quotaContainer.classList.add('text-orange-600');
+        } else {
+            quotaContainer.classList.add('text-red-600');
+        }
+    }
+
+    // Update submit button state based on quota availability
+    function updateSubmitButtonState() {
+        const submitBtn = form.querySelector('button[type="submit"]');
+        const phoneNumber = whatsappInput.value.trim();
+        
+        // Check multiple conditions for disabling submit button
+        const shouldDisable = 
+            // WhatsApp validation failed
+            (phoneNumber.length >= 9 && !isValidWhatsApp && whatsappInput.classList.contains('border-red-500')) ||
+            // Quota not available
+            !isQuotaAvailable ||
+            // No category selected
+            !currentSelectedCategory;
+        
+        if (shouldDisable) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+            
+            if (!isQuotaAvailable) {
+                submitBtn.innerHTML = '<i class="fas fa-ban mr-2"></i>Kuota Habis - Registrasi Ditutup';
+            } else if (phoneNumber.length >= 9 && !isValidWhatsApp && whatsappInput.classList.contains('border-red-500')) {
+                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Validasi WhatsApp Diperlukan';
+            } else {
+                submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Pilih Kategori Terlebih Dahulu';
+            }
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+        }
+    }
+    // Fetch ticket information for selected category
+    function fetchTicketInfo(category) {
+        if (isLoadingTicketInfo) {
+            return;
+        }
+        
+        isLoadingTicketInfo = true;
+        
+        fetch(`/api/ticket-info?category=${encodeURIComponent(category)}`, {
+            method: 'GET',
+            headers: {
+                'Content-Type': 'application/json',
+                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]').getAttribute('content')
+            }
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+            return response.json();
+        })
+        .then(data => {
+            if (data.available) {
+                currentTicketData = data.ticket_type;
+                showTicketInfo(data.ticket_type);
+                
+                // Check quota availability
+                const remainingQuota = parseInt(data.ticket_type.remaining_quota) || 0;
+                isQuotaAvailable = remainingQuota > 0;
+                
+                // Update submit button state
+                updateSubmitButtonState();
+                
+                if (data.ticket_type.time_remaining) {
+                    startCountdown(data.ticket_type.time_remaining);
+                }
+            } else {
+                showTicketUnavailable(data.message || 'Tiket tidak tersedia untuk kategori ini');
+                isQuotaAvailable = false;
+                updateSubmitButtonState();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching ticket info:', error);
+            showTicketError();
+            isQuotaAvailable = false;
+            updateSubmitButtonState();
+        })
+        .finally(() => {
+            isLoadingTicketInfo = false;
+        });
+    }
+
+    // Show ticket information
+    function showTicketInfo(ticketType) {
+        ticketInfoSection.classList.remove('hidden');
+        
+        const remainingQuota = parseInt(ticketType.remaining_quota) || 0;
+        const quotaColor = remainingQuota === 0 ? 'text-red-600' : 'text-green-600';
+        const quotaText = remainingQuota === 0 ? 'HABIS' : remainingQuota;
+        
+        ticketInfoSection.innerHTML = `
+            <div class="flex items-center mb-6">
+                <div class="bg-blue-100 rounded-full p-3 mr-4">
+                    <i class="fas fa-ticket-alt text-blue-600"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Informasi Tiket</h2>
+            </div>
+            
+            <div class="bg-white rounded-lg p-6 shadow-sm">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div>
+                        <div class="ticket-type-info">
+                            <h3 class="text-lg font-semibold text-gray-800">${ticketType.name} - ${ticketType.category}</h3>
+                            <p class="text-2xl font-bold text-green-600">${ticketType.formatted_price || 'Rp 0'}</p>
+                            <div class="ticket-quota ${quotaColor}">
+                                <small class="text-gray-600">Kuota tersisa: <span class="remaining-quota font-semibold">${quotaText}</span></small>
+                            </div>
+                        </div>
+                    </div>
+                    <div>
+                        <div class="countdown-timer">
+                            <h3 class="text-lg font-semibold text-gray-800 mb-2">Sisa Waktu:</h3>
+                            <div class="timer-display flex space-x-1">
+                                <div class="flex flex-col items-center">
+                                    <span class="bg-red-500 text-white px-2 py-1 rounded timer-days">0</span>
+                                    <span class="text-xs text-gray-600">hari</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="bg-red-500 text-white px-2 py-1 rounded timer-hours">0</span>
+                                    <span class="text-xs text-gray-600">jam</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="bg-red-500 text-white px-2 py-1 rounded timer-minutes">0</span>
+                                    <span class="text-xs text-gray-600">menit</span>
+                                </div>
+                                <div class="flex flex-col items-center">
+                                    <span class="bg-red-500 text-white px-2 py-1 rounded timer-seconds">0</span>
+                                    <span class="text-xs text-gray-600">detik</span>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        `;
+    }
+
+    // Show ticket unavailable message
+    function showTicketUnavailable(message) {
+        ticketInfoSection.classList.remove('hidden');
+        ticketInfoSection.innerHTML = `
+            <div class="flex items-center mb-6">
+                <div class="bg-blue-100 rounded-full p-3 mr-4">
+                    <i class="fas fa-ticket-alt text-blue-600"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Informasi Tiket</h2>
+            </div>
+            <div class="bg-yellow-50 border border-yellow-200 text-yellow-800 px-4 py-3 rounded-lg">
+                <i class="fas fa-exclamation-triangle mr-2"></i>
+                ${message}
+            </div>
+        `;
+    }
+
+    // Show ticket error
+    function showTicketError() {
+        ticketInfoSection.classList.remove('hidden');
+        ticketInfoSection.innerHTML = `
+            <div class="flex items-center mb-6">
+                <div class="bg-blue-100 rounded-full p-3 mr-4">
+                    <i class="fas fa-ticket-alt text-blue-600"></i>
+                </div>
+                <h2 class="text-xl font-semibold text-gray-800">Informasi Tiket</h2>
+            </div>
+            <div class="bg-red-50 border border-red-200 text-red-800 px-4 py-3 rounded-lg">
+                <i class="fas fa-exclamation-circle mr-2"></i>
+                Gagal memuat informasi tiket. Silakan coba lagi.
+            </div>
+        `;
+    }
+
+    // Hide ticket information
+    function hideTicketInfo() {
+        ticketInfoSection.classList.add('hidden');
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        if (quotaRefreshInterval) {
+            clearInterval(quotaRefreshInterval);
+            quotaRefreshInterval = null;
+        }
+        isQuotaAvailable = true;
+        updateSubmitButtonState();
+    }
+
+    // Start countdown timer with seconds
+    function startCountdown(timeRemaining) {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+            countdownInterval = null;
+        }
+        
+        if (!timeRemaining || timeRemaining.expired) {
+            const timerDisplay = document.querySelector('.timer-display');
+            if (timerDisplay) {
+                timerDisplay.innerHTML = '<span class="text-red-500">Periode berakhir</span>';
+            }
+            return;
+        }
+        
+        let days = parseInt(timeRemaining.days) || 0;
+        let hours = parseInt(timeRemaining.hours) || 0;
+        let minutes = parseInt(timeRemaining.minutes) || 0;
+        let seconds = parseInt(timeRemaining.seconds) || 0;
+        
+        // Initial display
+        updateTimerDisplay(days, hours, minutes, seconds);
+        
+        countdownInterval = setInterval(() => {
+            seconds--;
+            if (seconds < 0) {
+                seconds = 59;
+                minutes--;
+                if (minutes < 0) {
+                    minutes = 59;
+                    hours--;
+                    if (hours < 0) {
+                        hours = 23;
+                        days--;
+                        if (days < 0) {
+                            clearInterval(countdownInterval);
+                            countdownInterval = null;
+                            const timerDisplay = document.querySelector('.timer-display');
+                            if (timerDisplay) {
+                                timerDisplay.innerHTML = '<span class="text-red-500">Periode berakhir</span>';
+                            }
+                            return;
+                        }
+                    }
+                }
+            }
+            
+            updateTimerDisplay(days, hours, minutes, seconds);
+        }, 1000); // Update every second
+    }
+
+    // Update timer display elements including seconds
+    function updateTimerDisplay(days, hours, minutes, seconds) {
+        const daysElement = document.querySelector('.timer-days');
+        const hoursElement = document.querySelector('.timer-hours');
+        const minutesElement = document.querySelector('.timer-minutes');
+        const secondsElement = document.querySelector('.timer-seconds');
+        
+        if (daysElement) daysElement.textContent = days;
+        if (hoursElement) hoursElement.textContent = hours;
+        if (minutesElement) minutesElement.textContent = minutes;
+        if (secondsElement) secondsElement.textContent = seconds;
+    }
+
+    // Cleanup intervals when page is unloaded
+    window.addEventListener('beforeunload', function() {
+        if (countdownInterval) {
+            clearInterval(countdownInterval);
+        }
+        if (quotaRefreshInterval) {
+            clearInterval(quotaRefreshInterval);
+        }
+    });
+
+    // Initial submit button state check
+    updateSubmitButtonState();
 });
 </script>
 @endsection

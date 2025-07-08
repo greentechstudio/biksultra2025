@@ -34,10 +34,15 @@ class User extends Authenticatable
         'xendit_invoice_id',
         'xendit_invoice_url',
         'xendit_external_id',
+        'xendit_payment_id',
         'payment_status',
         'payment_requested_at',
+        'paid_at',
         'xendit_callback_data',
         'status',
+        'registration_number',
+        'is_active',
+        'ticket_type_id',
         // Detail registration fields
         'gender',
         'birth_place',
@@ -80,10 +85,12 @@ class User extends Authenticatable
             'whatsapp_verified_at' => 'datetime',
             'payment_confirmed_at' => 'datetime',
             'payment_requested_at' => 'datetime',
+            'paid_at' => 'datetime',
             'xendit_callback_data' => 'array',
             'birth_date' => 'date',
             'whatsapp_verified' => 'boolean',
             'payment_confirmed' => 'boolean',
+            'is_active' => 'boolean',
             'password' => 'hashed',
             'profile_edited' => 'boolean',
             'profile_edited_at' => 'datetime',
@@ -99,18 +106,26 @@ class User extends Authenticatable
     }
 
     /**
-     * Get the registration fee based on race category.
+     * Get the ticket type for this user.
+     */
+    public function ticketType()
+    {
+        return $this->belongsTo(TicketType::class, 'ticket_type_id');
+    }
+
+    /**
+     * Get the registration fee based on ticket type.
      */
     public function getRegistrationFeeAttribute()
     {
         // Refresh relationship untuk memastikan data terbaru
-        $this->unsetRelation('raceCategory');
-        $this->load('raceCategory');
+        $this->unsetRelation('ticketType');
+        $this->load('ticketType');
         
-        if ($this->raceCategory) {
-            return (float) $this->raceCategory->price;
+        if ($this->ticketType) {
+            return (float) $this->ticketType->price;
         }
-        return (float) config('xendit.registration_fee', 150000); // Default fallback
+        return (float) config('xendit.registration_fee', 75000); // Default fallback
     }
 
     /**

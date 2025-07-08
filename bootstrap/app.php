@@ -14,7 +14,12 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware): void {
         $middleware->alias([
             'role' => \App\Http\Middleware\CheckRole::class,
+            'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
+            'timezone' => \App\Http\Middleware\SetTimezone::class,
         ]);
+        
+        // Add timezone middleware globally
+        $middleware->append(\App\Http\Middleware\SetTimezone::class);
         
         // Exclude webhook routes from CSRF verification
         $middleware->validateCsrfTokens(except: [

@@ -36,3 +36,15 @@ Route::get('/test-username/{number}', function($number) {
 // WhatsApp API
 Route::post('/whatsapp/check-number', [WhatsAppController::class, 'checkNumber'])->name('api.whatsapp.check');
 Route::post('/whatsapp/send-message', [WhatsAppController::class, 'sendMessage'])->name('api.whatsapp.send');
+
+// WhatsApp validation API (no CSRF required)
+Route::post('/validate-whatsapp', [\App\Http\Controllers\AuthController::class, 'validateWhatsAppAjax'])->name('api.validate.whatsapp');
+
+// Registration API
+Route::post('/register', [\App\Http\Controllers\AuthController::class, 'registerApi'])->name('api.register');
+Route::post('/register-debug', [\App\Http\Controllers\AuthController::class, 'debugRegisterApi'])->name('api.register.debug');
+Route::post('/register-simple', [\App\Http\Controllers\AuthController::class, 'registerApiSimple'])->name('api.register.simple');
+
+// Ticket availability check
+Route::get('/check-ticket-availability', [\App\Http\Controllers\AuthController::class, 'checkTicketAvailability'])->name('api.check.ticket.availability');
+Route::post('/check-ticket-availability', [\App\Http\Controllers\AuthController::class, 'checkTicketAvailability'])->name('api.check.ticket.availability.post');

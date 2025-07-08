@@ -2,18 +2,6 @@
 
 @section('title', 'Reset Password')
 
-@push('styles')
-<style>
-.spinner {
-    animation: spin 1s linear infinite;
-}
-@keyframes spin {
-    from { transform: rotate(0deg); }
-    to { transform: rotate(360deg); }
-}
-</style>
-@endpush
-
 @section('content')
 <div class="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md mx-auto">
     <!-- Header -->
@@ -75,7 +63,7 @@
         </div>
         
         <!-- Username Info Section -->
-        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6" id="usernameInfo" style="display: none;">
+        <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6 hidden" id="usernameInfo">
             <div class="flex items-start">
                 <i class="fas fa-user text-blue-500 mr-3 mt-1"></i>
                 <div>
@@ -105,7 +93,7 @@
                         <span id="checkUsernameText">
                             <i class="fas fa-search mr-1"></i>Cek Username
                         </span>
-                        <span id="checkUsernameSpinner" style="display: none;">
+                        <span id="checkUsernameSpinner" class="hidden">
                             <i class="fas fa-spinner fa-spin"></i>
                         </span>
                     </button>
@@ -129,7 +117,7 @@
                     <i class="fab fa-whatsapp mr-2"></i>
                     Kirim Link Reset via WhatsApp
                 </span>
-                <span id="submitSpinner" style="display: none;">
+                <span id="submitSpinner" class="hidden">
                     <i class="fas fa-spinner fa-spin mr-2"></i>
                     Mengirim...
                 </span>
@@ -202,8 +190,8 @@ document.addEventListener('DOMContentLoaded', function() {
         }
 
         // Show spinner
-        checkUsernameText.style.display = 'none';
-        checkUsernameSpinner.style.display = 'inline';
+        checkUsernameText.classList.add('hidden');
+        checkUsernameSpinner.classList.remove('hidden');
         checkUsernameBtn.disabled = true;
 
         // Make AJAX request
@@ -223,12 +211,12 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (data.success) {
                 // Show user info
-                foundUsername.textContent = data.username || data.user?.email || 'Unknown';
-                foundName.textContent = data.name || data.user?.name || 'Unknown';
-                usernameInfo.style.display = 'block';
+                foundUsername.textContent = data.user.email;
+                foundName.textContent = data.user.name;
+                usernameInfo.classList.remove('hidden');
             } else {
                 // Hide user info and show error
-                usernameInfo.style.display = 'none';
+                usernameInfo.classList.add('hidden');
                 alert(data.message || 'Nomor WhatsApp tidak ditemukan');
             }
         })
@@ -238,8 +226,8 @@ document.addEventListener('DOMContentLoaded', function() {
         })
         .finally(() => {
             // Hide spinner
-            checkUsernameText.style.display = 'inline';
-            checkUsernameSpinner.style.display = 'none';
+            checkUsernameText.classList.remove('hidden');
+            checkUsernameSpinner.classList.add('hidden');
             checkUsernameBtn.disabled = false;
         });
     });
@@ -249,8 +237,8 @@ document.addEventListener('DOMContentLoaded', function() {
         console.log('Form submitted'); // Debug
         
         // Show spinner
-        submitText.style.display = 'none';
-        submitSpinner.style.display = 'inline';
+        submitText.classList.add('hidden');
+        submitSpinner.classList.remove('hidden');
         submitBtn.disabled = true;
         
         // Allow form to submit naturally

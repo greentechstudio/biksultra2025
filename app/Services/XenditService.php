@@ -239,12 +239,15 @@ class XenditService
             if (strtolower($payload['status']) === 'paid') {
                 $updateData['payment_confirmed'] = true;
                 $updateData['payment_confirmed_at'] = now();
+                $updateData['paid_at'] = now();
                 $updateData['payment_method'] = $payload['payment_method'] ?? 'xendit';
+                $updateData['xendit_payment_id'] = $payload['id'] ?? null;
                 $updateData['status'] = 'active';
                 
                 Log::info('Payment confirmed, updating user to active status', [
                     'user_id' => $user->id,
-                    'payment_method' => $updateData['payment_method']
+                    'payment_method' => $updateData['payment_method'],
+                    'xendit_payment_id' => $updateData['xendit_payment_id']
                 ]);
             } elseif (strtolower($payload['status']) === 'expired') {
                 $updateData['status'] = 'expired';

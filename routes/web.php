@@ -4,6 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\Admin\SettingsController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Api\WhatsAppController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\Auth\PasswordResetController;
@@ -53,18 +54,24 @@ Route::get('/debug/whatsapp/{number?}', function($number = '628114000805') {
     }
 });
 
-// Authentication Routes
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register');
+// Authentication Routes  
+Route::get('/register', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
+Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
 
-Route::post('/register', [AuthController::class, 'register']);
+// WhatsApp Validation Route
+Route::post('/validate-whatsapp', [AuthController::class, 'validateWhatsAppAjax'])->name('validate-whatsapp');
 
-Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+// Registration with Random Password
+Route::get('/register-random-password', [AuthController::class, 'showRegisterRandomPassword'])->name('register.random-password')->middleware('guest');
+Route::post('/register-random-password', [AuthController::class, 'registerWithRandomPassword'])->name('register.random-password.post')->middleware('guest');
 
-Route::post('/login', [AuthController::class, 'login']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
+Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
 // Password Reset Routes
 Route::get('/password/reset', [PasswordResetController::class, 'showResetForm'])->name('password.reset');
+Route::post('/password/reset/check', [PasswordResetController::class, 'checkUsername'])->name('password.reset.check');
 Route::post('/password/reset', [PasswordResetController::class, 'sendResetLink'])->name('password.reset.send');
 Route::get('/password/reset/{token}', [PasswordResetController::class, 'showResetPasswordForm'])->name('password.reset.form');
 Route::post('/password/reset/update', [PasswordResetController::class, 'resetPassword'])->name('password.reset.update');
@@ -83,10 +90,22 @@ Route::get('/api/test-username/{number}', function($number) {
     ]);
 });
 
+// Timezone info route
+Route::get('/api/timezone-info', function() {
+    return response()->json(server_time_info());
+});
+
 // WhatsApp verification routes
 Route::post('/api/verify-whatsapp', [AuthController::class, 'verifyWhatsapp']);
 Route::post('/api/confirm-payment', [AuthController::class, 'confirmPayment']);
 Route::post('/api/check-whatsapp-number', [WhatsAppController::class, 'checkNumber']);
+
+// Registration and Ticket Type API Routes
+Route::get('/api/ticket-info', [\App\Http\Controllers\RegistrationController::class, 'getTicketInfo']);
+Route::get('/api/registration-stats', [\App\Http\Controllers\RegistrationController::class, 'getStats']);
+
+// Xendit webhook
+Route::post('/webhook/xendit', [\App\Http\Controllers\RegistrationController::class, 'xenditWebhook']);
 
 // API routes for checking status
 Route::get('/api/check-verification/{userId}', function($userId) {
@@ -125,24 +144,32 @@ Route::get('/payment/failed', function () {
 // Dashboard Routes (protected by auth middleware)
 Route::middleware('auth')->group(function () {
     // Routes available for all authenticated users
-    Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+    // Redirect all users to appropriate dashboard
+    Route::get('/dashboard', function() {
+        if (auth()->user()->isAdmin()) {
+            return redirect()->route('admin.dashboard');
+        }
+        return redirect()->route('profile.show'); // Regular users go to profile
+    })->name('dashboard');
     
     // Profile Routes - Available for all users
     Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
     Route::get('/profile/edit', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     
-    // Admin Only Routes
-    Route::middleware('role:admin')->group(function () {
-        Route::get('/dashboard/profile', [DashboardController::class, 'profile'])->name('dashboard.profile');
-        Route::post('/dashboard/profile', [DashboardController::class, 'updateProfile']);
-        Route::get('/dashboard/users', [DashboardController::class, 'users'])->name('dashboard.users');
-        Route::get('/dashboard/whatsapp-verification', [DashboardController::class, 'whatsappVerification'])->name('dashboard.whatsapp');
-        Route::get('/dashboard/payment-confirmation', [DashboardController::class, 'paymentConfirmation'])->name('dashboard.payment');
-    });
-    
-    // Admin Settings Routes - Admin Only
+    // Admin Routes - Admin Only
     Route::middleware('role:admin')->prefix('admin')->name('admin.')->group(function () {
+        // Admin Dashboard
+        Route::get('/', [AdminDashboardController::class, 'index'])->name('dashboard');
+        
+        // User Management
+        Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+        Route::get('/whatsapp-verification', [AdminDashboardController::class, 'whatsappVerification'])->name('whatsapp-verification');
+        Route::get('/payment-confirmation', [AdminDashboardController::class, 'paymentConfirmation'])->name('payment-confirmation');
+        Route::get('/profile-management', [AdminDashboardController::class, 'profile'])->name('profile-management');
+        Route::post('/profile-management', [AdminDashboardController::class, 'updateProfile'])->name('profile-management.update');
+        
+        // Settings Management
         Route::get('/settings', [SettingsController::class, 'index'])->name('settings');
         
         // Jersey Sizes
@@ -179,6 +206,15 @@ Route::middleware('auth')->group(function () {
         Route::get('/whatsapp-queue/unpaid-status', [WhatsAppQueueController::class, 'unpaidStatus'])->name('whatsapp-queue.unpaid-status');
         Route::post('/whatsapp-queue/force-cleanup', [WhatsAppQueueController::class, 'forceCleanup'])->name('whatsapp-queue.force-cleanup');
         Route::post('/whatsapp-queue/force-reminders', [WhatsAppQueueController::class, 'forceReminders'])->name('whatsapp-queue.force-reminders');
+        
+        // Ticket Types Management
+        Route::get('/ticket-types', [\App\Http\Controllers\Admin\TicketTypeController::class, 'index'])->name('ticket-types.index');
+        Route::get('/ticket-types/create', [\App\Http\Controllers\Admin\TicketTypeController::class, 'create'])->name('ticket-types.create');
+        Route::post('/ticket-types', [\App\Http\Controllers\Admin\TicketTypeController::class, 'store'])->name('ticket-types.store');
+        Route::get('/ticket-types/{ticketType}/edit', [\App\Http\Controllers\Admin\TicketTypeController::class, 'edit'])->name('ticket-types.edit');
+        Route::put('/ticket-types/{ticketType}', [\App\Http\Controllers\Admin\TicketTypeController::class, 'update'])->name('ticket-types.update');
+        Route::patch('/ticket-types/{ticketType}/toggle-active', [\App\Http\Controllers\Admin\TicketTypeController::class, 'toggleActive'])->name('ticket-types.toggle-active');
+        Route::get('/ticket-types/stats', [\App\Http\Controllers\Admin\TicketTypeController::class, 'getStats'])->name('ticket-types.stats');
     });
 });
 

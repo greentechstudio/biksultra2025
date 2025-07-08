@@ -108,19 +108,19 @@
                             <small class="text-white-50 ms-3">ADMIN MENU</small>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard.users') ? 'active' : '' }}" href="{{ route('dashboard.users') }}">
+                            <a class="nav-link {{ request()->routeIs('admin.users') ? 'active' : '' }}" href="{{ route('admin.users') }}">
                                 <i class="fas fa-users me-2"></i>
                                 Kelola Users
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard.whatsapp') ? 'active' : '' }}" href="{{ route('dashboard.whatsapp') }}">
+                            <a class="nav-link {{ request()->routeIs('admin.whatsapp-verification') ? 'active' : '' }}" href="{{ route('admin.whatsapp-verification') }}">
                                 <i class="fab fa-whatsapp me-2"></i>
                                 Verifikasi WhatsApp
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link {{ request()->routeIs('dashboard.payment') ? 'active' : '' }}" href="{{ route('dashboard.payment') }}">
+                            <a class="nav-link {{ request()->routeIs('admin.payment-confirmation') ? 'active' : '' }}" href="{{ route('admin.payment-confirmation') }}">
                                 <i class="fas fa-credit-card me-2"></i>
                                 Konfirmasi Pembayaran
                             </a>
