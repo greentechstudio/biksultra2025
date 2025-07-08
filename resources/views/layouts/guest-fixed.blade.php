@@ -99,6 +99,20 @@
             color: #0c5460 !important;
         }
         
+        /* Fix for scrolling */
+        body {
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        /* Ensure background elements don't interfere with scrolling */
+        .bg-layer {
+            position: fixed;
+            inset: 0;
+            z-index: -10;
+            pointer-events: none;
+        }
+        
         /* Custom button styles with theme colors */
         .btn-custom-primary {
             background: linear-gradient(135deg, #ED3D26 0%, #273F0B 100%);
@@ -149,22 +163,23 @@
 </head>
 <body class="min-h-screen font-sans antialiased relative">
     <!-- Animated Gradient Background -->
-    <div class="fixed inset-0 bg-gradient-to-br from-custom-red via-custom-dark to-custom-green animate-gradient-x -z-10"></div>
+    <div class="bg-layer bg-gradient-to-br from-custom-red via-custom-dark to-custom-green animate-gradient-x"></div>
     
     <!-- Overlay Pattern for depth -->
-    <div class="fixed inset-0 opacity-10 -z-5">
+    <div class="bg-layer opacity-10">
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent transform -skew-y-12"></div>
         <div class="absolute inset-0 bg-gradient-to-l from-transparent via-white to-transparent transform skew-y-12"></div>
     </div>
     
     <!-- Floating Particles -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-5">
+    <div class="bg-layer">
         <div class="absolute -top-4 -right-4 w-72 h-72 bg-custom-red rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-bounce"></div>
         <div class="absolute -bottom-8 -left-4 w-72 h-72 bg-custom-green rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-bounce" style="animation-delay: 2s;"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
     </div>
     
-    <div class="relative min-h-screen flex items-center justify-center py-8 px-4">
+    <!-- Main Content Area - Scrollable -->
+    <div class="relative min-h-screen py-8 px-4">
         <div class="w-full max-w-6xl mx-auto relative z-10">
             @yield('content')
         </div>

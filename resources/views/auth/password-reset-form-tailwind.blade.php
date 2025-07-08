@@ -3,32 +3,31 @@
 @section('title', 'Set Password Baru')
 
 @section('content')
-<div class="form-container">
-    <div class="max-w-md mx-auto">
-        <div class="glass-effect rounded-2xl overflow-hidden form-card">
-            <!-- Header -->
-            <div class="custom-gradient-header p-6 text-center">
-                <div class="mb-4">
-                    <i class="fas fa-key text-4xl text-white"></i>
-                </div>
-                <h2 class="text-2xl font-bold text-white mb-2">Set Password Baru</h2>
-                <p class="text-gray-200">Atur password baru untuk akun Anda</p>
+<div class="max-w-md mx-auto">
+    <div class="glass-effect rounded-2xl overflow-hidden animate-float">
+        <!-- Header -->
+        <div class="custom-gradient-header p-6 text-center">
+            <div class="mb-4">
+                <i class="fas fa-key text-4xl text-white"></i>
             </div>
-            
-            <!-- Form -->
-            <div class="p-6">
-                @if ($errors->any())
-                    <div class="alert-danger rounded-lg p-4 mb-6">
-                        <div class="flex items-start">
-                            <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
-                            <div>
-                                <strong>Terdapat kesalahan:</strong>
-                                <ul class="list-disc list-inside mt-2">
-                                    @foreach ($errors->all() as $error)
-                                        <li>{{ $error }}</li>
-                                    @endforeach
-                                </ul>
-                            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Set Password Baru</h2>
+            <p class="text-gray-200">Atur password baru untuk akun Anda</p>
+        </div>
+        
+        <!-- Form -->
+        <div class="p-6">
+            @if ($errors->any())
+                <div class="alert-danger rounded-lg p-4 mb-6">
+                    <div class="flex items-start">
+                        <i class="fas fa-exclamation-circle mr-2 mt-1"></i>
+                        <div>
+                            <strong>Terdapat kesalahan:</strong>
+                            <ul class="list-disc list-inside mt-2">
+                                @foreach ($errors->all() as $error)
+                                    <li>{{ $error }}</li>
+                                @endforeach
+                            </ul>
+                        </div>
                     </div>
                 </div>
             @endif
@@ -96,7 +95,7 @@
                 </div>
 
                 <button type="submit" 
-                        class="w-full btn-custom-primary text-white font-bold py-3 px-4 rounded-lg focus:outline-none focus:ring-2 focus:ring-custom-red focus:ring-offset-2" 
+                        class="w-full bg-green-600 hover:bg-green-700 text-white font-bold py-3 px-4 rounded-lg transition-colors focus:outline-none focus:ring-2 focus:ring-green-500 focus:ring-offset-2" 
                         id="submitBtn">
                     <i class="fas fa-save mr-2"></i>
                     <span id="submitText">Simpan Password Baru</span>
@@ -211,7 +210,4 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
-        </div>
-    </div>
-</div>
 @endsection

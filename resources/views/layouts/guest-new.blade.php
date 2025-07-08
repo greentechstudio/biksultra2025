@@ -98,74 +98,27 @@
             border-color: #bee5eb !important;
             color: #0c5460 !important;
         }
-        
-        /* Custom button styles with theme colors */
-        .btn-custom-primary {
-            background: linear-gradient(135deg, #ED3D26 0%, #273F0B 100%);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-custom-primary:hover {
-            background: linear-gradient(135deg, #c73321 0%, #1f2f08 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(237, 61, 38, 0.3);
-        }
-        
-        .btn-custom-secondary {
-            background: linear-gradient(135deg, #273F0B 0%, #161616 100%);
-            color: white;
-            border: none;
-            transition: all 0.3s ease;
-        }
-        
-        .btn-custom-secondary:hover {
-            background: linear-gradient(135deg, #1f2f08 0%, #0a0a0a 100%);
-            transform: translateY(-2px);
-            box-shadow: 0 10px 20px -5px rgba(39, 63, 11, 0.3);
-        }
-        
-        /* Form stability - prevent movement */
-        .form-container {
-            position: relative;
-            min-height: 500px;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-        }
-        
-        /* Disable animations on form elements that cause movement */
-        .form-card {
-            animation: none !important;
-            transform: none !important;
-        }
-        
-        /* Override any bouncing/floating animations on forms */
-        .form-card * {
-            animation-duration: 0s !important;
-        }
     </style>
 </head>
-<body class="min-h-screen font-sans antialiased relative">
+<body class="min-h-screen font-sans antialiased relative overflow-hidden">
     <!-- Animated Gradient Background -->
-    <div class="fixed inset-0 bg-gradient-to-br from-custom-red via-custom-dark to-custom-green animate-gradient-x -z-10"></div>
+    <div class="fixed inset-0 bg-gradient-to-br from-custom-red via-custom-dark to-custom-green animate-gradient-x"></div>
     
     <!-- Overlay Pattern for depth -->
-    <div class="fixed inset-0 opacity-10 -z-5">
+    <div class="fixed inset-0 opacity-10">
         <div class="absolute inset-0 bg-gradient-to-r from-transparent via-white to-transparent transform -skew-y-12"></div>
         <div class="absolute inset-0 bg-gradient-to-l from-transparent via-white to-transparent transform skew-y-12"></div>
     </div>
     
     <!-- Floating Particles -->
-    <div class="fixed inset-0 overflow-hidden pointer-events-none -z-5">
+    <div class="fixed inset-0 overflow-hidden pointer-events-none">
         <div class="absolute -top-4 -right-4 w-72 h-72 bg-custom-red rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-bounce"></div>
         <div class="absolute -bottom-8 -left-4 w-72 h-72 bg-custom-green rounded-full mix-blend-multiply filter blur-xl opacity-30 animate-bounce" style="animation-delay: 2s;"></div>
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
     </div>
     
-    <div class="relative min-h-screen flex items-center justify-center py-8 px-4">
-        <div class="w-full max-w-6xl mx-auto relative z-10">
+    <div class="relative min-h-screen flex items-center justify-center p-4">
+        <div class="w-full max-w-6xl relative z-10">
             @yield('content')
         </div>
     </div>

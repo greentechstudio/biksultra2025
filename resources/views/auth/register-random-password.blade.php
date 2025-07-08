@@ -1,17 +1,21 @@
-@extends('layouts.app')
+@extends('layouts.guest')
 
 @section('title', 'Registrasi dengan Password Otomatis')
 
 @section('content')
-<div class="container-fluid">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card shadow-lg">
-                <div class="card-header bg-primary text-white">
-                    <h4 class="mb-0">
-                        <i class="fas fa-user-plus me-2"></i>
-                        Registrasi Amazing Sultra Run
-                    </h4>
+<div class="form-container">
+    <div class="w-full max-w-4xl mx-auto">
+        <div class="glass-effect rounded-2xl overflow-hidden form-card">
+            <!-- Header -->
+            <div class="custom-gradient-header text-white p-6 text-center">
+                <h1 class="text-3xl font-bold mb-2">
+                    <i class="fas fa-user-plus mr-3"></i>Registrasi Amazing Sultra Run
+                </h1>
+                <p class="text-gray-200">Password akan digenerate otomatis dan dikirim via WhatsApp</p>
+            </div>
+            
+            <!-- Form Content -->
+            <div class="p-8">
                     <small class="text-light">Password akan digenerate otomatis dan dikirim via WhatsApp</small>
                 </div>
                 <div class="card-body">
@@ -320,8 +324,8 @@
                         <!-- Submit Button -->
                         <div class="row">
                             <div class="col-12">
-                                <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
-                                    <i class="fas fa-user-plus me-2"></i>
+                                <button type="submit" class="w-full btn-custom-primary text-white font-bold py-4 px-8 rounded-lg" id="submitBtn">
+                                    <i class="fas fa-user-plus mr-2"></i>
                                     Daftar dengan Password Otomatis
                                 </button>
                                 <small class="form-text text-muted mt-2">
@@ -376,4 +380,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 </script>
 @endpush
+        </div>
+    </div>
+</div>
 @endsection

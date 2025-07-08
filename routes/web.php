@@ -12,12 +12,12 @@ use App\Http\Controllers\WhatsAppQueueController;
 use App\Http\Controllers\UnpaidRegistrationsController;
 
 Route::get('/', function () {
-    return view('welcome-simple'); // Using simple version for debugging
+    return view('welcome');
 });
 
-// Original complex version
-Route::get('/welcome-complex', function () {
-    return view('welcome');
+// Backup route for old version
+Route::get('/welcome-simple', function () {
+    return view('welcome-simple');
 });
 
 // Test route

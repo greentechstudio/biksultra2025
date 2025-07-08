@@ -15,39 +15,40 @@
 @endpush
 
 @section('content')
-<div class="bg-white rounded-2xl shadow-2xl overflow-hidden max-w-md mx-auto">
-    <!-- Header -->
-    <div class="bg-gradient-to-r from-green-500 to-green-600 p-6 text-center">
-        <div class="mb-4">
-            <i class="fab fa-whatsapp text-4xl text-white"></i>
+<div class="form-container">
+    <div class="glass-effect rounded-2xl overflow-hidden max-w-md mx-auto form-card">
+        <!-- Header -->
+        <div class="custom-gradient-header p-6 text-center">
+            <div class="mb-4">
+                <i class="fab fa-whatsapp text-4xl text-white"></i>
+            </div>
+            <h2 class="text-2xl font-bold text-white mb-2">Reset Password</h2>
+            <p class="text-gray-200">Reset password via WhatsApp</p>
         </div>
-        <h2 class="text-2xl font-bold text-white mb-2">Reset Password</h2>
-        <p class="text-green-100">Reset password via WhatsApp</p>
-    </div>
-    
-    <!-- Form -->
-    <div class="p-6">
-        <!-- Success Message -->
-        @if(session('success'))
-            <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
-                <div class="flex items-center">
-                    <i class="fas fa-check-circle text-green-400 mr-3"></i>
-                    <p class="text-green-800">{{ session('success') }}</p>
+        
+        <!-- Form -->
+        <div class="p-6">
+            <!-- Success Message -->
+            @if(session('success'))
+                <div class="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-check-circle text-green-400 mr-3"></i>
+                        <p class="text-green-800">{{ session('success') }}</p>
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
 
-        <!-- Error Message -->
-        @if(session('error'))
-            <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-                <div class="flex items-center">
-                    <i class="fas fa-exclamation-circle text-red-400 mr-3"></i>
-                    <p class="text-red-800">{{ session('error') }}</p>
+            <!-- Error Message -->
+            @if(session('error'))
+                <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
+                    <div class="flex items-center">
+                        <i class="fas fa-exclamation-circle text-red-400 mr-3"></i>
+                        <p class="text-red-800">{{ session('error') }}</p>
+                    </div>
                 </div>
-            </div>
-        @endif
+            @endif
 
-        <!-- Validation Errors -->
+            <!-- Validation Errors -->
         @if ($errors->any())
             <div class="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
                 <div class="flex items-start">
@@ -123,7 +124,7 @@
 
             <!-- Submit Button -->
             <button type="submit" 
-                    class="w-full bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white font-semibold py-3 px-4 rounded-lg transition-all duration-300 transform hover:scale-105 shadow-lg" 
+                    class="w-full btn-custom-secondary text-white font-semibold py-3 px-4 rounded-lg" 
                     id="submitBtn">
                 <span id="submitText">
                     <i class="fab fa-whatsapp mr-2"></i>
@@ -258,4 +259,6 @@ document.addEventListener('DOMContentLoaded', function() {
     });
 });
 </script>
+    </div>
+</div>
 @endsection

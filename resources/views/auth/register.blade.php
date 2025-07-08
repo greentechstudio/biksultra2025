@@ -3,51 +3,52 @@
 @section('title', 'Register - Event Lari')
 
 @section('content')
-<div class="w-full max-w-4xl mx-auto">
-    <div class="bg-white rounded-2xl shadow-2xl overflow-hidden">
-        <!-- Header -->
-        <div class="bg-gradient-to-r from-blue-600 to-purple-600 text-white p-6 text-center">
-            <h1 class="text-3xl font-bold mb-2">
-                <i class="fas fa-running mr-3"></i>Registrasi Event Lari
-            </h1>
-            <p class="text-blue-100">Daftar untuk mengikuti event lari</p>
-        </div>
-        
-        <!-- Form Content -->
-        <div class="p-8">
-            <form id="registrationForm" method="POST" action="{{ route('register') }}" class="space-y-8">
-                @csrf
-                
-                <!-- Basic Information -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <div class="flex items-center mb-6">
-                        <div class="bg-blue-100 rounded-full p-3 mr-4">
-                            <i class="fas fa-user text-blue-600"></i>
-                        </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Informasi Pribadi</h2>
-                    </div>
+<div class="form-container">
+    <div class="w-full max-w-4xl mx-auto">
+        <div class="glass-effect rounded-2xl overflow-hidden form-card">
+            <!-- Header -->
+            <div class="custom-gradient-header text-white p-6 text-center">
+                <h1 class="text-3xl font-bold mb-2">
+                    <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+                </h1>
+                <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+            </div>
+            
+            <!-- Form Content -->
+            <div class="p-8">
+                <form id="registrationForm" method="POST" action="{{ route('register') }}" class="space-y-8">
+                    @csrf
                     
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                Nama Lengkap <span class="text-red-500">*</span>
-                            </label>
-                            <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('name') border-red-500 @enderror" 
-                                   id="name" name="name" value="{{ old('name') }}" required>
-                            @error('name')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
+                    <!-- Basic Information -->
+                    <div class="bg-gray-50 rounded-lg p-6">
+                        <div class="flex items-center mb-6">
+                            <div class="bg-red-100 rounded-full p-3 mr-4">
+                                <i class="fas fa-user text-custom-red"></i>
+                            </div>
+                            <h2 class="text-xl font-semibold text-gray-800">Informasi Pribadi</h2>
                         </div>
+                        
+                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                            <div>
+                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nama Lengkap <span class="text-red-500">*</span>
+                                </label>
+                                <input type="text" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('name') border-red-500 @enderror" 
+                                       id="name" name="name" value="{{ old('name') }}" required>
+                                @error('name')
+                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                @enderror
+                            </div>
 
-                        <div>
-                            <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">
-                                Jenis Kelamin <span class="text-red-500">*</span>
-                            </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('gender') border-red-500 @enderror" 
-                                    id="gender" name="gender" required>
-                                <option value="">Pilih Jenis Kelamin</option>
-                                <option value="Laki-laki" {{ old('gender') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                            <div>
+                                <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Jenis Kelamin <span class="text-red-500">*</span>
+                                </label>
+                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('gender') border-red-500 @enderror" 
+                                        id="gender" name="gender" required>
+                                    <option value="">Pilih Jenis Kelamin</option>
+                                    <option value="Laki-laki" {{ old('gender') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
                                 <option value="Perempuan" {{ old('gender') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
                             </select>
                             @error('gender')
@@ -60,7 +61,7 @@
                                 Tempat Lahir <span class="text-red-500">*</span>
                             </label>
                             <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('birth_place') border-red-500 @enderror" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('birth_place') border-red-500 @enderror" 
                                    id="birth_place" name="birth_place" value="{{ old('birth_place') }}" required>
                             @error('birth_place')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -72,7 +73,7 @@
                                 Tanggal Lahir <span class="text-red-500">*</span>
                             </label>
                             <input type="date" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('birth_date') border-red-500 @enderror" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('birth_date') border-red-500 @enderror" 
                                    id="birth_date" name="birth_date" value="{{ old('birth_date') }}" 
                                    max="{{ date('Y-m-d', strtotime('-10 years')) }}" required>
                             @error('birth_date')
@@ -86,7 +87,7 @@
                         <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
                             Alamat Lengkap <span class="text-red-500">*</span>
                         </label>
-                        <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('address') border-red-500 @enderror" 
+                        <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('address') border-red-500 @enderror" 
                                   id="address" name="address" rows="3" required>{{ old('address') }}</textarea>
                         @error('address')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -108,7 +109,7 @@
                             <label for="race_category" class="block text-sm font-medium text-gray-700 mb-2">
                                 Kategori Lomba <span class="text-red-500">*</span>
                             </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('race_category') border-red-500 @enderror" 
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('race_category') border-red-500 @enderror" 
                                     id="race_category" name="race_category" required>
                                 <option value="">Pilih Kategori</option>
                                 <option value="5K" {{ old('race_category') == '5K' ? 'selected' : '' }}>5K - Fun Run</option>
@@ -124,7 +125,7 @@
                             <label for="jersey_size" class="block text-sm font-medium text-gray-700 mb-2">
                                 Ukuran Jersey <span class="text-red-500">*</span>
                             </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('jersey_size') border-red-500 @enderror" 
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('jersey_size') border-red-500 @enderror" 
                                     id="jersey_size" name="jersey_size" required>
                                 <option value="">Pilih Ukuran</option>
                                 <option value="S" {{ old('jersey_size') == 'S' ? 'selected' : '' }}>S</option>
@@ -144,7 +145,7 @@
                             Nama BIB <span class="text-red-500">*</span>
                         </label>
                         <input type="text" 
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('bib_name') border-red-500 @enderror" 
+                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('bib_name') border-red-500 @enderror" 
                                id="bib_name" name="bib_name" value="{{ old('bib_name') }}" 
                                placeholder="Nama yang akan tercetak di BIB" maxlength="20" required>
                         @error('bib_name')
@@ -219,7 +220,7 @@
                                 Email <span class="text-red-500">*</span>
                             </label>
                             <input type="email" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('email') border-red-500 @enderror" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('email') border-red-500 @enderror" 
                                    id="email" name="email" value="{{ old('email') }}" required>
                             @error('email')
                                 <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -236,7 +237,7 @@
                                     +62
                                 </span>
                                 <input type="text" 
-                                       class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-r-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('whatsapp_number') border-red-500 @enderror" 
+                                       class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-r-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('whatsapp_number') border-red-500 @enderror" 
                                        id="whatsapp_number" name="whatsapp_number" value="{{ old('whatsapp_number') }}" 
                                        placeholder="8114000805" required>
                             </div>
@@ -256,7 +257,7 @@
                                 Nomor HP Alternatif
                             </label>
                             <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('phone') border-red-500 @enderror" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('phone') border-red-500 @enderror" 
                                    id="phone" name="phone" value="{{ old('phone') }}" 
                                    placeholder="Contoh: 081234567890">
                             @error('phone')
@@ -270,7 +271,7 @@
                                     Kontak Darurat 1 <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('emergency_contact_1') border-red-500 @enderror" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_1') border-red-500 @enderror" 
                                        id="emergency_contact_1" name="emergency_contact_1" value="{{ old('emergency_contact_1') }}" 
                                        placeholder="Nama & No HP" required>
                                 @error('emergency_contact_1')
@@ -282,7 +283,7 @@
                                     Kontak Darurat 2
                                 </label>
                                 <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('emergency_contact_2') border-red-500 @enderror" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_2') border-red-500 @enderror" 
                                        id="emergency_contact_2" name="emergency_contact_2" value="{{ old('emergency_contact_2') }}" 
                                        placeholder="Nama & No HP">
                                 @error('emergency_contact_2')
@@ -308,7 +309,7 @@
                                 Group Lari/Komunitas/Instansi
                             </label>
                             <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('group_community') border-red-500 @enderror" 
+                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('group_community') border-red-500 @enderror" 
                                    id="group_community" name="group_community" value="{{ old('group_community') }}" 
                                    placeholder="Nama komunitas/instansi (opsional)">
                             @error('group_community')
@@ -321,7 +322,7 @@
                                 <label for="blood_type" class="block text-sm font-medium text-gray-700 mb-2">
                                     Golongan Darah <span class="text-red-500">*</span>
                                 </label>
-                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('blood_type') border-red-500 @enderror" 
+                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('blood_type') border-red-500 @enderror" 
                                         id="blood_type" name="blood_type" required>
                                     <option value="">Pilih Golongan Darah</option>
                                     @foreach($bloodTypes as $type)
@@ -339,7 +340,7 @@
                                     Pekerjaan <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('occupation') border-red-500 @enderror" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('occupation') border-red-500 @enderror" 
                                        id="occupation" name="occupation" value="{{ old('occupation') }}" required>
                                 @error('occupation')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
@@ -351,7 +352,7 @@
                             <label for="medical_history" class="block text-sm font-medium text-gray-700 mb-2">
                                 Riwayat Penyakit
                             </label>
-                            <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('medical_history') border-red-500 @enderror" 
+                            <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('medical_history') border-red-500 @enderror" 
                                       id="medical_history" name="medical_history" rows="3" 
                                       placeholder="Sebutkan riwayat penyakit yang relevan (opsional)">{{ old('medical_history') }}</textarea>
                             @error('medical_history')
@@ -363,7 +364,7 @@
                             <label for="event_source" class="block text-sm font-medium text-gray-700 mb-2">
                                 Tau Event Ini Darimana? <span class="text-red-500">*</span>
                             </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-colors @error('event_source') border-red-500 @enderror" 
+                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('event_source') border-red-500 @enderror" 
                                     id="event_source" name="event_source" required>
                                 <option value="">Pilih Sumber Informasi</option>
                                 @foreach($eventSources as $source)
@@ -411,7 +412,7 @@
 
                 <!-- Submit Button -->
                 <div class="text-center">
-                    <button type="submit" class="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white font-bold py-4 px-8 rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg">
+                    <button type="submit" class="w-full btn-custom-primary text-white font-bold py-4 px-8 rounded-lg">
                         <i class="fas fa-running mr-2"></i>Daftar Event Lari
                     </button>
                     
@@ -1206,4 +1207,6 @@ document.addEventListener('DOMContentLoaded', function() {
     updateSubmitButtonState();
 });
 </script>
+    </div>
+</div>
 @endsection

@@ -1,16 +1,18 @@
-{{-- Footer Section --}}
-<footer class="footer">
+<!-- Footer -->
+<footer id="contact" class="footer">
     <div class="container">
         <div class="footer-top">
             <div class="footer-cta">
                 <h2>Start Running With Us Today !</h2>
-                <p>Lorem ipsum dolor sit amet, consectetur adipiscing elit. Ut elit tellus, luctus nec ullamcorper mattis, pulvinar dapibus leo.</p>
+                <p>Bergabunglah dengan Amazing Sultra Run 2025 dan rasakan pengalaman lari yang tak terlupakan di Kendari, Sulawesi Tenggara.</p>
             </div>
             <div class="footer-logo">
-                <div class="footer-logo-icon">R</div>
+                <div class="footer-logo-icon">
+                    <i class="fas fa-running"></i>
+                </div>
                 <div class="footer-logo-text">
-                    <h3>RUNER</h3>
-                    <p>Running Club</p>
+                    <h3>AMAZING SULTRA RUN</h3>
+                    <p>Running Event</p>
                 </div>
             </div>
         </div>
@@ -32,30 +34,30 @@
 
             <div class="footer-column">
                 <h3>Address</h3>
-                <p>456 Creative District<br>Ahmad Yani, Medan<br>Indonesia</p>
+                <p>Dinas Pariwisata<br>Prov. Sulawesi Tenggara<br>Kendari, Indonesia</p>
             </div>
 
             <div class="footer-column">
                 <h3>Phone</h3>
-                <p class="phone-number">+800-3374-4676</p>
-                <p class="phone-number">555-278-4364</p>
+                <p class="phone-number">+62 xxx-xxxx-xxxx</p>
+                <p class="phone-number">+62 xxx-xxxx-xxxx</p>
             </div>
 
             <div class="footer-column">
                 <h3>Mail</h3>
-                <p class="email">hola@dominantsite.com</p>
+                <p class="email">info@amazingsultrarun.com</p>
             </div>
         </div>
 
         <div class="footer-bottom">
             <nav class="footer-nav">
-                <a href="#">About Us</a>
-                <a href="#">Our Team</a>
-                <a href="#">Events</a>
-                <a href="#">Services</a>
+                <a href="#home">Home</a>
+                <a href="#categories">Kategori</a>
+                <a href="#prizes">Hadiah</a>
+                <a href="#contact">Kontak</a>
             </nav>
             <div class="footer-copyright">
-                Runer, 2025 © All Rights Reserved Dex-Theme
+                Amazing Sultra Run, 2025 © All Rights Reserved Dinas Pariwisata Prov. Sulawesi Tenggara
             </div>
         </div>
     </div>
