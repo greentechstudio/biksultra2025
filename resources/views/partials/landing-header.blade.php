@@ -2,12 +2,8 @@
 <header class="header">
     <nav class="nav container">
         <div class="logo">
-            <div class="logo-icon">
-                <i class="fas fa-running"></i>
-            </div>
-            <div class="logo-text">
-                <h1>DINAS PARIWISATA</h1>
-                <p>Prov. Sulawesi Tenggara</p>
+            <div class="logo-header">
+                <img src="{{ asset('images/logo.png') }}" alt="Logo Dinas Pariwisata" style="height: 89px; width: auto;">
             </div>
         </div>
         <ul class="nav-links">

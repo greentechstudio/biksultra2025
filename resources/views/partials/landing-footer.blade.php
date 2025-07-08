@@ -7,12 +7,8 @@
                 <p>Bergabunglah dengan Amazing Sultra Run 2025 dan rasakan pengalaman lari yang tak terlupakan di Kendari, Sulawesi Tenggara.</p>
             </div>
             <div class="footer-logo">
-                <div class="footer-logo-icon">
-                    <i class="fas fa-running"></i>
-                </div>
-                <div class="footer-logo-text">
-                    <h3>AMAZING SULTRA RUN</h3>
-                    <p>Running Event</p>
+                <div class="footer-logo">
+                    <img src="{{ asset('images/logo.png') }}" alt="Logo Amazing Sultra Run" style="height: 160px; width: auto;">
                 </div>
             </div>
         </div>
@@ -57,7 +53,10 @@
                 <a href="#contact">Kontak</a>
             </nav>
             <div class="footer-copyright">
-                Amazing Sultra Run, 2025 © All Rights Reserved Dinas Pariwisata Prov. Sulawesi Tenggara
+                Amazing Sultra Run, 2025 © All Rights Reserved Dispar Prov. Sulawesi Tenggara
+            </div>
+            <div class="footer-powered">
+                <img src="{{ asset('images/supported.png') }}" alt="Powered by" style="height: 51px; width: auto; vertical-align: middle;">
             </div>
         </div>
     </div>

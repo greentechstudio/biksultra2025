@@ -20,5 +20,10 @@
                 <p>Half Marathon untuk pelari profesional</p>
             </div>
         </div>
+        
+        <div class="early-bird-note">
+            <p>* Harga diatas hanya berlaku early bird</p>
+        </div>
+        
     </div>
 </section>

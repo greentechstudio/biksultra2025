@@ -10,12 +10,22 @@
                     <p>LIMITED STOCK</p>
                 </div>
             </div>
+            
+            
             <div class="registration-form">
                 <h3>Daftar Sekarang!</h3>
                 <p>Jangan lewatkan kesempatan untuk menjadi bagian dari Amazing Sultra Run 2025</p>
-                <a href="https://www.amazingsultrarun.com" class="cta-button" target="_blank">
-                    KUNJUNGI WEBSITE RESMI
+                <a href="https://www.amazingsultrarun.com/register" class="cta-button" target="_blank">
+                    REGISTER
                 </a>
+                <p>
+            <div class="registration-supported">
+                <span class="supported-text">Supported by :</span>
+                <img src="{{ asset('images/supported.png') }}" alt="Supported by" class="registration-supported-logo">
+            </div>
+
+            <div class="registration-supported">
+                <img src="{{ asset('images/supported.png') }}" alt="Supported by" class="registration-supported-logo">
             </div>
         </div>
     </div>
