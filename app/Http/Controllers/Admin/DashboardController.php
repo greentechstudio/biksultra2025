@@ -14,20 +14,73 @@ use Carbon\Carbon;
 
 class DashboardController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
         $user = Auth::user();
         
         // Basic stats (exclude admin users)
+        $totalRegistrations = User::where('role', '!=', 'admin')->count();
+        $paidRegistrations = User::where('role', '!=', 'admin')->where('payment_confirmed', true)->count();
+        $pendingRegistrations = User::where('role', '!=', 'admin')->where('payment_confirmed', false)->count();
+        $totalRevenue = User::where('role', '!=', 'admin')->where('payment_confirmed', true)->sum('payment_amount');
+        $conversionRate = $totalRegistrations > 0 ? round(($paidRegistrations / $totalRegistrations) * 100, 1) : 0;
+        
+        // Calculate potential revenue from all registrations
+        $totalPotentialRevenue = User::where('role', '!=', 'admin')
+            ->join('race_categories', 'users.race_category', '=', 'race_categories.name')
+            ->sum('race_categories.price');
+        
+        $unpaidPotentialRevenue = User::where('role', '!=', 'admin')
+            ->where('payment_confirmed', false)
+            ->join('race_categories', 'users.race_category', '=', 'race_categories.name')
+            ->sum('race_categories.price');
+        
         $stats = [
-            'total_registrations' => User::where('role', '!=', 'admin')->count(),
-            'paid_registrations' => User::where('role', '!=', 'admin')->where('payment_confirmed', true)->count(),
-            'pending_registrations' => User::where('role', '!=', 'admin')->where('payment_confirmed', false)->count(),
-            'total_revenue' => User::where('role', '!=', 'admin')->where('payment_confirmed', true)->sum('payment_amount'),
-            'recent_registrations' => User::where('role', '!=', 'admin')->latest()->take(10)->get(),
+            'total_registrations' => $totalRegistrations,
+            'paid_registrations' => $paidRegistrations,
+            'pending_registrations' => $pendingRegistrations,
+            'total_revenue' => $totalRevenue,
+            'conversion_rate' => $conversionRate,
+            'total_potential_revenue' => $totalPotentialRevenue,
+            'unpaid_potential_revenue' => $unpaidPotentialRevenue,
+            'recent_registrations' => User::where('role', '!=', 'admin')->latest()->take(5)->get(),
+            'total_recent_registrations' => $totalRegistrations,
             'category_stats' => RaceCategory::withCount('users')->get(),
             'active_ticket_types' => TicketType::where('is_active', true)->count(),
             'whatsapp_queue_count' => DB::table('jobs')->where('queue', 'whatsapp')->count(),
+            
+            // Revenue by ticket type
+            'revenue_by_ticket_type' => TicketType::withCount(['users' => function($query) {
+                $query->where('role', '!=', 'admin');
+            }])
+            ->with(['users' => function($query) {
+                $query->where('role', '!=', 'admin')->where('payment_confirmed', true);
+            }])
+            ->get()
+            ->map(function($ticketType) {
+                $paidCount = $ticketType->users->count();
+                $revenue = $paidCount * $ticketType->price;
+                return (object) [
+                    'name' => $ticketType->name,
+                    'price' => $ticketType->price,
+                    'count' => $ticketType->users_count,
+                    'revenue' => $revenue
+                ];
+            }),
+            
+            // Revenue by race category
+            'revenue_by_category' => RaceCategory::get()
+            ->map(function($category) {
+                $totalUsers = User::where('role', '!=', 'admin')->where('race_category', $category->name)->count();
+                $paidUsers = User::where('role', '!=', 'admin')->where('race_category', $category->name)->where('payment_confirmed', true)->count();
+                $revenue = $paidUsers * $category->price;
+                return (object) [
+                    'name' => $category->name,
+                    'price' => $category->price,
+                    'count' => $totalUsers,
+                    'revenue' => $revenue
+                ];
+            }),
         ];
 
         return view('admin.dashboard', compact('stats'));
@@ -37,6 +90,14 @@ class DashboardController extends Controller
     {
         $users = User::where('role', '!=', 'admin')->paginate(20);
         return view('admin.users', compact('users'));
+    }
+
+    public function recentRegistrations()
+    {
+        $users = User::where('role', '!=', 'admin')
+                    ->latest()
+                    ->paginate(20);
+        return view('admin.recent-registrations', compact('users'));
     }
 
     public function whatsappVerification()

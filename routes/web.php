@@ -164,6 +164,7 @@ Route::middleware('auth')->group(function () {
         
         // User Management
         Route::get('/users', [AdminDashboardController::class, 'users'])->name('users');
+        Route::get('/recent-registrations', [AdminDashboardController::class, 'recentRegistrations'])->name('recent-registrations');
         Route::get('/whatsapp-verification', [AdminDashboardController::class, 'whatsappVerification'])->name('whatsapp-verification');
         Route::get('/payment-confirmation', [AdminDashboardController::class, 'paymentConfirmation'])->name('payment-confirmation');
         Route::get('/profile-management', [AdminDashboardController::class, 'profile'])->name('profile-management');
