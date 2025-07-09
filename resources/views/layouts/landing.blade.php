@@ -34,6 +34,17 @@
     <meta name="geo.placename" content="Kendari, Sulawesi Tenggara">
     <meta name="geo.position" content="-3.9778;122.5149">
     <meta name="ICBM" content="-3.9778, 122.5149">
+
+
+    <!-- Google tag (gtag.js) -->
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-1V4ZXC9BP5"></script>
+    <script>
+      window.dataLayer = window.dataLayer || [];
+      function gtag(){dataLayer.push(arguments);}
+      gtag('js', new Date());
+
+      gtag('config', 'G-1V4ZXC9BP5');
+    </script>
     
     <!-- Structured Data -->
     <script type="application/ld+json">

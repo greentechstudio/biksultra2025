@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fullNumber = '62' + phoneNumber;
         
         // Make API call to validate
-        fetch('{{ route("validate-whatsapp") }}', {
+        fetch('{{ secure_url(route("validate-whatsapp", [], false)) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
