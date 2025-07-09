@@ -195,7 +195,7 @@ document.addEventListener('DOMContentLoaded', function() {
         checkUsernameBtn.disabled = true;
 
         // Make AJAX request
-        fetch('{{ route("password.reset.check") }}', {
+        fetch('{{ secure_url(route("password.reset.check", [], false)) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',

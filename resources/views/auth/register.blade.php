@@ -112,8 +112,8 @@
                             <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('race_category') border-red-500 @enderror" 
                                     id="race_category" name="race_category" required>
                                 <option value="">Pilih Kategori</option>
-                                <option value="5K" {{ old('race_category') == '5K' ? 'selected' : '' }}>5K - Fun Run</option>
-                                <option value="10K" {{ old('race_category') == '10K' ? 'selected' : '' }}>10K - Challenge Run</option>
+                                <option value="5K" {{ old('race_category') == '5K' ? 'selected' : '' }}>5K </option>
+                                <option value="10K" {{ old('race_category') == '10K' ? 'selected' : '' }}>10K </option>
                                 <option value="21K" {{ old('race_category') == '21K' ? 'selected' : '' }}>21K - Half Marathon</option>
                             </select>
                             @error('race_category')
@@ -606,7 +606,7 @@ document.addEventListener('DOMContentLoaded', function() {
         const fullNumber = '62' + phoneNumber;
         
         // Make API call to validate
-        fetch('{{ route("validate-whatsapp") }}', {
+        fetch('{{ secure_url(route("validate-whatsapp", [], false)) }}', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
