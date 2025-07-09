@@ -30,6 +30,7 @@ class DashboardController extends Controller
             ->join('race_categories', 'users.race_category', '=', 'race_categories.name')
             ->sum('race_categories.price');
         
+        // Calculate unpaid potential revenue (only from pending payments)
         $unpaidPotentialRevenue = User::where('role', '!=', 'admin')
             ->where('payment_confirmed', false)
             ->join('race_categories', 'users.race_category', '=', 'race_categories.name')

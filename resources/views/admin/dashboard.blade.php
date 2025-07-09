@@ -95,13 +95,13 @@
         </div>
         <div class="border-t border-gray-200">
             <div class="grid grid-cols-1 md:grid-cols-3 gap-6 p-6">
-                <!-- Total Potential Revenue -->
+                <!-- Total Potential Revenue (from unpaid only) -->
                 <div class="bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-lg p-6">
                     <div class="flex items-center justify-between">
                         <div>
                             <h4 class="text-lg font-medium">Total Potential</h4>
-                            <p class="text-3xl font-bold mt-2">Rp {{ number_format($stats['total_potential_revenue'], 0, ',', '.') }}</p>
-                            <p class="text-sm mt-1 opacity-90">From {{ number_format($stats['total_registrations']) }} registrations</p>
+                            <p class="text-3xl font-bold mt-2">Rp {{ number_format($stats['unpaid_potential_revenue'], 0, ',', '.') }}</p>
+                            <p class="text-sm mt-1 opacity-90">From {{ number_format($stats['pending_registrations']) }} pending payments</p>
                         </div>
                         <div class="flex-shrink-0">
                             <i class="fas fa-chart-line text-4xl opacity-80"></i>
@@ -123,16 +123,16 @@
                     </div>
                 </div>
 
-                <!-- Unpaid Potential -->
+                <!-- Total Maximum Potential -->
                 <div class="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white rounded-lg p-6">
                     <div class="flex items-center justify-between">
                         <div>
-                            <h4 class="text-lg font-medium">Unpaid Potential</h4>
-                            <p class="text-3xl font-bold mt-2">Rp {{ number_format($stats['unpaid_potential_revenue'], 0, ',', '.') }}</p>
-                            <p class="text-sm mt-1 opacity-90">{{ number_format($stats['pending_registrations']) }} pending payments</p>
+                            <h4 class="text-lg font-medium">Total Maximum</h4>
+                            <p class="text-3xl font-bold mt-2">Rp {{ number_format($stats['total_potential_revenue'], 0, ',', '.') }}</p>
+                            <p class="text-sm mt-1 opacity-90">{{ number_format($stats['total_registrations']) }} total registrations</p>
                         </div>
                         <div class="flex-shrink-0">
-                            <i class="fas fa-clock text-4xl opacity-80"></i>
+                            <i class="fas fa-calculator text-4xl opacity-80"></i>
                         </div>
                     </div>
                 </div>
