@@ -35,8 +35,7 @@
 
             <div class="footer-column">
                 <h3>Phone</h3>
-                <p class="phone-number">+62 xxx-xxxx-xxxx</p>
-                <p class="phone-number">+62 xxx-xxxx-xxxx</p>
+                <p class="phone-number">+62 811-4040-707</p>
             </div>
 
             <div class="footer-column">
