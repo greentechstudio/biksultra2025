@@ -84,18 +84,19 @@ class RandomPasswordService
             $user->password = Hash::make($password);
             $user->save();
             
-            // Send WhatsApp message
+            // Send WhatsApp message via queue
             $whatsappNumber = $user->whatsapp_number ?: $user->phone;
             
             if ($whatsappNumber) {
                 $message = $this->formatPasswordMessage($user, $password);
-                $whatsappService->sendMessage($whatsappNumber, $message);
+                $queueId = $whatsappService->queueMessage($whatsappNumber, $message, 'high');
                 
-                Log::info('Random password generated and sent', [
+                Log::info('Random password generated and queued', [
                     'user_id' => $user->id,
                     'user_email' => $user->email,
                     'whatsapp_number' => $whatsappNumber,
-                    'password_type' => $type
+                    'password_type' => $type,
+                    'queue_id' => $queueId
                 ]);
                 
                 return [

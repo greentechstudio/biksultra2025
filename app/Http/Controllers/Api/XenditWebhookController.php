@@ -105,11 +105,12 @@ class XenditWebhookController extends Controller
             $message .= "🔗 Dashboard: " . url('/dashboard') . "\n\n";
             $message .= "Terima kasih dan selamat berlari! 🏃‍♀️💪";
 
-            $this->whatsappService->sendMessage($whatsappNumber, $message);
+            $queueId = $this->whatsappService->queueMessage($whatsappNumber, $message, 'high');
 
-            Log::info('Payment success WhatsApp notification sent', [
+            Log::info('Payment success WhatsApp notification queued', [
                 'user_id' => $user->id,
-                'whatsapp_number' => $whatsappNumber
+                'whatsapp_number' => $whatsappNumber,
+                'queue_id' => $queueId
             ]);
 
         } catch (\Exception $e) {
@@ -140,7 +141,7 @@ class XenditWebhookController extends Controller
             $message .= "🔗 Login: " . url('/login') . "\n\n";
             $message .= "Terima kasih! 🙏";
 
-            $this->whatsappService->sendMessage($whatsappNumber, $message);
+            $queueId = $this->whatsappService->queueMessage($whatsappNumber, $message, 'normal');
 
         } catch (\Exception $e) {
             Log::error('Failed to send payment expired notification', [
@@ -170,7 +171,7 @@ class XenditWebhookController extends Controller
             $message .= "🔗 Login: " . url('/login') . "\n\n";
             $message .= "Terima kasih! 🙏";
 
-            $this->whatsappService->sendMessage($whatsappNumber, $message);
+            $queueId = $this->whatsappService->queueMessage($whatsappNumber, $message, 'normal');
 
         } catch (\Exception $e) {
             Log::error('Failed to send payment failed notification', [

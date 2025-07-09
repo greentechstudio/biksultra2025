@@ -21,12 +21,12 @@ class TestWhatsAppRegistration extends Command
         $this->info('1. Testing WhatsApp Service...');
         try {
             $whatsappService = app(WhatsAppService::class);
-            $result = $whatsappService->sendMessage('628114000805', 'Test message from registration flow');
+            $queueId = $whatsappService->queueMessage('628114000805', 'Test message from registration flow (queued)', 'high');
             
-            if ($result) {
-                $this->info('✅ WhatsApp Service: SUCCESS');
+            if ($queueId) {
+                $this->info('✅ WhatsApp Service (Queue): SUCCESS - Queue ID: ' . $queueId);
             } else {
-                $this->error('❌ WhatsApp Service: FAILED');
+                $this->error('❌ WhatsApp Service (Queue): FAILED');
             }
         } catch (\Exception $e) {
             $this->error('❌ WhatsApp Service Exception: ' . $e->getMessage());

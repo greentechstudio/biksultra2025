@@ -532,21 +532,22 @@ class AuthController extends Controller
             $message .= "Terima kasih dan selamat berlari! 🏃‍♂️🏃‍♀️\n\n";
             $message .= "_Tim Amazing Sultra Run_";
 
-            // Use WhatsApp service directly instead of internal API call
-            $result = $this->whatsappService->sendMessage($user->whatsapp_number, $message);
+            // Use WhatsApp queue for better performance
+            $queueId = $this->whatsappService->queueMessage($user->whatsapp_number, $message, 'high');
 
-            if ($result) {
-                Log::info('Activation message sent successfully', [
+            if ($queueId) {
+                Log::info('Activation message queued successfully', [
                     'user_id' => $user->id,
-                    'whatsapp_number' => $user->whatsapp_number
+                    'whatsapp_number' => $user->whatsapp_number,
+                    'queue_id' => $queueId
                 ]);
                 
                 return [
                     'success' => true,
-                    'message' => 'Pesan aktivasi berhasil dikirim'
+                    'message' => 'Pesan aktivasi sedang dikirim'
                 ];
             } else {
-                Log::error('Failed to send activation message', [
+                Log::error('Failed to queue activation message', [
                     'user_id' => $user->id,
                     'whatsapp_number' => $user->whatsapp_number
                 ]);
@@ -875,18 +876,19 @@ class AuthController extends Controller
             $message .= "📞 Butuh bantuan? Hubungi: +62811-4000-805\n\n";
             $message .= "Terima kasih! 🙏";
 
-            // Use WhatsApp service directly
-            $result = $this->whatsappService->sendMessage($user->whatsapp_number, $message);
+            // Use WhatsApp queue for better performance
+            $queueId = $this->whatsappService->queueMessage($user->whatsapp_number, $message, 'high');
 
-            if ($result) {
-                Log::info('Payment link sent successfully via WhatsApp', [
+            if ($queueId) {
+                Log::info('Payment link queued successfully via WhatsApp', [
                     'user_id' => $user->id,
                     'whatsapp_number' => $user->whatsapp_number,
-                    'invoice_url' => $invoiceUrl
+                    'invoice_url' => $invoiceUrl,
+                    'queue_id' => $queueId
                 ]);
                 return true;
             } else {
-                Log::error('Failed to send payment link via WhatsApp', [
+                Log::error('Failed to queue payment link via WhatsApp', [
                     'user_id' => $user->id,
                     'whatsapp_number' => $user->whatsapp_number,
                     'invoice_url' => $invoiceUrl
