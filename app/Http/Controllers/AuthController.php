@@ -596,6 +596,20 @@ class AuthController extends Controller
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|string|min:9|max:15',
                 'category' => 'required|in:5K,10K,21K',
+                'bib_name' => 'nullable|string|max:255',
+                'gender' => 'nullable|in:Laki-laki,Perempuan',
+                'birth_place' => 'nullable|string|max:255',
+                'birth_date' => 'nullable|date',
+                'address' => 'nullable|string|max:500',
+                'jersey_size' => 'nullable|in:XS,S,M,L,XL,XXL',
+                'whatsapp_number' => 'nullable|string|min:9|max:15',
+                'emergency_contact_name' => 'nullable|string|max:255',
+                'emergency_contact_phone' => 'nullable|string|min:9|max:15',
+                'group_community' => 'nullable|string|max:255',
+                'blood_type' => 'nullable|in:A,B,AB,O',
+                'occupation' => 'nullable|string|max:255',
+                'medical_history' => 'nullable|string|max:500',
+                'event_source' => 'nullable|string|max:255',
                 'regency_id' => 'nullable|string',
                 'regency_name' => 'nullable|string|max:255',
                 'province_name' => 'nullable|string|max:255'
@@ -606,8 +620,9 @@ class AuthController extends Controller
                 'ip' => $request->ip()
             ]);
 
-            // Format phone number  
+            // Format phone numbers
             $phoneNumber = $this->formatPhoneNumber($request->phone);
+            $whatsappNumber = $request->whatsapp_number ? $this->formatPhoneNumber($request->whatsapp_number) : $phoneNumber;
             
             // Get and validate ticket type with quota check
             $ticketType = \App\Models\TicketType::getCurrentTicketType($request->category);
@@ -659,8 +674,8 @@ class AuthController extends Controller
 
             // Generate unique registration number
             $registrationNumber = $this->generateRegistrationNumber();
-
-            // Create user with basic registration data
+            
+            // Create user with complete registration data
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -673,25 +688,25 @@ class AuthController extends Controller
                 'payment_status' => 'pending',
                 'race_category' => $request->category,
                 'ticket_type_id' => $ticketType->id,
-                'whatsapp_number' => $phoneNumber,
+                'whatsapp_number' => $whatsappNumber,
                 // Location fields
                 'regency_id' => $request->regency_id,
                 'regency_name' => $request->regency_name,
                 'province_name' => $request->province_name,
-                // Set default values for required fields
-                'gender' => 'Laki-laki', // Default, user can update later
-                'birth_place' => 'Unknown',
-                'birth_date' => '1990-01-01',
-                'address' => 'To be updated',
-                'jersey_size' => 'M',
-                'emergency_contact_name' => 'To be updated',
-                'emergency_contact_phone' => 'To be updated',
-                'blood_type' => 'O',
-                'occupation' => 'Unknown',
-                'group_community' => null,
-                'medical_history' => null,
-                'event_source' => 'Website',
-                'bib_name' => $request->name, // Use name as bib name by default
+                // Personal information from request
+                'gender' => $request->gender ?? 'Laki-laki',
+                'birth_place' => $request->birth_place ?? 'Unknown',
+                'birth_date' => $request->birth_date ?? '1990-01-01',
+                'address' => $request->address ?? 'To be updated',
+                'jersey_size' => $request->jersey_size ?? 'M',
+                'emergency_contact_name' => $request->emergency_contact_name ?? 'To be updated',
+                'emergency_contact_phone' => $request->emergency_contact_phone ? $this->formatPhoneNumber($request->emergency_contact_phone) : 'To be updated',
+                'blood_type' => $request->blood_type ?? 'O',
+                'occupation' => $request->occupation ?? 'Unknown',
+                'group_community' => $request->group_community,
+                'medical_history' => $request->medical_history,
+                'event_source' => $request->event_source ?? 'Website',
+                'bib_name' => $request->bib_name ?? $request->name,
             ]);
 
             // Increment registered count for ticket type
