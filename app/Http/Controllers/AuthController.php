@@ -659,20 +659,8 @@ class AuthController extends Controller
                 $resolvedLocation = $this->resolveLocationData($request->city);
                 if ($resolvedLocation) {
                     $locationData = $resolvedLocation;
-                    \Log::info('Location auto-resolved', [
+                    \Log::info('Location auto-resolved from city', [
                         'city' => $request->city,
-                        'resolved' => $resolvedLocation
-                    ]);
-                }
-            }
-            
-            // If still no location data, try to resolve from birth_place
-            if ((!$locationData['regency_id'] || !$locationData['regency_name'] || !$locationData['province_name']) && $request->birth_place) {
-                $resolvedLocation = $this->resolveLocationData($request->birth_place);
-                if ($resolvedLocation) {
-                    $locationData = $resolvedLocation;
-                    \Log::info('Location auto-resolved from birth_place', [
-                        'birth_place' => $request->birth_place,
                         'resolved' => $resolvedLocation
                     ]);
                 }
@@ -681,7 +669,6 @@ class AuthController extends Controller
             // Log final location data after auto-resolution attempts
             \Log::info('Final location data after auto-resolution', [
                 'city' => $request->city,
-                'birth_place' => $request->birth_place,
                 'final_location_data' => $locationData,
                 'has_regency_id' => !empty($locationData['regency_id']),
                 'has_regency_name' => !empty($locationData['regency_name']),

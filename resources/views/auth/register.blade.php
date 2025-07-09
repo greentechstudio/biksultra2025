@@ -416,7 +416,7 @@
 
                         <div>
                             <label for="regency_search" class="block text-sm font-medium text-gray-700 mb-2">
-                                Asal Kota/Kabupaten <span class="text-red-500">*</span>
+                                Kota/Kabupaten Tempat Tinggal Saat Ini <span class="text-red-500">*</span>
                             </label>
                             <div class="location-autocomplete-container">
                                 <input type="text" 
@@ -424,7 +424,7 @@
                                        id="regency_search" 
                                        name="regency_search"
                                        value="{{ old('regency_name') }}" 
-                                       placeholder="Ketik nama kota/kabupaten..."
+                                       placeholder="Ketik nama kota/kabupaten tempat tinggal saat ini..."
                                        data-location-autocomplete
                                        data-hidden-input="#regency_id"
                                        autocomplete="off"
@@ -441,7 +441,7 @@
                             @enderror
                             <p class="mt-2 text-sm text-gray-600">
                                 <i class="fas fa-info-circle mr-1"></i>
-                                Ketik minimal 2 karakter untuk mencari kota/kabupaten
+                                Ketik minimal 2 karakter untuk mencari kota/kabupaten tempat tinggal saat ini
                             </p>
                         </div>
                     </div>
@@ -1363,6 +1363,12 @@ document.addEventListener('DOMContentLoaded', function() {
             email: formData.get('email'),
             phone: formData.get('whatsapp_number'), // API expects 'phone' field, use whatsapp number
             category: formData.get('race_category'), // Backend expects 'category' not 'race_category'
+            
+            // Location data - send regency_search as city for auto-resolution
+            city: formData.get('regency_search'), // Send search input as city for auto-resolution
+            regency_id: formData.get('regency_id'),
+            regency_name: formData.get('regency_name'),
+            province_name: formData.get('province_name'),
             
             // Additional fields (may not be processed by basic API but keeping for completeness)
             bib_name: formData.get('bib_name'),
