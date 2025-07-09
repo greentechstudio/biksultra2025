@@ -678,53 +678,34 @@ class AuthController extends Controller
                 }
             }
 
+            // Log final location data after auto-resolution attempts
+            \Log::info('Final location data after auto-resolution', [
+                'city' => $request->city,
+                'birth_place' => $request->birth_place,
+                'final_location_data' => $locationData,
+                'has_regency_id' => !empty($locationData['regency_id']),
+                'has_regency_name' => !empty($locationData['regency_name']),
+                'has_province_name' => !empty($locationData['province_name'])
+            ]);
+
             // Get and validate ticket type with quota check
             $ticketType = \App\Models\TicketType::getCurrentTicketType($request->category);
 
             // If not found using getCurrentTicketType, try manual search
             if (!$ticketType) {
-                $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($request) {
-                    $query->where('name', $request->category);
-                })->where('is_active', true)->first();
-            }
+                $ticketType = \App\Models\TicketType::where('name', $request->category)
+                    ->where('is_active', true)
+                    ->first();
 
-            // Validate ticket availability and quota
-            if (!$ticketType) {
-                return response()->json([
-                    'success' => false,
-                    'message' => "Kategori '{$request->category}' tidak tersedia. Silakan pilih kategori lain atau hubungi admin.",
-                    'available_categories' => $this->getAvailableCategories()
-                ], 400);
-            }
-
-            // Check if ticket type is currently active (includes quota check)
-            if (!$ticketType->isCurrentlyActive()) {
-                if ($ticketType->isQuotaExceeded()) {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Quota untuk kategori '{$request->category}' sudah habis. Silakan pilih kategori lain yang masih tersedia.",
-                        'quota_info' => [
-                            'category' => $request->category,
-                            'quota' => $ticketType->quota,
-                            'registered' => $ticketType->registered_count,
-                            'status' => 'quota_exceeded'
-                        ],
-                        'available_categories' => $this->getAvailableCategories()
-                    ], 400);
-                } else {
-                    return response()->json([
-                        'success' => false,
-                        'message' => "Pendaftaran untuk kategori '{$request->category}' belum dibuka atau sudah ditutup.",
-                        'period_info' => [
-                            'category' => $request->category,
-                            'start_date' => $ticketType->start_date,
-                            'end_date' => $ticketType->end_date,
-                            'status' => 'period_inactive'
-                        ],
-                        'available_categories' => $this->getAvailableCategories()
-                    ], 400);
+                // If not found, try to find by race_category relationship
+                if (!$ticketType) {
+                    $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($request) {
+                        $query->where('name', $request->category);
+                    })->where('is_active', true)->first();
                 }
             }
+
+            $ticketTypeId = $ticketType ? $ticketType->id : null;
 
             // Generate unique registration number
             $registrationNumber = $this->generateRegistrationNumber();
@@ -769,7 +750,27 @@ class AuthController extends Controller
             ]);
 
             // Create user with complete registration data
-            $user = User::create($userData);
+            try {
+                $user = User::create($userData);
+                
+                Log::info('User created successfully in database', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'registration_number' => $user->registration_number
+                ]);
+            } catch (\Exception $e) {
+                Log::error('Failed to create user in database', [
+                    'error' => $e->getMessage(),
+                    'user_data' => $userData,
+                    'trace' => $e->getTraceAsString()
+                ]);
+                
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Registration failed. Please try again.',
+                    'error' => 'Database error: ' . $e->getMessage()
+                ], 500);
+            }
 
             // Increment registered count for ticket type
             $ticketType->increment('registered_count');
@@ -1354,52 +1355,48 @@ class AuthController extends Controller
             
             \Log::info('Starting location resolution', ['city' => $cityName]);
             
-            // Call smart search API using absolute URL
-            $baseUrl = config('app.url', 'https://www.amazingsultrarun.com');
-            $apiUrl = rtrim($baseUrl, '/') . '/api/location/smart-search';
+            // Use direct method call instead of HTTP request to avoid routing issues
+            $locationController = new \App\Http\Controllers\LocationController();
+            $request = new \Illuminate\Http\Request(['q' => $cityName]);
             
-            \Log::info('Calling location API', ['url' => $apiUrl, 'query' => $cityName]);
+            \Log::info('Calling location controller directly', ['query' => $cityName]);
             
-            $response = \Http::timeout(10)->get($apiUrl, [
-                'q' => $cityName
+            $response = $locationController->smartSearch($request);
+            $data = json_decode($response->getContent(), true);
+            
+            \Log::info('Location controller response', [
+                'status' => $response->getStatusCode(),
+                'data' => $data,
+                'raw_content' => $response->getContent(),
+                'data_success' => isset($data['success']) ? $data['success'] : 'not_set',
+                'data_data_empty' => empty($data['data']),
+                'data_count' => isset($data['data']) ? count($data['data']) : 0
             ]);
             
-            \Log::info('Location API response', [
-                'status' => $response->status(),
-                'successful' => $response->successful(),
-                'body' => $response->body()
-            ]);
-            
-            if ($response->successful()) {
-                $data = $response->json();
+            if ($response->getStatusCode() === 200 && isset($data['success']) && $data['success'] && !empty($data['data'])) {
+                \Log::info('Condition check passed, processing data');
+                // Return the best match (first result)
+                $bestMatch = $data['data'][0];
                 
-                if ($data['success'] && !empty($data['data'])) {
-                    // Return the best match (first result)
-                    $bestMatch = $data['data'][0];
-                    
-                    $result = [
-                        'regency_id' => $bestMatch['regency_id'],
-                        'regency_name' => $bestMatch['regency_name'],
-                        'province_name' => $bestMatch['province_name']
-                    ];
-                    
-                    \Log::info('Location resolution successful', [
-                        'city' => $cityName,
-                        'result' => $result
-                    ]);
-                    
-                    return $result;
-                } else {
-                    \Log::warning('Location API returned no data', [
-                        'city' => $cityName,
-                        'response' => $data
-                    ]);
-                }
-            } else {
-                \Log::warning('Location API failed', [
+                \Log::info('Best match found', ['best_match' => $bestMatch]);
+                
+                $result = [
+                    'regency_id' => $bestMatch['regency_id'],
+                    'regency_name' => $bestMatch['regency_name'],
+                    'province_name' => $bestMatch['province_name']
+                ];
+                
+                \Log::info('Location resolution successful', [
                     'city' => $cityName,
-                    'status' => $response->status(),
-                    'body' => $response->body()
+                    'result' => $result
+                ]);
+                
+                return $result;
+            } else {
+                \Log::warning('Location controller failed or returned no data', [
+                    'city' => $cityName,
+                    'status' => $response->getStatusCode(),
+                    'data' => $data
                 ]);
             }
             
