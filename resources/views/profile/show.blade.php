@@ -155,12 +155,12 @@
                 <div class="bg-gray-50 rounded-lg p-4">
                     <dl class="space-y-4">
                         <div class="flex justify-between">
-                            <dt class="text-sm font-medium text-gray-500">Kontak Darurat 1:</dt>
-                            <dd class="text-sm text-gray-900">{{ $user->emergency_contact_1 }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">Nama Kontak Darurat:</dt>
+                            <dd class="text-sm text-gray-900">{{ $user->emergency_contact_name }}</dd>
                         </div>
                         <div class="flex justify-between">
-                            <dt class="text-sm font-medium text-gray-500">Kontak Darurat 2:</dt>
-                            <dd class="text-sm text-gray-900">{{ $user->emergency_contact_2 ?: '-' }}</dd>
+                            <dt class="text-sm font-medium text-gray-500">Nomor Kontak Darurat:</dt>
+                            <dd class="text-sm text-gray-900">{{ $user->emergency_contact_phone }}</dd>
                         </div>
                     </dl>
                 </div>

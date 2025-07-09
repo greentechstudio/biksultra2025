@@ -260,23 +260,23 @@
                     </h3>
 
                     <div>
-                        <label for="emergency_contact_1" class="block text-sm font-medium text-gray-700">Kontak Darurat 1 <span class="text-red-500">*</span></label>
-                        <input type="text" id="emergency_contact_1" name="emergency_contact_1" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('emergency_contact_1') border-red-500 @enderror"
-                               value="{{ old('emergency_contact_1', $user->emergency_contact_1) }}"
-                               placeholder="Nama dan nomor telepon">
-                        @error('emergency_contact_1')
+                        <label for="emergency_contact_name" class="block text-sm font-medium text-gray-700">Nama Kontak Darurat <span class="text-red-500">*</span></label>
+                        <input type="text" id="emergency_contact_name" name="emergency_contact_name" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('emergency_contact_name') border-red-500 @enderror"
+                               value="{{ old('emergency_contact_name', $user->emergency_contact_name) }}"
+                               placeholder="Nama kontak darurat">
+                        @error('emergency_contact_name')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>
 
                     <div>
-                        <label for="emergency_contact_2" class="block text-sm font-medium text-gray-700">Kontak Darurat 2</label>
-                        <input type="text" id="emergency_contact_2" name="emergency_contact_2"
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('emergency_contact_2') border-red-500 @enderror"
-                               value="{{ old('emergency_contact_2', $user->emergency_contact_2) }}"
-                               placeholder="Nama dan nomor telepon (opsional)">
-                        @error('emergency_contact_2')
+                        <label for="emergency_contact_phone" class="block text-sm font-medium text-gray-700">Nomor Kontak Darurat <span class="text-red-500">*</span></label>
+                        <input type="tel" id="emergency_contact_phone" name="emergency_contact_phone" required
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('emergency_contact_phone') border-red-500 @enderror"
+                               value="{{ old('emergency_contact_phone', $user->emergency_contact_phone) }}"
+                               placeholder="Nomor telepon kontak darurat">
+                        @error('emergency_contact_phone')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
                     </div>

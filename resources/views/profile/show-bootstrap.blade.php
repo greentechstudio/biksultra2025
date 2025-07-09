@@ -133,12 +133,12 @@
                             <div class="table-responsive">
                                 <table class="table table-borderless">
                                     <tr>
-                                        <td width="40%" class="fw-bold">Kontak Darurat 1:</td>
-                                        <td>{{ $user->emergency_contact_1 }}</td>
+                                        <td width="40%" class="fw-bold">Nama Kontak Darurat:</td>
+                                        <td>{{ $user->emergency_contact_name }}</td>
                                     </tr>
                                     <tr>
-                                        <td class="fw-bold">Kontak Darurat 2:</td>
-                                        <td>{{ $user->emergency_contact_2 ?: '-' }}</td>
+                                        <td class="fw-bold">Nomor Kontak Darurat:</td>
+                                        <td>{{ $user->emergency_contact_phone }}</td>
                                     </tr>
                                 </table>
                             </div>

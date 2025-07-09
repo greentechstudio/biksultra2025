@@ -228,21 +228,21 @@
                                 </h5>
 
                                 <div class="mb-3">
-                                    <label for="emergency_contact_1" class="form-label">Kontak Darurat 1 <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('emergency_contact_1') is-invalid @enderror" 
-                                           id="emergency_contact_1" name="emergency_contact_1" value="{{ old('emergency_contact_1', $user->emergency_contact_1) }}" 
-                                           required placeholder="Nama & No. HP">
-                                    @error('emergency_contact_1')
+                                    <label for="emergency_contact_name" class="form-label">Nama Kontak Darurat <span class="text-danger">*</span></label>
+                                    <input type="text" class="form-control @error('emergency_contact_name') is-invalid @enderror" 
+                                           id="emergency_contact_name" name="emergency_contact_name" value="{{ old('emergency_contact_name', $user->emergency_contact_name) }}" 
+                                           required placeholder="Nama kontak darurat">
+                                    @error('emergency_contact_name')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>
 
                                 <div class="mb-3">
-                                    <label for="emergency_contact_2" class="form-label">Kontak Darurat 2</label>
-                                    <input type="text" class="form-control @error('emergency_contact_2') is-invalid @enderror" 
-                                           id="emergency_contact_2" name="emergency_contact_2" value="{{ old('emergency_contact_2', $user->emergency_contact_2) }}" 
-                                           placeholder="Nama & No. HP (opsional)">
-                                    @error('emergency_contact_2')
+                                    <label for="emergency_contact_phone" class="form-label">Nomor Kontak Darurat <span class="text-danger">*</span></label>
+                                    <input type="tel" class="form-control @error('emergency_contact_phone') is-invalid @enderror" 
+                                           id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone', $user->emergency_contact_phone) }}" 
+                                           required placeholder="Nomor telepon kontak darurat">
+                                    @error('emergency_contact_phone')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
                                 </div>

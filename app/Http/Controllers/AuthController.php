@@ -81,6 +81,9 @@ class AuthController extends Controller
             'birth_place' => 'required|string|max:255',
             'birth_date' => 'required|date|before:today',
             'address' => 'required|string|max:500',
+            'regency_id' => 'required|string|max:255',
+            'regency_name' => 'required|string|max:255',
+            'province_name' => 'required|string|max:255',
             'jersey_size' => 'required|string|max:10',
             'race_category' => 'required|string|max:255',
             'whatsapp_number' => 'required|string|max:15',
@@ -195,6 +198,9 @@ class AuthController extends Controller
             'birth_place' => $request->birth_place,
             'birth_date' => $request->birth_date,
             'address' => $request->address,
+            'regency_id' => $request->regency_id,
+            'regency_name' => $request->regency_name,
+            'province_name' => $request->province_name,
             'jersey_size' => $request->jersey_size,
             'race_category' => $request->race_category,
             'whatsapp_number' => $whatsappNumber, // Use formatted number
@@ -678,9 +684,12 @@ class AuthController extends Controller
                 'birth_date' => '1990-01-01',
                 'address' => 'To be updated',
                 'jersey_size' => 'M',
-                'emergency_contact_1' => 'To be updated',
+                'emergency_contact_name' => 'To be updated',
+                'emergency_contact_phone' => 'To be updated',
                 'blood_type' => 'O',
                 'occupation' => 'Unknown',
+                'group_community' => null,
+                'medical_history' => null,
                 'event_source' => 'Website',
                 'bib_name' => $request->name, // Use name as bib name by default
             ]);
@@ -988,12 +997,29 @@ class AuthController extends Controller
     public function registerApiSimple(Request $request)
     {
         try {
-            // Validate the request
+            // Validate the request with all possible fields
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|string|min:9|max:15',
-                'category' => 'required|in:5K,10K,21K'
+                'category' => 'required|in:5K,10K,21K',
+                // Optional detailed fields
+                'birth_place' => 'nullable|string|max:255',
+                'birth_date' => 'nullable|date|before:today',
+                'address' => 'nullable|string|max:500',
+                'regency_id' => 'nullable|string|max:255',
+                'regency_name' => 'nullable|string|max:255',
+                'province_name' => 'nullable|string|max:255',
+                'gender' => 'nullable|in:Laki-laki,Perempuan',
+                'jersey_size' => 'nullable|string|max:10',
+                'emergency_contact_name' => 'nullable|string|max:255',
+                'emergency_contact_phone' => 'nullable|string|max:20',
+                'group_community' => 'nullable|string|max:255',
+                'blood_type' => 'nullable|string|max:5',
+                'occupation' => 'nullable|string|max:255',
+                'medical_history' => 'nullable|string|max:1000',
+                'event_source' => 'nullable|string|max:255',
+                'bib_name' => 'nullable|string|max:255'
             ]);
 
             // Generate unique registration number
@@ -1020,7 +1046,7 @@ class AuthController extends Controller
             
             $ticketTypeId = $ticketType ? $ticketType->id : null;
 
-            // Create user with basic registration data
+            // Create user with all provided data or defaults
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -1034,17 +1060,23 @@ class AuthController extends Controller
                 'race_category' => $request->category,
                 'ticket_type_id' => $ticketTypeId,
                 'whatsapp_number' => $phoneNumber,
-                // Set default values for required fields
-                'gender' => 'Laki-laki', // Default, user can update later
-                'birth_place' => 'Unknown',
-                'birth_date' => '1990-01-01',
-                'address' => 'To be updated',
-                'jersey_size' => 'M',
-                'emergency_contact_1' => 'To be updated',
-                'blood_type' => 'O',
-                'occupation' => 'Unknown',
-                'event_source' => 'Website',
-                'bib_name' => $request->name, // Use name as bib name by default
+                // Use provided data or defaults
+                'gender' => $request->gender ?: 'Laki-laki',
+                'birth_place' => $request->birth_place ?: 'Unknown',
+                'birth_date' => $request->birth_date ?: '1990-01-01',
+                'address' => $request->address ?: 'To be updated',
+                'regency_id' => $request->regency_id,
+                'regency_name' => $request->regency_name,
+                'province_name' => $request->province_name,
+                'jersey_size' => $request->jersey_size ?: 'M',
+                'emergency_contact_name' => $request->emergency_contact_name ?: 'To be updated',
+                'emergency_contact_phone' => $request->emergency_contact_phone ?: 'To be updated',
+                'blood_type' => $request->blood_type ?: 'O',
+                'occupation' => $request->occupation ?: 'Unknown',
+                'group_community' => $request->group_community,
+                'medical_history' => $request->medical_history,
+                'event_source' => $request->event_source ?: 'Website',
+                'bib_name' => $request->bib_name ?: $request->name,
             ]);
 
             // Update registered count in ticket_types table
@@ -1114,12 +1146,29 @@ class AuthController extends Controller
     public function registerApiUltraSimple(Request $request)
     {
         try {
-            // Validate the request
+            // Validate the request with all required fields
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|string|min:9|max:15',
-                'category' => 'required|in:5K,10K,21K'
+                'category' => 'required|in:5K,10K,21K',
+                // Optional detailed fields
+                'birth_place' => 'nullable|string|max:255',
+                'birth_date' => 'nullable|date|before:today',
+                'address' => 'nullable|string|max:500',
+                'regency_id' => 'nullable|string|max:255',
+                'regency_name' => 'nullable|string|max:255',
+                'province_name' => 'nullable|string|max:255',
+                'gender' => 'nullable|in:Laki-laki,Perempuan',
+                'jersey_size' => 'nullable|string|max:10',
+                'emergency_contact_name' => 'nullable|string|max:255',
+                'emergency_contact_phone' => 'nullable|string|max:20',
+                'group_community' => 'nullable|string|max:255',
+                'blood_type' => 'nullable|string|max:5',
+                'occupation' => 'nullable|string|max:255',
+                'medical_history' => 'nullable|string|max:1000',
+                'event_source' => 'nullable|string|max:255',
+                'bib_name' => 'nullable|string|max:255'
             ]);
 
             // Generate unique registration number
@@ -1147,7 +1196,7 @@ class AuthController extends Controller
             
             $ticketTypeId = $ticketType ? $ticketType->id : null;
 
-            // Create user with basic registration data
+            // Create user with all provided data or defaults
             $user = User::create([
                 'name' => $request->name,
                 'email' => $request->email,
@@ -1161,17 +1210,23 @@ class AuthController extends Controller
                 'race_category' => $request->category,
                 'ticket_type_id' => $ticketTypeId,
                 'whatsapp_number' => $phoneNumber,
-                // Set default values for required fields
-                'gender' => 'Laki-laki', // Default, user can update later
-                'birth_place' => 'Unknown',
-                'birth_date' => '1990-01-01',
-                'address' => 'To be updated',
-                'jersey_size' => 'M',
-                'emergency_contact_1' => 'To be updated',
-                'blood_type' => 'O',
-                'occupation' => 'Unknown',
-                'event_source' => 'Website',
-                'bib_name' => $request->name, // Use name as bib name by default
+                // Use provided data or defaults
+                'gender' => $request->gender ?: 'Laki-laki',
+                'birth_place' => $request->birth_place ?: 'Unknown',
+                'birth_date' => $request->birth_date ?: '1990-01-01',
+                'address' => $request->address ?: 'To be updated',
+                'regency_id' => $request->regency_id,
+                'regency_name' => $request->regency_name,
+                'province_name' => $request->province_name,
+                'jersey_size' => $request->jersey_size ?: 'M',
+                'emergency_contact_name' => $request->emergency_contact_name ?: 'To be updated',
+                'emergency_contact_phone' => $request->emergency_contact_phone ?: 'To be updated',
+                'blood_type' => $request->blood_type ?: 'O',
+                'occupation' => $request->occupation ?: 'Unknown',
+                'group_community' => $request->group_community,
+                'medical_history' => $request->medical_history,
+                'event_source' => $request->event_source ?: 'Website',
+                'bib_name' => $request->bib_name ?: $request->name,
             ]);
 
             // Update registered count
