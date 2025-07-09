@@ -42,8 +42,8 @@ Route::post('/validate-whatsapp', [\App\Http\Controllers\AuthController::class, 
 
 // Registration API
 Route::post('/register', [\App\Http\Controllers\AuthController::class, 'registerApi'])->name('api.register');
-Route::post('/register-debug', [\App\Http\Controllers\AuthController::class, 'debugRegisterApi'])->name('api.register.debug');
-Route::post('/register-simple', [\App\Http\Controllers\AuthController::class, 'registerApiSimple'])->name('api.register.simple');
+// Route::post('/register-debug', [\App\Http\Controllers\AuthController::class, 'debugRegisterApi'])->name('api.register.debug');
+// Route::post('/register-simple', [\App\Http\Controllers\AuthController::class, 'registerApiSimple'])->name('api.register.simple');
 
 // Location autocomplete API
 Route::get('/location/search', [\App\Http\Controllers\LocationController::class, 'searchRegencies'])->name('api.location.search');
