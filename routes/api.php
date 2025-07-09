@@ -48,6 +48,7 @@ Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register
 // Location autocomplete API
 Route::get('/location/search', [\App\Http\Controllers\LocationController::class, 'searchRegencies'])->name('api.location.search');
 Route::get('/location/regency/{id}', [\App\Http\Controllers\LocationController::class, 'getRegency'])->name('api.location.regency');
+Route::get('/location/smart-search', [\App\Http\Controllers\LocationController::class, 'smartSearch'])->name('api.location.smart-search');
 
 // Ticket availability check
 Route::get('/check-ticket-availability', [\App\Http\Controllers\AuthController::class, 'checkTicketAvailability'])->name('api.check.ticket.availability');

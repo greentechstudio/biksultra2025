@@ -64,7 +64,7 @@ class AuthController extends Controller
         // Verify reCAPTCHA
         if ($request->has('g-recaptcha-response')) {
             $recaptchaResult = $this->recaptchaService->verify($request->input('g-recaptcha-response'));
-            
+
             if (!$recaptchaResult['success']) {
                 return redirect()->back()
                     ->withErrors(['recaptcha' => 'reCAPTCHA verification failed: ' . $recaptchaResult['message']])
@@ -106,18 +106,18 @@ class AuthController extends Controller
 
         // Format WhatsApp number
         $whatsappNumber = $this->formatPhoneNumber($request->whatsapp_number);
-        
+
         // Validate WhatsApp number (optional - can be disabled if API is down)
         if (config('app.validate_whatsapp', true)) {
             try {
                 $validationResult = $this->validateWhatsAppNumber($whatsappNumber);
-                
+
                 if ($validationResult['success'] && !$validationResult['valid']) {
                     return redirect()->back()
                         ->withErrors(['whatsapp_number' => 'Nomor WhatsApp tidak valid atau tidak terdaftar'])
                         ->withInput();
                 }
-                
+
                 if (!$validationResult['success']) {
                     // Log warning but continue with registration
                     Log::warning('WhatsApp validation service unavailable', [
@@ -142,7 +142,7 @@ class AuthController extends Controller
 
         // Get and validate ticket type
         $ticketType = \App\Models\TicketType::getCurrentTicketType($request->race_category);
-        
+
         // If not found using getCurrentTicketType, try manual search
         if (!$ticketType) {
             $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($request) {
@@ -215,15 +215,15 @@ class AuthController extends Controller
 
         // Generate and send random password (always simple type)
         $passwordResult = $this->randomPasswordService->generateAndSendPassword(
-            $user, 
-            $this->whatsappService, 
+            $user,
+            $this->whatsappService,
             'simple'
         );
 
         if (!$passwordResult['success']) {
             // Delete user if password generation failed
             $user->delete();
-            
+
             return redirect()->back()
                 ->withErrors(['password' => $passwordResult['message']])
                 ->withInput();
@@ -241,7 +241,7 @@ class AuthController extends Controller
 
         // Send WhatsApp activation message and verify account automatically
         $activationResult = $this->sendActivationMessage($user);
-        
+
         if ($activationResult['success']) {
             // Automatically verify WhatsApp if message sent successfully
             $user->update([
@@ -249,7 +249,7 @@ class AuthController extends Controller
                 'whatsapp_verified_at' => now(),
                 'status' => 'verified' // Change status to verified
             ]);
-            
+
             Log::info('User registered and WhatsApp verified automatically', [
                 'user_id' => $user->id,
                 'email' => $user->email,
@@ -266,7 +266,7 @@ class AuthController extends Controller
 
         // Create Xendit payment invoice
         $paymentResult = $this->xenditService->createInvoice(
-            $user, 
+            $user,
             null, // Let the service use the user's race category price
             'Amazing Sultra Run Registration Fee - ' . $user->name
         );
@@ -274,8 +274,8 @@ class AuthController extends Controller
         if ($paymentResult['success']) {
             // Send payment link via WhatsApp
             $this->sendPaymentLink($user, $paymentResult['invoice_url']);
-            
-            return redirect()->route('login')->with('success', 
+
+            return redirect()->route('login')->with('success',
                 'Registrasi berhasil! Link pembayaran telah dikirim ke WhatsApp Anda. Silakan lakukan pembayaran untuk mengaktifkan membership.'
             );
         } else {
@@ -283,8 +283,8 @@ class AuthController extends Controller
                 'user_id' => $user->id,
                 'error' => $paymentResult['error']
             ]);
-            
-            return redirect()->route('login')->with('warning', 
+
+            return redirect()->route('login')->with('warning',
                 'Registrasi berhasil! Namun link pembayaran gagal dibuat. Silakan hubungi admin untuk bantuan pembayaran.'
             );
         }
@@ -370,7 +370,7 @@ class AuthController extends Controller
     {
         // Verify reCAPTCHA
         $recaptchaResult = $this->recaptchaService->verify($request->input('g-recaptcha-response'));
-        
+
         if (!$recaptchaResult['success']) {
             return redirect()->back()
                 ->withErrors(['recaptcha' => 'reCAPTCHA verification failed: ' . $recaptchaResult['message']])
@@ -408,18 +408,18 @@ class AuthController extends Controller
 
         // Format WhatsApp number
         $whatsappNumber = $this->formatPhoneNumber($request->whatsapp_number);
-        
+
         // Validate WhatsApp number (optional - can be disabled if API is down)
         if (config('app.validate_whatsapp', true)) {
             try {
                 $validationResult = $this->validateWhatsAppNumber($whatsappNumber);
-                
+
                 if ($validationResult['success'] && !$validationResult['valid']) {
                     return redirect()->back()
                         ->withErrors(['whatsapp_number' => 'Nomor WhatsApp tidak valid atau tidak terdaftar'])
                         ->withInput();
                 }
-                
+
                 if (!$validationResult['success']) {
                     // Log warning but continue with registration
                     Log::warning('WhatsApp validation service unavailable', [
@@ -464,8 +464,8 @@ class AuthController extends Controller
         // Generate and send random password
         $passwordType = $request->input('password_type', 'simple');
         $passwordResult = $this->randomPasswordService->generateAndSendPassword(
-            $user, 
-            $this->whatsappService, 
+            $user,
+            $this->whatsappService,
             $passwordType
         );
 
@@ -508,7 +508,7 @@ class AuthController extends Controller
         } else {
             // Delete user if password generation failed
             $user->delete();
-            
+
             return redirect()->back()
                 ->withErrors(['password' => $passwordResult['message']])
                 ->withInput();
@@ -547,7 +547,7 @@ class AuthController extends Controller
                     'whatsapp_number' => $user->whatsapp_number,
                     'queue_id' => $queueId
                 ]);
-                
+
                 return [
                     'success' => true,
                     'message' => 'Pesan aktivasi sedang dikirim'
@@ -557,7 +557,7 @@ class AuthController extends Controller
                     'user_id' => $user->id,
                     'whatsapp_number' => $user->whatsapp_number
                 ]);
-                
+
                 return [
                     'success' => false,
                     'message' => 'Gagal mengirim pesan aktivasi'
@@ -569,7 +569,7 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
             ]);
-            
+
             return [
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengirim pesan aktivasi: ' . $e->getMessage()
@@ -589,7 +589,7 @@ class AuthController extends Controller
                 'method' => $request->method(),
                 'url' => $request->url()
             ]);
-            
+
             // Validate the request
             $validatedData = $request->validate([
                 'name' => 'required|string|max:255',
@@ -601,6 +601,7 @@ class AuthController extends Controller
                 'birth_place' => 'nullable|string|max:255',
                 'birth_date' => 'nullable|date',
                 'address' => 'nullable|string|max:500',
+                'city' => 'nullable|string|max:255', // Support city field
                 'jersey_size' => 'nullable|in:XS,S,M,L,XL,XXL',
                 'whatsapp_number' => 'nullable|string|min:9|max:15',
                 'emergency_contact_name' => 'nullable|string|max:255',
@@ -620,13 +621,66 @@ class AuthController extends Controller
                 'ip' => $request->ip()
             ]);
 
+            // Debug: Log all request data to check what's actually being received
+            Log::info('Request field values', [
+                'name' => $request->name,
+                'email' => $request->email,
+                'phone' => $request->phone,
+                'category' => $request->category,
+                'bib_name' => $request->bib_name,
+                'gender' => $request->gender,
+                'birth_place' => $request->birth_place,
+                'birth_date' => $request->birth_date,
+                'address' => $request->address,
+                'jersey_size' => $request->jersey_size,
+                'whatsapp_number' => $request->whatsapp_number,
+                'emergency_contact_name' => $request->emergency_contact_name,
+                'emergency_contact_phone' => $request->emergency_contact_phone,
+                'group_community' => $request->group_community,
+                'blood_type' => $request->blood_type,
+                'occupation' => $request->occupation,
+                'medical_history' => $request->medical_history,
+                'event_source' => $request->event_source,
+            ]);
+
             // Format phone numbers
             $phoneNumber = $this->formatPhoneNumber($request->phone);
             $whatsappNumber = $request->whatsapp_number ? $this->formatPhoneNumber($request->whatsapp_number) : $phoneNumber;
             
+            // Auto-resolve location data if city is provided but location details are missing
+            $locationData = [
+                'regency_id' => $request->regency_id,
+                'regency_name' => $request->regency_name,
+                'province_name' => $request->province_name
+            ];
+            
+            // If location details are missing but city is provided, try to auto-resolve
+            if ((!$request->regency_id || !$request->regency_name || !$request->province_name) && $request->city) {
+                $resolvedLocation = $this->resolveLocationData($request->city);
+                if ($resolvedLocation) {
+                    $locationData = $resolvedLocation;
+                    \Log::info('Location auto-resolved', [
+                        'city' => $request->city,
+                        'resolved' => $resolvedLocation
+                    ]);
+                }
+            }
+            
+            // If still no location data, try to resolve from birth_place
+            if ((!$locationData['regency_id'] || !$locationData['regency_name'] || !$locationData['province_name']) && $request->birth_place) {
+                $resolvedLocation = $this->resolveLocationData($request->birth_place);
+                if ($resolvedLocation) {
+                    $locationData = $resolvedLocation;
+                    \Log::info('Location auto-resolved from birth_place', [
+                        'birth_place' => $request->birth_place,
+                        'resolved' => $resolvedLocation
+                    ]);
+                }
+            }
+
             // Get and validate ticket type with quota check
             $ticketType = \App\Models\TicketType::getCurrentTicketType($request->category);
-            
+
             // If not found using getCurrentTicketType, try manual search
             if (!$ticketType) {
                 $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($request) {
@@ -674,9 +728,9 @@ class AuthController extends Controller
 
             // Generate unique registration number
             $registrationNumber = $this->generateRegistrationNumber();
-            
-            // Create user with complete registration data
-            $user = User::create([
+
+            // Prepare user data for creation
+            $userData = [
                 'name' => $request->name,
                 'email' => $request->email,
                 'phone' => $phoneNumber,
@@ -689,25 +743,33 @@ class AuthController extends Controller
                 'race_category' => $request->category,
                 'ticket_type_id' => $ticketType->id,
                 'whatsapp_number' => $whatsappNumber,
-                // Location fields
-                'regency_id' => $request->regency_id,
-                'regency_name' => $request->regency_name,
-                'province_name' => $request->province_name,
-                // Personal information from request
-                'gender' => $request->gender,
-                'birth_place' => $request->birth_place,
-                'birth_date' => $request->birth_date,
-                'address' => $request->address,
-                'jersey_size' => $request->jersey_size,
-                'emergency_contact_name' => $request->emergency_contact_name,
+                // Location fields (auto-resolved if possible)
+                'regency_id' => $locationData['regency_id'],
+                'regency_name' => $locationData['regency_name'],
+                'province_name' => $locationData['province_name'],
+                // Personal information from request with fallback defaults
+                'gender' => $request->gender ?? 'Laki-laki',
+                'birth_place' => $request->birth_place ?? 'Unknown',
+                'birth_date' => $request->birth_date ?? '1990-01-01',
+                'address' => $request->address ?? 'To be updated',
+                'jersey_size' => $request->jersey_size ?? 'M',
+                'emergency_contact_name' => $request->emergency_contact_name ?? 'To be updated',
                 'emergency_contact_phone' => $request->emergency_contact_phone ? $this->formatPhoneNumber($request->emergency_contact_phone) : 'To be updated',
-                'blood_type' => $request->blood_type,
-                'occupation' => $request->occupation,
+                'blood_type' => $request->blood_type ?? 'O',
+                'occupation' => $request->occupation ?? 'Unknown',
                 'group_community' => $request->group_community,
                 'medical_history' => $request->medical_history,
-                'event_source' => $request->event_source,
-                'bib_name' => $request->bib_name,
+                'event_source' => $request->event_source ?? 'Website',
+                'bib_name' => $request->bib_name ?? $request->name,
+            ];
+
+            // Debug: Log the data that will be saved
+            Log::info('User data to be saved', [
+                'user_data' => $userData
             ]);
+
+            // Create user with complete registration data
+            $user = User::create($userData);
 
             // Increment registered count for ticket type
             $ticketType->increment('registered_count');
@@ -723,11 +785,11 @@ class AuthController extends Controller
             // Generate and send random password
             try {
                 $passwordResult = $this->randomPasswordService->generateAndSendPassword(
-                    $user, 
-                    $this->whatsappService, 
+                    $user,
+                    $this->whatsappService,
                     'simple'
                 );
-                
+
                 if ($passwordResult['success']) {
                     Log::info('Password sent successfully', [
                         'user_id' => $user->id,
@@ -744,7 +806,7 @@ class AuthController extends Controller
             // Send activation message
             try {
                 $activationResult = $this->sendActivationMessage($user);
-                
+
                 if ($activationResult['success']) {
                     $user->update([
                         'whatsapp_verified' => true,
@@ -762,7 +824,7 @@ class AuthController extends Controller
             // Create Xendit payment invoice
             try {
                 $paymentResult = $this->xenditService->createInvoice(
-                    $user, 
+                    $user,
                     null, // Use race category price
                     'Amazing Sultra Run Registration Fee - ' . $user->name
                 );
@@ -770,7 +832,7 @@ class AuthController extends Controller
                 if ($paymentResult['success']) {
                     // Send payment link
                     $this->sendPaymentLink($user, $paymentResult['invoice_url']);
-                    
+
                     return response()->json([
                         'success' => true,
                         'message' => 'Registration successful! Check your WhatsApp for login details and payment link.',
@@ -784,7 +846,7 @@ class AuthController extends Controller
                         'user_id' => $user->id,
                         'error' => $paymentResult['error']
                     ]);
-                    
+
                     return response()->json([
                         'success' => true,
                         'message' => 'Registration successful! However, payment link could not be created. Please contact admin.',
@@ -798,7 +860,7 @@ class AuthController extends Controller
                     'user_id' => $user->id,
                     'error' => $e->getMessage()
                 ]);
-                
+
                 return response()->json([
                     'success' => true,
                     'message' => 'Registration successful! However, some services are unavailable. Please contact admin.',
@@ -813,20 +875,20 @@ class AuthController extends Controller
                 'errors' => $e->errors(),
                 'input' => $request->all()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
-            
+
         } catch (\Exception $e) {
             Log::error('API Registration error', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString(),
                 'input' => $request->all()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed. Please try again.'
@@ -865,17 +927,17 @@ class AuthController extends Controller
     {
         $prefix = 'ASR' . date('Y'); // ASR2025
         $counter = 1;
-        
+
         // Get the last registration number for this year
         $lastUser = User::where('registration_number', 'like', $prefix . '%')
             ->orderBy('registration_number', 'desc')
             ->first();
-        
+
         if ($lastUser) {
             $lastNumber = intval(substr($lastUser->registration_number, -4));
             $counter = $lastNumber + 1;
         }
-        
+
         return $prefix . sprintf('%04d', $counter);
     }
 
@@ -883,7 +945,7 @@ class AuthController extends Controller
     {
         try {
             $amount = number_format($user->registration_fee, 0, ',', '.');
-            
+
             $message = "🎯 *LINK PEMBAYARAN REGISTRASI* 🎯\n\n";
             $message .= "Halo *{$user->name}*,\n\n";
             $message .= "Terima kasih telah mendaftar di Amazing Sultra Run! 🏃‍♂️\n\n";
@@ -936,7 +998,7 @@ class AuthController extends Controller
     {
         try {
             $whatsappNumber = $request->input('whatsapp_number');
-            
+
             if (!$whatsappNumber) {
                 return response()->json([
                     'success' => false,
@@ -947,7 +1009,7 @@ class AuthController extends Controller
 
             // Format phone number
             $formattedNumber = $this->formatPhoneNumber($whatsappNumber);
-            
+
             // Check if WhatsApp validation is enabled
             if (!config('app.validate_whatsapp', true)) {
                 return response()->json([
@@ -956,10 +1018,10 @@ class AuthController extends Controller
                     'message' => 'Validasi WhatsApp dilewati (disabled)'
                 ]);
             }
-            
+
             // Validate WhatsApp number with timeout protection
             $validationResult = $this->validateWhatsAppNumber($formattedNumber);
-            
+
             // Only allow fallback for connection/timeout errors (success=false)
             // If API responds with invalid number (success=true, valid=false), block registration
             if (!$validationResult['success']) {
@@ -968,23 +1030,23 @@ class AuthController extends Controller
                     'number' => $formattedNumber,
                     'error' => $validationResult['message']
                 ]);
-                
+
                 return response()->json([
                     'success' => true,
                     'valid' => true,
                     'message' => 'Nomor WhatsApp diterima (validasi service tidak tersedia)'
                 ]);
             }
-            
+
             // API responded successfully - return the actual validation result
             return response()->json($validationResult);
-            
+
         } catch (\Exception $e) {
             Log::error('WhatsApp validation AJAX error', [
                 'error' => $e->getMessage(),
                 'number' => $request->input('whatsapp_number')
             ]);
-            
+
             // For exceptions, block registration to be safe
             return response()->json([
                 'success' => false,
@@ -1039,26 +1101,26 @@ class AuthController extends Controller
 
             // Generate unique registration number
             $registrationNumber = $this->generateRegistrationNumber();
-            
-            // Format phone number  
+
+            // Format phone number
             $phoneNumber = $this->formatPhoneNumber($request->phone);
 
             // Get ticket type ID based on category
             // First try to find by name matching category
             $ticketType = \App\Models\TicketType::where('name', $request->category)->first();
-            
+
             // If not found, try to find by race_category relationship
             if (!$ticketType) {
                 $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($request) {
                     $query->where('name', $request->category);
                 })->first();
             }
-            
+
             // If still not found, get the first active ticket type
             if (!$ticketType) {
                 $ticketType = \App\Models\TicketType::where('is_active', true)->first();
             }
-            
+
             $ticketTypeId = $ticketType ? $ticketType->id : null;
 
             // Create user with all provided data or defaults
@@ -1114,7 +1176,7 @@ class AuthController extends Controller
                         'error' => $e->getMessage()
                     ]);
                 }
-                
+
                 Log::info('Registration completed successfully', [
                     'user_id' => $user->id,
                     'registration_number' => $user->registration_number,
@@ -1145,7 +1207,7 @@ class AuthController extends Controller
                 'message' => 'Validation failed',
                 'errors' => $e->errors()
             ], 422);
-            
+
         } catch (\Exception $e) {
             return response()->json([
                 'success' => false,
@@ -1188,19 +1250,19 @@ class AuthController extends Controller
 
             // Generate unique registration number
             $registrationNumber = $this->generateRegistrationNumber();
-            
-            // Format phone number  
+
+            // Format phone number
             $phoneNumber = $this->formatPhoneNumber($request->phone);
 
             // Get ticket type based on category with quota validation
             $ticketType = \App\Models\TicketType::getCurrentTicketType($request->category);
-            
+
             // If not found using getCurrentTicketType, try manual search
             if (!$ticketType) {
                 $ticketType = \App\Models\TicketType::where('name', $request->category)
                     ->where('is_active', true)
                     ->first();
-                
+
                 // If not found, try to find by race_category relationship
                 if (!$ticketType) {
                     $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($request) {
@@ -1208,7 +1270,7 @@ class AuthController extends Controller
                     })->where('is_active', true)->first();
                 }
             }
-            
+
             $ticketTypeId = $ticketType ? $ticketType->id : null;
 
             // Create user with all provided data or defaults
@@ -1271,11 +1333,52 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
                 'input' => $request->all()
             ]);
-            
+
             return response()->json([
                 'success' => false,
                 'message' => 'Registration failed: ' . $e->getMessage()
             ], 500);
+        }
+    }
+
+    /**
+     * Auto-resolve location data based on city name
+     */
+    private function resolveLocationData($cityName)
+    {
+        try {
+            if (!$cityName || strlen($cityName) < 2) {
+                return null;
+            }
+            
+            // Call smart search API
+            $response = \Http::timeout(5)->get(url('/api/location/smart-search'), [
+                'q' => $cityName
+            ]);
+            
+            if ($response->successful()) {
+                $data = $response->json();
+                
+                if ($data['success'] && !empty($data['data'])) {
+                    // Return the best match (first result)
+                    $bestMatch = $data['data'][0];
+                    
+                    return [
+                        'regency_id' => $bestMatch['regency_id'],
+                        'regency_name' => $bestMatch['regency_name'],
+                        'province_name' => $bestMatch['province_name']
+                    ];
+                }
+            }
+            
+            return null;
+            
+        } catch (\Exception $e) {
+            \Log::warning('Location resolution failed', [
+                'city' => $cityName,
+                'error' => $e->getMessage()
+            ]);
+            return null;
         }
     }
 
@@ -1287,7 +1390,7 @@ class AuthController extends Controller
         try {
             // Format phone number to international format (remove + and spaces)
             $formattedNumber = preg_replace('/[^0-9]/', '', $phoneNumber);
-            
+
             // Ensure it starts with 62 (Indonesia country code)
             if (!str_starts_with($formattedNumber, '62')) {
                 if (str_starts_with($formattedNumber, '0')) {
@@ -1300,7 +1403,7 @@ class AuthController extends Controller
             $apiKey = env('WHATSAPP_API_KEY', 'tZiKYy1sHXasOj0hDGZnRfAnAYo2Ec');
             $sender = env('WHATSAPP_SENDER', '628114040707');
             $apiUrl = 'https://wamd.system112.org/check-number';
-            
+
             Log::info('Validating WhatsApp number', [
                 'original' => $phoneNumber,
                 'formatted' => $formattedNumber
@@ -1315,16 +1418,16 @@ class AuthController extends Controller
 
             if ($response->successful()) {
                 $data = $response->json();
-                
+
                 Log::info('WhatsApp API response received', [
                     'phone' => $formattedNumber,
                     'response' => $data
                 ]);
-                
+
                 // Check API response format
                 // Success response: {"status": true, "data": {"jid": "...", "exists": true}}
                 // Error response: {"status": false, "msg": "Failed to check number!,check your connection!"}
-                
+
                 if (isset($data['status']) && $data['status'] === true) {
                     // Check the data format - valid number should have array structure with exists=true
                     if (is_array($data['data']) && isset($data['data']['exists']) && $data['data']['exists'] === true) {
@@ -1345,7 +1448,7 @@ class AuthController extends Controller
                 } else {
                     // Status false means number not found in WhatsApp
                     $message = isset($data['msg']) ? $data['msg'] : 'Nomor tidak terdaftar di WhatsApp';
-                    
+
                     return [
                         'success' => true,  // API berhasil, tapi nomor tidak valid
                         'valid' => false,
@@ -1369,25 +1472,25 @@ class AuthController extends Controller
                         // If JSON parsing fails, treat as service error
                     }
                 }
-                
+
                 Log::warning('WhatsApp API request failed', [
                     'phone' => $formattedNumber,
                     'status_code' => $response->status()
                 ]);
-                
+
                 return [
                     'success' => false,
                     'valid' => false,
                     'message' => 'Service WhatsApp tidak tersedia saat ini'
                 ];
             }
-            
+
         } catch (\Illuminate\Http\Client\ConnectionException $e) {
             Log::warning('WhatsApp validation timeout', [
                 'error' => $e->getMessage(),
                 'number' => $phoneNumber
             ]);
-            
+
             return [
                 'success' => false,
                 'valid' => false,
@@ -1398,7 +1501,7 @@ class AuthController extends Controller
                 'error' => $e->getMessage(),
                 'number' => $phoneNumber
             ]);
-            
+
             return [
                 'success' => false,
                 'valid' => false,
@@ -1414,7 +1517,7 @@ class AuthController extends Controller
     {
         try {
             $category = $request->input('category');
-            
+
             if (!$category) {
                 return response()->json([
                     'success' => false,
@@ -1423,7 +1526,7 @@ class AuthController extends Controller
             }
 
             $ticketType = \App\Models\TicketType::getCurrentTicketType($category);
-            
+
             if (!$ticketType) {
                 return response()->json([
                     'success' => false,
@@ -1494,14 +1597,14 @@ class AuthController extends Controller
     {
         // Remove all non-numeric characters
         $phoneNumber = preg_replace('/[^0-9]/', '', $phoneNumber);
-        
+
         // Handle Indonesian numbers
         if (substr($phoneNumber, 0, 1) === '0') {
             $phoneNumber = '62' . substr($phoneNumber, 1);
         } elseif (substr($phoneNumber, 0, 2) !== '62') {
             $phoneNumber = '62' . $phoneNumber;
         }
-        
+
         return $phoneNumber;
     }
 
