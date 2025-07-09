@@ -1348,12 +1348,26 @@ class AuthController extends Controller
     {
         try {
             if (!$cityName || strlen($cityName) < 2) {
+                \Log::info('Location resolution skipped - city name too short', ['city' => $cityName]);
                 return null;
             }
             
-            // Call smart search API
-            $response = \Http::timeout(5)->get(url('/api/location/smart-search'), [
+            \Log::info('Starting location resolution', ['city' => $cityName]);
+            
+            // Call smart search API using absolute URL
+            $baseUrl = config('app.url', 'https://www.amazingsultrarun.com');
+            $apiUrl = rtrim($baseUrl, '/') . '/api/location/smart-search';
+            
+            \Log::info('Calling location API', ['url' => $apiUrl, 'query' => $cityName]);
+            
+            $response = \Http::timeout(10)->get($apiUrl, [
                 'q' => $cityName
+            ]);
+            
+            \Log::info('Location API response', [
+                'status' => $response->status(),
+                'successful' => $response->successful(),
+                'body' => $response->body()
             ]);
             
             if ($response->successful()) {
@@ -1363,12 +1377,30 @@ class AuthController extends Controller
                     // Return the best match (first result)
                     $bestMatch = $data['data'][0];
                     
-                    return [
+                    $result = [
                         'regency_id' => $bestMatch['regency_id'],
                         'regency_name' => $bestMatch['regency_name'],
                         'province_name' => $bestMatch['province_name']
                     ];
+                    
+                    \Log::info('Location resolution successful', [
+                        'city' => $cityName,
+                        'result' => $result
+                    ]);
+                    
+                    return $result;
+                } else {
+                    \Log::warning('Location API returned no data', [
+                        'city' => $cityName,
+                        'response' => $data
+                    ]);
                 }
+            } else {
+                \Log::warning('Location API failed', [
+                    'city' => $cityName,
+                    'status' => $response->status(),
+                    'body' => $response->body()
+                ]);
             }
             
             return null;
@@ -1376,7 +1408,8 @@ class AuthController extends Controller
         } catch (\Exception $e) {
             \Log::warning('Location resolution failed', [
                 'city' => $cityName,
-                'error' => $e->getMessage()
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
             ]);
             return null;
         }
