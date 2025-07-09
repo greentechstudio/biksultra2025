@@ -1,4 +1,4 @@
-    <style>
+<style>
         * {
             margin: 0;
             padding: 0;
@@ -264,6 +264,14 @@
             max-width: 1280px;
             margin: 0 auto;
             padding: 0 24px;
+            min-width: 0; /* Prevent flex/grid overflow */
+            width: 100%;
+        }
+
+        /* Prevent horizontal overflow on all sections */
+        section {
+            overflow-x: hidden;
+            width: 100%;
         }
 
         /* Header */
@@ -553,10 +561,16 @@
             text-decoration: none;
             display: inline-flex;
             align-items: center;
+            justify-content: center;
             gap: 16px;
             box-shadow: var(--shadow-md);
             letter-spacing: var(--tracking-wide);
             text-transform: uppercase;
+            max-width: 100%;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
         }
 
         .cta-button::after {
@@ -621,6 +635,8 @@
             align-items: center;
             position: relative;
             z-index: 2;
+            width: 100%;
+            max-width: 100%;
         }
 
         .registration-info h2 {
@@ -631,6 +647,9 @@
             letter-spacing: var(--tracking-tighter);
             line-height: var(--leading-tight);
             text-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            hyphens: auto;
         }
 
         .registration-details {
@@ -678,6 +697,9 @@
             border-radius: var(--border-radius-lg);
             border: 1px solid rgba(255, 255, 255, 0.2);
             text-align: center;
+            width: 100%;
+            max-width: 100%;
+            box-sizing: border-box;
         }
 
         .registration-form h3 {
@@ -685,6 +707,8 @@
             font-weight: var(--font-weight-bold);
             margin-bottom: 28px;
             letter-spacing: var(--tracking-tight);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         .registration-form p {
@@ -693,6 +717,8 @@
             opacity: 0.9;
             line-height: var(--leading-relaxed);
             font-weight: var(--font-weight-regular);
+            word-wrap: break-word;
+            overflow-wrap: break-word;
         }
 
         /* Categories Section */
@@ -1310,6 +1336,201 @@
             }
         }
 
+        /* Extra Small Mobile (320px and below) */
+        @media (max-width: 360px) {
+            .container {
+                padding: 0 12px;
+                max-width: 100%;
+            }
+
+            .registration {
+                padding: 60px 0;
+            }
+
+            .registration-content {
+                gap: 32px;
+            }
+
+            .registration-info h2 {
+                font-size: clamp(1.5rem, 8vw, 2.5rem);
+                margin-bottom: 24px;
+                line-height: 1.1;
+            }
+
+            .registration-details {
+                font-size: clamp(1rem, 4vw, 1.25rem);
+                margin-bottom: 24px;
+            }
+
+            .early-bird {
+                padding: 20px 16px;
+                margin: 20px 0;
+            }
+
+            .early-bird h3 {
+                font-size: clamp(1rem, 5vw, 1.25rem);
+                margin-bottom: 8px;
+            }
+
+            .early-bird p {
+                font-size: clamp(0.75rem, 3vw, 0.875rem);
+            }
+
+            .registration-form {
+                padding: 20px 12px;
+                margin: 0 -4px;
+            }
+
+            .registration-form h3 {
+                font-size: clamp(1.125rem, 5vw, 1.5rem);
+                margin-bottom: 16px;
+            }
+
+            .registration-form p {
+                font-size: clamp(0.875rem, 3.5vw, 1rem);
+                margin-bottom: 24px;
+                line-height: 1.4;
+            }
+
+            .cta-button {
+                padding: 14px 24px;
+                font-size: 0.9rem;
+                width: 100%;
+                max-width: none;
+                border-radius: 8px;
+            }
+
+            .registration-supported {
+                margin-top: 20px;
+                gap: 8px;
+            }
+
+            .supported-text {
+                font-size: 12px;
+            }
+
+            .registration-supported-logo {
+                height: 60px;
+            }
+        }
+
+        /* Ultra Small Mobile (320px and below) */
+        @media (max-width: 320px) {
+            .container {
+                padding: 0 8px;
+                max-width: 320px;
+                margin: 0 auto;
+            }
+
+            .registration {
+                padding: 40px 0;
+                overflow: hidden;
+            }
+
+            .registration-content {
+                grid-template-columns: 1fr;
+                gap: 24px;
+                width: 100%;
+                max-width: 100%;
+                overflow: hidden;
+            }
+
+            .registration-info {
+                width: 100%;
+                overflow: hidden;
+            }
+
+            .registration-info h2 {
+                font-size: 1.75rem;
+                margin-bottom: 16px;
+                line-height: 1.1;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            .registration-details {
+                font-size: 1rem;
+                margin-bottom: 16px;
+                word-break: break-word;
+            }
+
+            .early-bird {
+                padding: 16px 12px;
+                margin: 16px 0;
+                width: 100%;
+                box-sizing: border-box;
+            }
+
+            .early-bird h3 {
+                font-size: 1rem;
+                margin-bottom: 8px;
+                word-break: break-word;
+            }
+
+            .early-bird p {
+                font-size: 0.75rem;
+                word-break: break-word;
+            }
+
+            .registration-form {
+                padding: 16px 12px;
+                margin: 0;
+                width: 100%;
+                box-sizing: border-box;
+                border-radius: 12px;
+            }
+
+            .registration-form h3 {
+                font-size: 1.125rem;
+                margin-bottom: 12px;
+                line-height: 1.2;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            .registration-form p {
+                font-size: 0.825rem;
+                margin-bottom: 20px;
+                line-height: 1.3;
+                word-break: break-word;
+                hyphens: auto;
+            }
+
+            .cta-button {
+                padding: 12px 20px;
+                font-size: 0.85rem;
+                width: 100%;
+                max-width: 100%;
+                box-sizing: border-box;
+                border-radius: 8px;
+                margin-bottom: 16px;
+                word-break: keep-all;
+                white-space: nowrap;
+            }
+
+            .registration-supported {
+                margin-top: 16px;
+                gap: 6px;
+                width: 100%;
+                display: flex;
+                flex-direction: column;
+                align-items: center;
+                justify-content: center;
+            }
+
+            .registration-supported-logo {
+                height: 50px;
+                max-width: 100%;
+                object-fit: contain;
+            }
+
+            .supported-text {
+                font-size: 11px;
+                text-align: center;
+                word-break: break-word;
+            }
+        }
+
         /* Scroll Animations */
         @media (prefers-reduced-motion: no-preference) {
             .category-card,
@@ -1375,5 +1596,25 @@
             color: #fff;
             font-style: italic;
             margin: 0;
+        }
+
+        /* Global mobile fixes for 320px screens */
+        @media (max-width: 320px) {
+            * {
+                max-width: 100%;
+                box-sizing: border-box;
+            }
+            
+            html, body {
+                overflow-x: hidden;
+                width: 100%;
+                max-width: 100%;
+            }
+            
+            .registration * {
+                max-width: 100%;
+                word-wrap: break-word;
+                overflow-wrap: break-word;
+            }
         }
     </style>

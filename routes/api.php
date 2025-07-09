@@ -45,6 +45,10 @@ Route::post('/register', [\App\Http\Controllers\AuthController::class, 'register
 Route::post('/register-debug', [\App\Http\Controllers\AuthController::class, 'debugRegisterApi'])->name('api.register.debug');
 Route::post('/register-simple', [\App\Http\Controllers\AuthController::class, 'registerApiSimple'])->name('api.register.simple');
 
+// Location autocomplete API
+Route::get('/location/search', [\App\Http\Controllers\LocationController::class, 'searchRegencies'])->name('api.location.search');
+Route::get('/location/regency/{id}', [\App\Http\Controllers\LocationController::class, 'getRegency'])->name('api.location.regency');
+
 // Ticket availability check
 Route::get('/check-ticket-availability', [\App\Http\Controllers\AuthController::class, 'checkTicketAvailability'])->name('api.check.ticket.availability');
 Route::post('/check-ticket-availability', [\App\Http\Controllers\AuthController::class, 'checkTicketAvailability'])->name('api.check.ticket.availability.post');

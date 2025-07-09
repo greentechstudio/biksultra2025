@@ -51,8 +51,8 @@ class User extends Authenticatable
         'jersey_size',
         'race_category',
         'whatsapp_number',
-        'emergency_contact_1',
-        'emergency_contact_2',
+        'emergency_contact_name',
+        'emergency_contact_phone',
         'group_community',
         'blood_type',
         'occupation',
@@ -61,6 +61,9 @@ class User extends Authenticatable
         'profile_edited',
         'profile_edited_at',
         'edit_notes',
+        'regency_id',
+        'regency_name',
+        'province_name',
     ];
 
     /**

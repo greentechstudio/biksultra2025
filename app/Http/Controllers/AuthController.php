@@ -84,8 +84,8 @@ class AuthController extends Controller
             'jersey_size' => 'required|string|max:10',
             'race_category' => 'required|string|max:255',
             'whatsapp_number' => 'required|string|max:15',
-            'emergency_contact_1' => 'required|string|max:255',
-            'emergency_contact_2' => 'nullable|string|max:255',
+            'emergency_contact_name' => 'required|string|max:255',
+            'emergency_contact_phone' => 'required|string|max:20|regex:/^[0-9+\-\s]+$/',
             'group_community' => 'nullable|string|max:255',
             'blood_type' => 'required|string|max:5',
             'occupation' => 'required|string|max:255',
@@ -198,8 +198,8 @@ class AuthController extends Controller
             'jersey_size' => $request->jersey_size,
             'race_category' => $request->race_category,
             'whatsapp_number' => $whatsappNumber, // Use formatted number
-            'emergency_contact_1' => $request->emergency_contact_1,
-            'emergency_contact_2' => $request->emergency_contact_2,
+            'emergency_contact_name' => $request->emergency_contact_name,
+            'emergency_contact_phone' => $request->emergency_contact_phone,
             'group_community' => $request->group_community,
             'blood_type' => $request->blood_type,
             'occupation' => $request->occupation,
@@ -383,8 +383,8 @@ class AuthController extends Controller
             'jersey_size' => 'required|string|max:10',
             'race_category' => 'required|string|max:255',
             'whatsapp_number' => 'required|string|max:15',
-            'emergency_contact_1' => 'required|string|max:255',
-            'emergency_contact_2' => 'nullable|string|max:255',
+            'emergency_contact_name' => 'required|string|max:255',
+            'emergency_contact_phone' => 'required|string|max:20|regex:/^[0-9+\-\s]+$/',
             'group_community' => 'nullable|string|max:255',
             'blood_type' => 'required|string|max:5',
             'occupation' => 'required|string|max:255',
@@ -444,8 +444,8 @@ class AuthController extends Controller
             'jersey_size' => $request->jersey_size,
             'race_category' => $request->race_category,
             'whatsapp_number' => $whatsappNumber,
-            'emergency_contact_1' => $request->emergency_contact_1,
-            'emergency_contact_2' => $request->emergency_contact_2,
+            'emergency_contact_name' => $request->emergency_contact_name,
+            'emergency_contact_phone' => $request->emergency_contact_phone,
             'group_community' => $request->group_community,
             'blood_type' => $request->blood_type,
             'occupation' => $request->occupation,
@@ -588,7 +588,10 @@ class AuthController extends Controller
                 'name' => 'required|string|max:255',
                 'email' => 'required|email|unique:users,email',
                 'phone' => 'required|string|min:9|max:15',
-                'category' => 'required|in:5K,10K,21K'
+                'category' => 'required|in:5K,10K,21K',
+                'regency_id' => 'nullable|string',
+                'regency_name' => 'nullable|string|max:255',
+                'province_name' => 'nullable|string|max:255'
             ]);
 
             Log::info('API Registration validation passed', [
@@ -664,6 +667,10 @@ class AuthController extends Controller
                 'race_category' => $request->category,
                 'ticket_type_id' => $ticketType->id,
                 'whatsapp_number' => $phoneNumber,
+                // Location fields
+                'regency_id' => $request->regency_id,
+                'regency_name' => $request->regency_name,
+                'province_name' => $request->province_name,
                 // Set default values for required fields
                 'gender' => 'Laki-laki', // Default, user can update later
                 'birth_place' => 'Unknown',

@@ -81,6 +81,37 @@
                             @enderror
                             <p class="mt-2 text-sm text-gray-600">Minimal umur 10 tahun</p>
                         </div>
+
+                        <div>
+                            <label for="regency_search" class="block text-sm font-medium text-gray-700 mb-2">
+                                Asal Kota/Kabupaten <span class="text-red-500">*</span>
+                            </label>
+                            <div class="location-autocomplete-container">
+                                <input type="text" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('regency_name') border-red-500 @enderror" 
+                                       id="regency_search" 
+                                       name="regency_search"
+                                       value="{{ old('regency_name') }}" 
+                                       placeholder="Ketik nama kota/kabupaten..."
+                                       data-location-autocomplete
+                                       data-hidden-input="#regency_id"
+                                       autocomplete="off"
+                                       required>
+                                <input type="hidden" id="regency_id" name="regency_id" value="{{ old('regency_id') }}">
+                                <input type="hidden" id="regency_name" name="regency_name" value="{{ old('regency_name') }}">
+                                <input type="hidden" id="province_name" name="province_name" value="{{ old('province_name') }}">
+                            </div>
+                            @error('regency_name')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            @error('regency_id')
+                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            @enderror
+                            <p class="mt-2 text-sm text-gray-600">
+                                <i class="fas fa-info-circle mr-1"></i>
+                                Ketik minimal 2 karakter untuk mencari kota/kabupaten
+                            </p>
+                        </div>
                     </div>
 
                     <div class="mt-6">
@@ -267,28 +298,35 @@
 
                         <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
                             <div>
-                                <label for="emergency_contact_1" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Kontak Darurat 1 <span class="text-red-500">*</span>
+                                <label for="emergency_contact_name" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nama Kontak Darurat <span class="text-red-500">*</span>
                                 </label>
                                 <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_1') border-red-500 @enderror" 
-                                       id="emergency_contact_1" name="emergency_contact_1" value="{{ old('emergency_contact_1') }}" 
-                                       placeholder="Nama & No HP" required>
-                                @error('emergency_contact_1')
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_name') border-red-500 @enderror" 
+                                       id="emergency_contact_name" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}" 
+                                       placeholder="Nama kontak darurat" required>
+                                @error('emergency_contact_name')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
                             </div>
                             <div>
-                                <label for="emergency_contact_2" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Kontak Darurat 2
+                                <label for="emergency_contact_phone" class="block text-sm font-medium text-gray-700 mb-2">
+                                    Nomor Kontak Darurat <span class="text-red-500">*</span>
                                 </label>
-                                <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_2') border-red-500 @enderror" 
-                                       id="emergency_contact_2" name="emergency_contact_2" value="{{ old('emergency_contact_2') }}" 
-                                       placeholder="Nama & No HP">
-                                @error('emergency_contact_2')
+                                <input type="tel" 
+                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_phone') border-red-500 @enderror" 
+                                       id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}" 
+                                       placeholder="08xxxxxxxxxx" 
+                                       pattern="[0-9+\-\s]+"
+                                       title="Hanya angka, tanda +, -, dan spasi yang diperbolehkan"
+                                       required>
+                                @error('emergency_contact_phone')
                                     <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                                 @enderror
+                                <p class="mt-2 text-sm text-gray-600">
+                                    <i class="fas fa-info-circle mr-1"></i>
+                                    Format: 08xxxxxxxxxx atau +628xxxxxxxxxx
+                                </p>
                             </div>
                         </div>
                     </div>
@@ -387,7 +425,7 @@
                             <i class="fas fa-key text-indigo-600"></i>
                         </div>
                         <h2 class="text-xl font-semibold text-gray-800">Informasi Akun</h2>
-                    </div>
+                    </div
                     
                     <!-- Password Auto-Generation Info -->
                     <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
@@ -767,8 +805,8 @@ document.addEventListener('DOMContentLoaded', function() {
             address: formData.get('address'),
             jersey_size: formData.get('jersey_size'),
             whatsapp_number: formData.get('whatsapp_number'),
-            emergency_contact_1: formData.get('emergency_contact_1'),
-            emergency_contact_2: formData.get('emergency_contact_2'),
+            emergency_contact_name: formData.get('emergency_contact_name'),
+            emergency_contact_phone: formData.get('emergency_contact_phone'),
             group_community: formData.get('group_community'),
             blood_type: formData.get('blood_type'),
             occupation: formData.get('occupation'),
@@ -1205,6 +1243,62 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Initial submit button state check
     updateSubmitButtonState();
+
+    // Emergency contact phone validation
+    const emergencyPhoneInput = document.getElementById('emergency_contact_phone');
+    if (emergencyPhoneInput) {
+        emergencyPhoneInput.addEventListener('input', function() {
+            // Remove non-numeric characters except + - and space
+            let value = this.value.replace(/[^0-9+\-\s]/g, '');
+            
+            // Limit to 20 characters to accommodate international formats
+            if (value.length > 20) {
+                value = value.substring(0, 20);
+            }
+            
+            this.value = value;
+        });
+        
+        emergencyPhoneInput.addEventListener('keypress', function(e) {
+            // Allow only numbers, +, -, space, and control keys
+            const allowedChars = /[0-9+\-\s]/;
+            const controlKeys = ['Backspace', 'Delete', 'Tab', 'Escape', 'Enter', 'Home', 'End', 'ArrowLeft', 'ArrowRight'];
+            
+            if (!allowedChars.test(e.key) && !controlKeys.includes(e.key)) {
+                e.preventDefault();
+            }
+        });
+    }
+});
+</script>
+
+<!-- Location Autocomplete CSS -->
+<link rel="stylesheet" href="{{ asset('css/location-autocomplete.css') }}">
+
+<!-- Location Autocomplete JS -->
+<script src="{{ asset('js/location-autocomplete.js') }}"></script>
+
+<script>
+// Initialize location autocomplete after page load
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize autocomplete for regency search
+    const regencySearchInput = document.getElementById('regency_search');
+    
+    if (regencySearchInput) {
+        const autocomplete = new LocationAutocomplete('#regency_search');
+        
+        // Listen for location selection
+        regencySearchInput.addEventListener('locationSelected', function(e) {
+            const selection = e.detail;
+            
+            // Update hidden fields
+            document.getElementById('regency_id').value = selection.id;
+            document.getElementById('regency_name').value = selection.name;
+            document.getElementById('province_name').value = selection.province_name;
+            
+            console.log('Location selected:', selection);
+        });
+    }
 });
 </script>
     </div>

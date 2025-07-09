@@ -1,0 +1,111 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Location Autocomplete</title>
+    <link rel="stylesheet" href="/css/location-autocomplete.css">
+    <style>
+        body { 
+            padding: 20px; 
+            font-family: Arial, sans-serif; 
+        }
+        .container { 
+            max-width: 500px; 
+            margin: 0 auto; 
+        }
+        .form-group { 
+            margin-bottom: 20px; 
+        }
+        label { 
+            display: block; 
+            margin-bottom: 5px; 
+            font-weight: bold; 
+        }
+        input[type="text"] { 
+            width: 100%; 
+            padding: 10px; 
+            border: 2px solid #ddd; 
+            border-radius: 4px; 
+        }
+        .location-autocomplete-container {
+            position: relative;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Test Location Autocomplete</h1>
+        
+        <div class="form-group">
+            <label for="regency_search">Kota/Kabupaten:</label>
+            <div class="location-autocomplete-container">
+                <input type="text" 
+                       id="regency_search" 
+                       name="regency_search"
+                       placeholder="Ketik nama kota/kabupaten (min 2 karakter)..."
+                       data-location-autocomplete
+                       data-hidden-input="#regency_id"
+                       autocomplete="off">
+                <input type="hidden" id="regency_id" name="regency_id">
+                <input type="hidden" id="regency_name" name="regency_name">
+                <input type="hidden" id="province_name" name="province_name">
+            </div>
+        </div>
+        
+        <div id="debug-info">
+            <h3>Debug Info:</h3>
+            <p>Regency ID: <span id="debug-id">-</span></p>
+            <p>Regency Name: <span id="debug-name">-</span></p>
+            <p>Province Name: <span id="debug-province">-</span></p>
+        </div>
+        
+        <div id="api-test">
+            <h3>API Test:</h3>
+            <button onclick="testAPI()">Test API Manually</button>
+            <div id="api-result"></div>
+        </div>
+    </div>
+
+    <script src="/js/location-autocomplete.js"></script>
+    <script>
+        // Test API function
+        function testAPI() {
+            fetch('/api/location/search?q=jakarta')
+                .then(response => response.json())
+                .then(data => {
+                    document.getElementById('api-result').innerHTML = 
+                        '<pre>' + JSON.stringify(data, null, 2) + '</pre>';
+                })
+                .catch(error => {
+                    document.getElementById('api-result').innerHTML = 
+                        '<div style="color: red;">Error: ' + error.message + '</div>';
+                });
+        }
+        
+        // Debug location selection
+        document.addEventListener('DOMContentLoaded', function() {
+            const input = document.getElementById('regency_search');
+            
+            if (input) {
+                input.addEventListener('locationSelected', function(e) {
+                    const selection = e.detail;
+                    
+                    // Update debug info
+                    document.getElementById('debug-id').textContent = selection.id;
+                    document.getElementById('debug-name').textContent = selection.name;
+                    document.getElementById('debug-province').textContent = selection.province_name;
+                    
+                    console.log('Location selected:', selection);
+                });
+                
+                console.log('Location autocomplete initialized for:', input.id);
+            } else {
+                console.error('Input element not found');
+            }
+        });
+        
+        // Debug console messages
+        console.log('Test page loaded');
+        console.log('LocationAutocomplete available:', typeof LocationAutocomplete !== 'undefined');
+    </script>
+</body>
+</html>
