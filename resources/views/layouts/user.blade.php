@@ -25,20 +25,28 @@
                     <a href="{{ route('profile.show') }}" class="text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium {{ request()->routeIs('profile.show') ? 'text-blue-600 bg-blue-50' : '' }}">
                         <i class="fas fa-user mr-2"></i>Profile
                     </a>
-                    <div class="relative group">
-                        <button class="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium">
+                    <div class="relative">
+                        <button id="userMenuButton" class="flex items-center text-gray-700 hover:text-blue-600 px-3 py-2 rounded-md text-sm font-medium focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2">
                             <i class="fas fa-user-circle mr-2"></i>
                             {{ auth()->user()->name }}
-                            <i class="fas fa-chevron-down ml-2"></i>
+                            <i class="fas fa-chevron-down ml-2 transition-transform duration-200" id="chevronIcon"></i>
                         </button>
-                        <div class="absolute right-0 mt-2 w-48 bg-white rounded-md shadow-lg py-1 z-50 hidden group-hover:block">
-                            <a href="{{ route('profile.show') }}" class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                <i class="fas fa-user mr-2"></i>Profile
+                        <div id="userDropdown" class="absolute right-0 mt-2 w-56 bg-white rounded-lg shadow-lg py-2 z-50 border border-gray-200 hidden">
+                            <div class="px-4 py-2 border-b border-gray-100">
+                                <p class="text-sm font-medium text-gray-900">{{ auth()->user()->name }}</p>
+                                <p class="text-sm text-gray-500">{{ auth()->user()->email }}</p>
+                            </div>
+                            <a href="{{ route('profile.show') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-user mr-3"></i>Lihat Profile
                             </a>
+                            <a href="{{ route('profile.edit') }}" class="block px-4 py-3 text-sm text-gray-700 hover:bg-blue-50 hover:text-blue-600 transition-colors">
+                                <i class="fas fa-user-edit mr-3"></i>Edit Profile
+                            </a>
+                            <hr class="my-1">
                             <form method="POST" action="{{ route('logout') }}" class="block">
                                 @csrf
-                                <button type="submit" class="w-full text-left px-4 py-2 text-sm text-gray-700 hover:bg-gray-100">
-                                    <i class="fas fa-sign-out-alt mr-2"></i>Logout
+                                <button type="submit" class="w-full text-left px-4 py-3 text-sm text-red-600 hover:bg-red-50 transition-colors focus:outline-none focus:bg-red-50">
+                                    <i class="fas fa-sign-out-alt mr-3"></i>Logout
                                 </button>
                             </form>
                         </div>
@@ -81,5 +89,86 @@
             @yield('content')
         </div>
     </main>
+
+    <script>
+        // User dropdown functionality
+        document.addEventListener('DOMContentLoaded', function() {
+            const userMenuButton = document.getElementById('userMenuButton');
+            const userDropdown = document.getElementById('userDropdown');
+            const chevronIcon = document.getElementById('chevronIcon');
+            let isDropdownOpen = false;
+
+            // Toggle dropdown when button is clicked
+            userMenuButton.addEventListener('click', function(e) {
+                e.stopPropagation();
+                toggleDropdown();
+            });
+
+            // Close dropdown when clicking outside
+            document.addEventListener('click', function(e) {
+                if (!userMenuButton.contains(e.target) && !userDropdown.contains(e.target)) {
+                    closeDropdown();
+                }
+            });
+
+            // Close dropdown when pressing Escape key
+            document.addEventListener('keydown', function(e) {
+                if (e.key === 'Escape') {
+                    closeDropdown();
+                }
+            });
+
+            // Prevent dropdown from closing when clicking inside it
+            userDropdown.addEventListener('click', function(e) {
+                e.stopPropagation();
+            });
+
+            function toggleDropdown() {
+                if (isDropdownOpen) {
+                    closeDropdown();
+                } else {
+                    openDropdown();
+                }
+            }
+
+            function openDropdown() {
+                userDropdown.classList.remove('hidden');
+                chevronIcon.style.transform = 'rotate(180deg)';
+                isDropdownOpen = true;
+                
+                // Add focus trap for accessibility
+                userDropdown.focus();
+            }
+
+            function closeDropdown() {
+                userDropdown.classList.add('hidden');
+                chevronIcon.style.transform = 'rotate(0deg)';
+                isDropdownOpen = false;
+            }
+
+            // Add hover delay for better UX
+            let hoverTimeout;
+            
+            userMenuButton.addEventListener('mouseenter', function() {
+                clearTimeout(hoverTimeout);
+                if (!isDropdownOpen) {
+                    hoverTimeout = setTimeout(openDropdown, 200); // 200ms delay
+                }
+            });
+
+            userMenuButton.addEventListener('mouseleave', function() {
+                clearTimeout(hoverTimeout);
+            });
+
+            // Keep dropdown open when hovering over it
+            userDropdown.addEventListener('mouseenter', function() {
+                clearTimeout(hoverTimeout);
+            });
+
+            userDropdown.addEventListener('mouseleave', function() {
+                hoverTimeout = setTimeout(closeDropdown, 300); // 300ms delay before closing
+            });
+        });
+    </script>
 </body>
 </html>

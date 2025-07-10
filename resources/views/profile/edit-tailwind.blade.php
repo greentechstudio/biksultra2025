@@ -74,12 +74,16 @@
 
                     <div>
                         <label for="email" class="block text-sm font-medium text-gray-700">Email <span class="text-red-500">*</span></label>
-                        <input type="email" id="email" name="email" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('email') border-red-500 @enderror"
+                        <input type="email" id="email" name="email" required readonly
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed @error('email') border-red-500 @enderror"
                                value="{{ old('email', $user->email) }}">
                         @error('email')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        <p class="mt-2 text-sm text-gray-500">
+                            <i class="fas fa-lock mr-1"></i>
+                            Email tidak dapat diubah
+                        </p>
                     </div>
 
                     <div>
@@ -94,14 +98,17 @@
 
                     <div>
                         <label for="whatsapp_number" class="block text-sm font-medium text-gray-700">WhatsApp <span class="text-red-500">*</span></label>
-                        <input type="tel" id="whatsapp_number" name="whatsapp_number" required
-                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('whatsapp_number') border-red-500 @enderror"
+                        <input type="tel" id="whatsapp_number" name="whatsapp_number" required readonly
+                               class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed @error('whatsapp_number') border-red-500 @enderror"
                                value="{{ old('whatsapp_number', $user->whatsapp_number) }}"
                                placeholder="62812345678">
                         @error('whatsapp_number')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
-                        <p class="mt-2 text-sm text-gray-500">Format: 62812345678 (tanpa tanda +)</p>
+                        <p class="mt-2 text-sm text-gray-500">
+                            <i class="fas fa-lock mr-1"></i>
+                            Nomor WhatsApp tidak dapat diubah
+                        </p>
                     </div>
 
                     <div>
@@ -181,20 +188,30 @@
 
                     <div>
                         <label for="race_category" class="block text-sm font-medium text-gray-700">Kategori Lomba <span class="text-red-500">*</span></label>
-                        <select id="race_category" name="race_category" required
-                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('race_category') border-red-500 @enderror">
+                        <select id="race_category" name="race_category" required disabled
+                                class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm bg-gray-100 text-gray-600 cursor-not-allowed @error('race_category') border-red-500 @enderror">
                             <option value="">Pilih Kategori Lomba</option>
-                            @foreach($raceCategories as $category)
-                                <option value="{{ $category->name }}" 
-                                        data-price="{{ $category->price }}"
-                                        {{ old('race_category', $user->race_category) == $category->name ? 'selected' : '' }}>
-                                    {{ $category->name }} - Rp {{ number_format($category->price, 0, ',', '.') }}
-                                </option>
-                            @endforeach
+                            @if(isset($raceCategories))
+                                @foreach($raceCategories as $category)
+                                    <option value="{{ $category->name }}" 
+                                            data-price="{{ $category->price }}"
+                                            {{ old('race_category', $user->race_category) == $category->name ? 'selected' : '' }}>
+                                        {{ $category->name }} - Rp {{ number_format($category->price, 0, ',', '.') }}
+                                    </option>
+                                @endforeach
+                            @else
+                                <option value="{{ $user->race_category }}" selected>{{ $user->race_category }}</option>
+                            @endif
                         </select>
+                        <!-- Hidden input to ensure value is submitted -->
+                        <input type="hidden" name="race_category" value="{{ $user->race_category }}">
                         @error('race_category')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
                         @enderror
+                        <p class="mt-2 text-sm text-gray-500">
+                            <i class="fas fa-lock mr-1"></i>
+                            Kategori lomba tidak dapat diubah
+                        </p>
                     </div>
 
                     <div>
@@ -217,11 +234,20 @@
                         <select id="jersey_size" name="jersey_size" required
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('jersey_size') border-red-500 @enderror">
                             <option value="">Pilih Ukuran Jersey</option>
-                            @foreach($jerseySizes as $size)
-                                <option value="{{ $size->size }}" {{ old('jersey_size', $user->jersey_size) == $size->size ? 'selected' : '' }}>
-                                    {{ $size->size }} ({{ $size->description }})
-                                </option>
-                            @endforeach
+                            @if(isset($jerseySizes) && count($jerseySizes) > 0)
+                                @foreach($jerseySizes as $size)
+                                    <option value="{{ $size->size }}" {{ old('jersey_size', $user->jersey_size) == $size->size ? 'selected' : '' }}>
+                                        {{ $size->size }} ({{ $size->description }})
+                                    </option>
+                                @endforeach
+                            @else
+                                <!-- Fallback jersey sizes if not provided by controller -->
+                                <option value="S" {{ old('jersey_size', $user->jersey_size) == 'S' ? 'selected' : '' }}>S</option>
+                                <option value="M" {{ old('jersey_size', $user->jersey_size) == 'M' ? 'selected' : '' }}>M</option>
+                                <option value="L" {{ old('jersey_size', $user->jersey_size) == 'L' ? 'selected' : '' }}>L</option>
+                                <option value="XL" {{ old('jersey_size', $user->jersey_size) == 'XL' ? 'selected' : '' }}>XL</option>
+                                <option value="XXL" {{ old('jersey_size', $user->jersey_size) == 'XXL' ? 'selected' : '' }}>XXL</option>
+                            @endif
                         </select>
                         @error('jersey_size')
                             <p class="mt-2 text-sm text-red-600">{{ $message }}</p>

@@ -53,11 +53,15 @@
 
                                 <div class="mb-3">
                                     <label for="email" class="form-label">Email <span class="text-danger">*</span></label>
-                                    <input type="email" class="form-control @error('email') is-invalid @enderror" 
-                                           id="email" name="email" value="{{ old('email', $user->email) }}" required>
+                                    <input type="email" class="form-control bg-light text-muted @error('email') is-invalid @enderror" 
+                                           id="email" name="email" value="{{ old('email', $user->email) }}" required readonly>
                                     @error('email')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Email tidak dapat diubah
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -72,12 +76,16 @@
 
                                 <div class="mb-3">
                                     <label for="whatsapp_number" class="form-label">No. WhatsApp <span class="text-danger">*</span></label>
-                                    <input type="text" class="form-control @error('whatsapp_number') is-invalid @enderror" 
+                                    <input type="text" class="form-control bg-light text-muted @error('whatsapp_number') is-invalid @enderror" 
                                            id="whatsapp_number" name="whatsapp_number" value="{{ old('whatsapp_number', $user->whatsapp_number) }}" 
-                                           required placeholder="Contoh: 6281234567890">
+                                           required readonly placeholder="Contoh: 6281234567890">
                                     @error('whatsapp_number')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Nomor WhatsApp tidak dapat diubah
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -154,19 +162,29 @@
 
                                 <div class="mb-3">
                                     <label for="race_category" class="form-label">Kategori Lomba <span class="text-danger">*</span></label>
-                                    <select class="form-select @error('race_category') is-invalid @enderror" id="race_category" name="race_category" required>
+                                    <select class="form-select bg-light text-muted @error('race_category') is-invalid @enderror" id="race_category" name="race_category" required disabled>
                                         <option value="">Pilih Kategori Lomba</option>
-                                        @foreach($raceCategories as $category)
-                                            <option value="{{ $category->name }}" 
-                                                    data-price="{{ $category->price }}"
-                                                    {{ old('race_category', $user->race_category) == $category->name ? 'selected' : '' }}>
-                                                {{ $category->name }} - Rp {{ number_format($category->price, 0, ',', '.') }}
-                                            </option>
-                                        @endforeach
+                                        @if(isset($raceCategories))
+                                            @foreach($raceCategories as $category)
+                                                <option value="{{ $category->name }}" 
+                                                        data-price="{{ $category->price }}"
+                                                        {{ old('race_category', $user->race_category) == $category->name ? 'selected' : '' }}>
+                                                    {{ $category->name }} - Rp {{ number_format($category->price, 0, ',', '.') }}
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            <option value="{{ $user->race_category }}" selected>{{ $user->race_category }}</option>
+                                        @endif
                                     </select>
+                                    <!-- Hidden input to ensure value is submitted -->
+                                    <input type="hidden" name="race_category" value="{{ $user->race_category }}">
                                     @error('race_category')
                                         <div class="invalid-feedback">{{ $message }}</div>
                                     @enderror
+                                    <div class="form-text">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Kategori lomba tidak dapat diubah
+                                    </div>
                                 </div>
 
                                 <div class="mb-3">
@@ -187,11 +205,20 @@
                                     <label for="jersey_size" class="form-label">Ukuran Jersey <span class="text-danger">*</span></label>
                                     <select class="form-select @error('jersey_size') is-invalid @enderror" id="jersey_size" name="jersey_size" required>
                                         <option value="">Pilih Ukuran Jersey</option>
-                                        @foreach($jerseySizes as $size)
-                                            <option value="{{ $size->size }}" {{ old('jersey_size', $user->jersey_size) == $size->size ? 'selected' : '' }}>
-                                                {{ $size->size }} ({{ $size->description }})
-                                            </option>
-                                        @endforeach
+                                        @if(isset($jerseySizes) && count($jerseySizes) > 0)
+                                            @foreach($jerseySizes as $size)
+                                                <option value="{{ $size->size }}" {{ old('jersey_size', $user->jersey_size) == $size->size ? 'selected' : '' }}>
+                                                    {{ $size->size }} ({{ $size->description }})
+                                                </option>
+                                            @endforeach
+                                        @else
+                                            <!-- Fallback jersey sizes if not provided by controller -->
+                                            <option value="S" {{ old('jersey_size', $user->jersey_size) == 'S' ? 'selected' : '' }}>S</option>
+                                            <option value="M" {{ old('jersey_size', $user->jersey_size) == 'M' ? 'selected' : '' }}>M</option>
+                                            <option value="L" {{ old('jersey_size', $user->jersey_size) == 'L' ? 'selected' : '' }}>L</option>
+                                            <option value="XL" {{ old('jersey_size', $user->jersey_size) == 'XL' ? 'selected' : '' }}>XL</option>
+                                            <option value="XXL" {{ old('jersey_size', $user->jersey_size) == 'XXL' ? 'selected' : '' }}>XXL</option>
+                                        @endif
                                     </select>
                                     @error('jersey_size')
                                         <div class="invalid-feedback">{{ $message }}</div>
