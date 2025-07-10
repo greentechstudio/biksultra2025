@@ -500,10 +500,18 @@
             align-items: center;
             position: relative;
             z-index: 2;
+            width: 100%;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .hero-text {
+            flex: 1;
+            padding-right: 20px;
         }
 
         .hero-text h1 {
-            font-size: var(--text-6xl);
+            font-size: clamp(2.5rem, 6vw, 4rem);
             font-weight: var(--font-weight-black);
             margin-bottom: 32px;
             text-transform: uppercase;
@@ -520,7 +528,7 @@
         }
 
         .hero-text .date {
-            font-size: var(--text-2xl);
+            font-size: clamp(1.125rem, 3vw, 1.5rem);
             margin-bottom: 40px;
             opacity: 0.95;
             font-weight: var(--font-weight-semibold);
@@ -533,7 +541,7 @@
             color: white;
             padding: 18px 36px;
             border-radius: var(--border-radius-xl);
-            font-size: var(--text-lg);
+            font-size: clamp(1rem, 2.5vw, 1.125rem);
             font-weight: var(--font-weight-bold);
             display: inline-block;
             margin-bottom: 48px;
@@ -554,7 +562,7 @@
             padding: 20px 50px;
             border: none;
             border-radius: var(--border-radius-xl);
-            font-size: var(--text-lg);
+            font-size: clamp(1rem, 2.5vw, 1.125rem);
             font-weight: var(--font-weight-bold);
             cursor: pointer;
             transition: var(--transition);
@@ -590,17 +598,23 @@
         }
 
         .hero-image {
+            flex: 1;
             text-align: center;
             position: relative;
+            display: flex;
+            justify-content: center;
+            align-items: center;
         }
 
         .runner-image {
-            width: 100%;
-            max-width: 450px;
+            /* width: 100%; */
+            max-width: 734px;
             height: auto;
             border-radius: var(--border-radius-lg);
-            box-shadow: var(--shadow-lg);
+            box-shadow: 19px 20px 20px 0px rgb(0 0 0 / 12%);
             transition: var(--transition);
+            object-fit: cover;
+            /* aspect-ratio: 4/5; */
         }
 
         .runner-image:hover {
@@ -1190,13 +1204,60 @@
         }
 
         /* Responsive */
+        
+        /* Desktop large (1200px+) */
+        @media (min-width: 1200px) {
+            .hero-content {
+                max-width: 1400px;
+                gap: 100px;
+            }
+            
+            .hero-text {
+                padding-right: 40px;
+            }
+        }
+
+        /* Tablet landscape and small desktop (1024px) */
         @media (max-width: 1024px) {
             .container {
                 padding: 0 20px;
             }
             
+            .hero {
+                padding: 120px 0 80px;
+                min-height: 90vh;
+            }
+            
             .hero-content {
                 gap: 60px;
+                max-width: 900px;
+            }
+            
+            .hero-text {
+                padding-right: 15px;
+            }
+            
+            .hero-text h1 {
+                font-size: clamp(2.25rem, 5.5vw, 3.5rem);
+                margin-bottom: 28px;
+            }
+            
+            .hero-text .date {
+                font-size: clamp(1rem, 2.8vw, 1.375rem);
+                margin-bottom: 35px;
+            }
+            
+            .hashtag {
+                padding: 16px 30px;
+                margin-bottom: 40px;
+            }
+            
+            .cta-button {
+                padding: 18px 40px;
+            }
+            
+            .runner-image {
+                max-width: 380px;
             }
             
             .footer-content {
@@ -1213,6 +1274,7 @@
             }
         }
 
+        /* iPad Portrait and larger mobile (768px) */
         @media (max-width: 768px) {
             .nav-links {
                 display: none;
@@ -1223,18 +1285,50 @@
             }
 
             .hero {
-                padding: 120px 0 80px;
-                min-height: 90vh;
+                padding: 100px 0 60px;
+                min-height: 85vh;
             }
 
             .hero-content {
                 grid-template-columns: 1fr;
                 text-align: center;
-                gap: 48px;
+                gap: 40px;
+                max-width: 600px;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                order: 1;
             }
 
             .hero-text h1 {
-                font-size: clamp(2rem, 12vw, 3.5rem);
+                font-size: clamp(2rem, 8vw, 3rem);
+                margin-bottom: 24px;
+            }
+            
+            .hero-text .date {
+                font-size: clamp(1rem, 4vw, 1.25rem);
+                margin-bottom: 30px;
+            }
+            
+            .hashtag {
+                padding: 14px 28px;
+                margin-bottom: 35px;
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+            }
+            
+            .cta-button {
+                padding: 16px 35px;
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+            }
+            
+            .hero-image {
+                order: 2;
+            }
+            
+            .runner-image {
+                max-width: 422px;
+                /* aspect-ratio: 3/4; */
             }
 
             .registration-content {
@@ -1288,9 +1382,47 @@
             }
         }
 
+        /* Large mobile (480px) */
         @media (max-width: 480px) {
             .container {
                 padding: 0 16px;
+            }
+            
+            .hero {
+                padding: 80px 0 50px;
+                min-height: 80vh;
+            }
+            
+            .hero-content {
+                gap: 32px;
+                max-width: 400px;
+            }
+            
+            .hero-text h1 {
+                font-size: clamp(1.75rem, 9vw, 2.5rem);
+                margin-bottom: 20px;
+            }
+            
+            .hero-text .date {
+                font-size: clamp(0.9rem, 4.5vw, 1.125rem);
+                margin-bottom: 25px;
+            }
+            
+            .hashtag {
+                padding: 12px 24px;
+                margin-bottom: 30px;
+                font-size: clamp(0.85rem, 4vw, 0.95rem);
+            }
+            
+            .cta-button {
+                padding: 14px 28px;
+                font-size: clamp(0.85rem, 4vw, 0.95rem);
+                gap: 12px;
+            }
+            
+            .runner-image {
+                max-width: 422px;
+                /* aspect-ratio: 3/4; */
             }
 
             .logo-text h1 {
@@ -1305,11 +1437,6 @@
                 width: 48px;
                 height: 48px;
                 font-size: 1.25rem;
-            }
-
-            .cta-button {
-                padding: 16px 32px;
-                font-size: 1rem;
             }
 
             .registration-form {
@@ -1336,11 +1463,49 @@
             }
         }
 
-        /* Extra Small Mobile (320px and below) */
+        /* Small mobile (360px and below) */
         @media (max-width: 360px) {
             .container {
                 padding: 0 12px;
                 max-width: 100%;
+            }
+            
+            .hero {
+                padding: 70px 0 40px;
+                min-height: 75vh;
+            }
+            
+            .hero-content {
+                gap: 28px;
+                max-width: 320px;
+            }
+            
+            .hero-text h1 {
+                font-size: clamp(1.5rem, 10vw, 2.25rem);
+                margin-bottom: 16px;
+            }
+            
+            .hero-text .date {
+                font-size: clamp(0.85rem, 5vw, 1rem);
+                margin-bottom: 20px;
+            }
+            
+            .hashtag {
+                padding: 10px 20px;
+                margin-bottom: 25px;
+                font-size: clamp(0.8rem, 4.5vw, 0.9rem);
+                transform: rotate(0deg);
+            }
+            
+            .cta-button {
+                padding: 12px 24px;
+                font-size: clamp(0.8rem, 4.5vw, 0.9rem);
+                gap: 10px;
+            }
+            
+            .runner-image {
+                max-width: 240px;
+                /* aspect-ratio: 3/4; */
             }
 
             .registration {

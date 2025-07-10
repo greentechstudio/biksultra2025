@@ -9,7 +9,7 @@
                 <a href="#registration" class="cta-button">DAFTAR SEKARANG</a>
             </div>
             <div class="hero-image">
-                <img src="/placeholder.svg?height=500&width=400" alt="Runner" class="runner-image">
+                <img src="{{ asset('images/depan.png') }}" alt="Amazing Sultra Run - Runner Image" class="runner-image" loading="eager">
             </div>
         </div>
     </div>

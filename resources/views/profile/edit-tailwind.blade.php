@@ -162,8 +162,8 @@
                                 class="mt-1 block w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 @error('blood_type') border-red-500 @enderror">
                             <option value="">Pilih Golongan Darah</option>
                             @foreach($bloodTypes as $bloodType)
-                                <option value="{{ $bloodType->type }}" {{ old('blood_type', $user->blood_type) == $bloodType->type ? 'selected' : '' }}>
-                                    {{ $bloodType->type }}
+                                <option value="{{ $bloodType->name }}" {{ old('blood_type', $user->blood_type) == $bloodType->name ? 'selected' : '' }}>
+                                    {{ $bloodType->name }}
                                 </option>
                             @endforeach
                         </select>

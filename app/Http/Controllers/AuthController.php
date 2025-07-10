@@ -616,6 +616,9 @@ class AuthController extends Controller
                 'province_name' => 'nullable|string|max:255'
             ]);
 
+            // SECURITY: Check for suspicious price-related parameters
+            $this->detectPriceManipulationAttempt($request);
+
             Log::info('API Registration validation passed', [
                 'validated_data' => $validatedData,
                 'ip' => $request->ip()
@@ -809,11 +812,14 @@ class AuthController extends Controller
                 ]);
             }
 
-            // Create Xendit payment invoice
+            // Create Xendit payment invoice with security validation
             try {
+                // SECURITY: Validate price before creating payment
+                $this->validateUserTicketPrice($user, $ticketType);
+                
                 $paymentResult = $this->xenditService->createInvoice(
                     $user,
-                    null, // Use race category price
+                    null, // Never pass custom amount - always use database price
                     'Amazing Sultra Run Registration Fee - ' . $user->name
                 );
 
@@ -1396,6 +1402,107 @@ class AuthController extends Controller
                 'trace' => $e->getTraceAsString()
             ]);
             return null;
+        }
+    }
+
+    /**
+     * SECURITY: Validate user's ticket price against database
+     * Prevents price manipulation attacks
+     */
+    private function validateUserTicketPrice($user, $ticketType)
+    {
+        try {
+            // Get current ticket type price from database
+            $currentTicketType = \App\Models\TicketType::getCurrentTicketType($user->race_category);
+            
+            if (!$currentTicketType) {
+                throw new \Exception('No active ticket type found for category: ' . $user->race_category);
+            }
+            
+            // Compare with provided ticket type
+            if ($ticketType->id !== $currentTicketType->id) {
+                \Log::warning('Ticket type mismatch detected', [
+                    'user_id' => $user->id,
+                    'provided_ticket_id' => $ticketType->id,
+                    'current_ticket_id' => $currentTicketType->id,
+                    'category' => $user->race_category
+                ]);
+                throw new \Exception('Ticket type validation failed');
+            }
+            
+            // Validate price hasn't changed
+            if ($ticketType->price !== $currentTicketType->price) {
+                \Log::warning('Price change detected during registration', [
+                    'user_id' => $user->id,
+                    'original_price' => $ticketType->price,
+                    'current_price' => $currentTicketType->price,
+                    'ticket_type_id' => $ticketType->id
+                ]);
+                throw new \Exception('Price validation failed - price may have changed');
+            }
+            
+            // Validate user's stored registration fee matches ticket price
+            if ($user->registration_fee && $user->registration_fee != $ticketType->price) {
+                \Log::warning('User registration fee mismatch', [
+                    'user_id' => $user->id,
+                    'stored_fee' => $user->registration_fee,
+                    'ticket_price' => $ticketType->price,
+                    'ticket_type_id' => $ticketType->id
+                ]);
+                // Update user's registration fee to match ticket price
+                $user->update(['registration_fee' => $ticketType->price]);
+            }
+            
+            \Log::info('Ticket price validation successful', [
+                'user_id' => $user->id,
+                'ticket_type_id' => $ticketType->id,
+                'validated_price' => $ticketType->price
+            ]);
+            
+        } catch (\Exception $e) {
+            \Log::error('Ticket price validation failed', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'ip' => request()->ip(),
+                'user_agent' => request()->userAgent()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * SECURITY: Detect price manipulation attempts
+     */
+    private function detectPriceManipulationAttempt($request)
+    {
+        // List of suspicious parameters that shouldn't be in registration request
+        $suspiciousParams = [
+            'price', 'amount', 'cost', 'fee', 'payment_amount', 
+            'ticket_price', 'registration_fee', 'total', 'subtotal',
+            'discount', 'coupon', 'promo_code', 'voucher'
+        ];
+        
+        $allInput = $request->all();
+        $foundSuspicious = [];
+        
+        foreach ($suspiciousParams as $param) {
+            if (array_key_exists($param, $allInput)) {
+                $foundSuspicious[$param] = $allInput[$param];
+            }
+        }
+        
+        if (!empty($foundSuspicious)) {
+            \Log::warning('Price manipulation attempt detected', [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'email' => $request->email,
+                'suspicious_params' => $foundSuspicious,
+                'all_input' => $allInput,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
+            // For now, just log. In production, you might want to block or challenge the request
+            // throw new \Exception('Invalid request parameters detected');
         }
     }
 

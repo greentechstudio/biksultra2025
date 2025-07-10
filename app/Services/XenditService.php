@@ -40,10 +40,24 @@ class XenditService
                 throw new \Exception('Xendit API key is not configured');
             }
             
-            // Get amount from user's race category if not provided
-            if ($amount === null) {
-                $amount = $user->registration_fee;
+            // SECURITY: Always validate price against database - NEVER trust client input
+            $officialAmount = $this->validateAndGetOfficialPrice($user);
+            
+            // If amount is provided, validate it matches official price
+            if ($amount !== null && $amount !== $officialAmount) {
+                \Log::warning('Price manipulation attempt detected', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'provided_amount' => $amount,
+                    'official_amount' => $officialAmount,
+                    'ip' => request()->ip(),
+                    'user_agent' => request()->userAgent()
+                ]);
+                throw new \Exception('Price manipulation detected. Transaction blocked.');
             }
+            
+            // Use official price from database
+            $amount = $officialAmount;
             
             $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
             
@@ -276,6 +290,60 @@ class XenditService
                 'payload' => $payload
             ]);
             return false;
+        }
+    }
+
+    /**
+     * SECURITY: Validate and get official price from database
+     * This prevents price manipulation attacks
+     */
+    private function validateAndGetOfficialPrice(User $user): float
+    {
+        try {
+            // Get current ticket type for user's category
+            $ticketType = \App\Models\TicketType::getCurrentTicketType($user->race_category);
+            
+            if (!$ticketType) {
+                // Fallback to user's stored registration fee if ticket type not found
+                if ($user->registration_fee && $user->registration_fee > 0) {
+                    \Log::info('Using fallback registration fee for user', [
+                        'user_id' => $user->id,
+                        'category' => $user->race_category,
+                        'fallback_fee' => $user->registration_fee
+                    ]);
+                    return (float) $user->registration_fee;
+                }
+                throw new \Exception('No valid ticket type found for category: ' . $user->race_category);
+            }
+            
+            // Validate ticket is still active and has quota
+            if (!$ticketType->isCurrentlyActive()) {
+                throw new \Exception('Ticket type is no longer active or quota exceeded');
+            }
+            
+            $officialPrice = (float) $ticketType->price;
+            
+            // Additional sanity check
+            if ($officialPrice <= 0) {
+                throw new \Exception('Invalid ticket price: ' . $officialPrice);
+            }
+            
+            \Log::info('Official price validated', [
+                'user_id' => $user->id,
+                'category' => $user->race_category,
+                'ticket_type_id' => $ticketType->id,
+                'official_price' => $officialPrice
+            ]);
+            
+            return $officialPrice;
+            
+        } catch (\Exception $e) {
+            \Log::error('Price validation failed', [
+                'user_id' => $user->id,
+                'category' => $user->race_category,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
         }
     }
 }

@@ -16,10 +16,17 @@ return Application::configure(basePath: dirname(__DIR__))
             'role' => \App\Http\Middleware\CheckRole::class,
             'guest' => \App\Http\Middleware\RedirectIfAuthenticated::class,
             'timezone' => \App\Http\Middleware\SetTimezone::class,
+            'prevent.price.manipulation' => \App\Http\Middleware\PreventPriceManipulation::class,
         ]);
         
         // Add timezone middleware globally
         $middleware->append(\App\Http\Middleware\SetTimezone::class);
+        
+        // Add price manipulation detection to registration endpoints only
+        // (No rate limiting to allow legitimate bulk registrations)
+        $middleware->api(prepend: [
+            \App\Http\Middleware\PreventPriceManipulation::class,
+        ]);
         
         // Exclude webhook routes from CSRF verification
         $middleware->validateCsrfTokens(except: [

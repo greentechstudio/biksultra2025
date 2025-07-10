@@ -172,4 +172,27 @@ class TicketType extends Model
     {
         return $this->hasMany(User::class);
     }
+
+    /**
+     * Boot method to add model events for price auditing
+     */
+    protected static function boot()
+    {
+        parent::boot();
+        
+        // Log price changes
+        static::updating(function ($ticketType) {
+            if ($ticketType->isDirty('price')) {
+                \App\Models\PriceAuditLog::logPriceChange(
+                    'ticket_type',
+                    $ticketType->id,
+                    'price',
+                    $ticketType->getOriginal('price'),
+                    $ticketType->price,
+                    auth()->id(),
+                    'Ticket type price update'
+                );
+            }
+        });
+    }
 }

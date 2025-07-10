@@ -339,11 +339,26 @@
     <div class="w-full max-w-4xl mx-auto">
         <div class="glass-effect rounded-2xl overflow-hidden form-card">
             <!-- Header -->
-            <div class="custom-gradient-header text-white p-6 text-center">
-                <h1 class="text-3xl font-bold mb-2">
-                    <i class="fas fa-running mr-3"></i>Registrasi Event Lari
-                </h1>
-                <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+            <div class="custom-gradient-header text-white p-6">
+                <div class="flex items-center justify-between">
+                    <!-- Logo Kiri -->
+                    <div class="flex-shrink-0">
+                        <img src="{{ asset('images/logoprov.png') }}" alt="Logo Provinsi" class="h-16 w-auto object-contain">
+                    </div>
+                    
+                    <!-- Konten Tengah -->
+                    <div class="text-center flex-1 mx-6">
+                        <h1 class="text-3xl font-bold mb-2">
+                            <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+                        </h1>
+                        <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+                    </div>
+                    
+                    <!-- Logo Kanan -->
+                    <div class="flex-shrink-0">
+                        <img src="{{ asset('images/pesonaindonesia.png') }}" alt="Pesona Indonesia" class="h-16 w-auto object-contain">
+                    </div>
+                </div>
             </div>
             
             <!-- Form Content -->

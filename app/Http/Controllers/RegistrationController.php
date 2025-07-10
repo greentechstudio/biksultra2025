@@ -84,16 +84,34 @@ class RegistrationController extends Controller
             'category' => 'required|in:5K,10K,21K'
         ]);
 
+        // SECURITY: Check for price manipulation attempts
+        $this->detectPriceManipulationAttempt($request);
+
         try {
             DB::beginTransaction();
 
-            // Get current ticket type
-            $ticketType = TicketType::getCurrentTicketType($request->category);
+            // Get current ticket type with mapping
+            $categoryMapping = [
+                '5K' => '5K',
+                '10K' => '10K', 
+                '21K' => 'HM 21K'  // Map 21K to HM 21K
+            ];
+            
+            $dbCategory = $categoryMapping[$request->category] ?? $request->category;
+            $ticketType = TicketType::getCurrentTicketType($dbCategory);
             
             if (!$ticketType) {
                 return response()->json([
                     'success' => false,
                     'message' => 'No tickets available for this category at the moment'
+                ], 400);
+            }
+
+            // SECURITY: Double-check ticket is still valid
+            if (!$ticketType->isCurrentlyActive()) {
+                return response()->json([
+                    'success' => false,
+                    'message' => 'Ticket type is no longer active or quota exceeded'
                 ], 400);
             }
 
@@ -108,6 +126,9 @@ class RegistrationController extends Controller
             // Format phone number
             $phone = $this->formatPhoneNumber($request->phone);
 
+            // SECURITY: Always use price from database, never from request
+            $officialPrice = $ticketType->price;
+
             // Create registration
             $registration = Registration::create([
                 'name' => $request->name,
@@ -115,7 +136,7 @@ class RegistrationController extends Controller
                 'phone' => $phone,
                 'category' => $request->category,
                 'ticket_type_id' => $ticketType->id,
-                'price' => $ticketType->price,
+                'price' => $officialPrice, // SECURITY: Use validated price from database
                 'payment_status' => 'pending',
                 'registration_number' => Registration::generateRegistrationNumber(),
                 'whatsapp_verified_at' => Carbon::now(), // Auto-verify for now
@@ -264,5 +285,41 @@ class RegistrationController extends Controller
         }
         
         return response()->json($stats);
+    }
+
+    /**
+     * SECURITY: Detect price manipulation attempts
+     */
+    private function detectPriceManipulationAttempt($request)
+    {
+        // List of suspicious parameters that shouldn't be in registration request
+        $suspiciousParams = [
+            'price', 'amount', 'cost', 'fee', 'payment_amount', 
+            'ticket_price', 'registration_fee', 'total', 'subtotal',
+            'discount', 'coupon', 'promo_code', 'voucher'
+        ];
+        
+        $allInput = $request->all();
+        $foundSuspicious = [];
+        
+        foreach ($suspiciousParams as $param) {
+            if (array_key_exists($param, $allInput)) {
+                $foundSuspicious[$param] = $allInput[$param];
+            }
+        }
+        
+        if (!empty($foundSuspicious)) {
+            \Log::warning('Price manipulation attempt detected in RegistrationController', [
+                'ip' => $request->ip(),
+                'user_agent' => $request->userAgent(),
+                'email' => $request->email,
+                'suspicious_params' => $foundSuspicious,
+                'all_input' => $allInput,
+                'timestamp' => now()->toDateTimeString()
+            ]);
+            
+            // For now, just log. In production, you might want to block the request
+            // throw new \Exception('Invalid request parameters detected');
+        }
     }
 }
