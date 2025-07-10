@@ -3,6 +3,9 @@
 @section('title', 'Recent Registrations')
 
 @section('content')
+@php
+use Illuminate\Support\Facades\Route;
+@endphp
 <div class="px-4 py-6 sm:px-0">
     <div class="bg-white shadow rounded-lg">
         <div class="px-4 py-5 sm:px-6">
@@ -29,7 +32,16 @@
                         @endif
                     </button>
                     
-                    <a href="{{ route('admin.recent-registrations.export', request()->query()) }}"
+                    @php
+                    $exportUrl = '';
+                    try {
+                        $exportUrl = route('admin.recent-registrations.export', request()->query());
+                    } catch (\Exception $e) {
+                        $exportUrl = url('/admin/recent-registrations/export?' . http_build_query(request()->query()));
+                    }
+                    @endphp
+                    
+                    <a href="{{ $exportUrl }}"
                        class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-white bg-green-600 hover:bg-green-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-green-500">
                         <i class="fas fa-download mr-2"></i>
                         Export CSV
