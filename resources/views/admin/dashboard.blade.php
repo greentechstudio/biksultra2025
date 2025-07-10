@@ -210,30 +210,123 @@
         <!-- Category Statistics -->
         <div class="bg-white shadow rounded-lg">
             <div class="px-4 py-5 sm:px-6">
-                <h3 class="text-lg leading-6 font-medium text-gray-900">Category Statistics</h3>
-                <p class="mt-1 max-w-2xl text-sm text-gray-500">Registration count by race category</p>
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Category Statistics by Ticket Type</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Registration count by race category and ticket type (Early Bird vs Regular)</p>
             </div>
             <div class="border-t border-gray-200">
                 <div class="px-4 py-5 sm:px-6">
-                    @foreach($stats['category_stats'] as $category)
-                    <div class="flex items-center justify-between mb-4">
-                        <div class="flex items-center">
+                    @forelse($stats['category_stats'] as $categoryTicket)
+                    @if($categoryTicket->users_count > 0)
+                    <div class="flex items-center justify-between mb-4 p-3 border border-gray-200 rounded-lg hover:bg-gray-50">
+                        <div class="flex items-center flex-1">
                             <div class="flex-shrink-0">
-                                <span class="inline-flex items-center justify-center h-8 w-8 rounded-full bg-indigo-100">
-                                    <i class="fas fa-running text-indigo-600"></i>
+                                <span class="inline-flex items-center justify-center h-10 w-10 rounded-full 
+                                    @if(str_contains(strtolower($categoryTicket->ticket_type_name), 'early')) bg-green-100 @else bg-blue-100 @endif">
+                                    <i class="fas fa-running 
+                                        @if(str_contains(strtolower($categoryTicket->ticket_type_name), 'early')) text-green-600 @else text-blue-600 @endif"></i>
                                 </span>
                             </div>
-                            <div class="ml-4">
-                                <div class="text-sm font-medium text-gray-900">{{ $category->name }}</div>
-                                <div class="text-sm text-gray-500">Rp {{ number_format($category->price, 0, ',', '.') }}</div>
+                            <div class="ml-4 flex-1">
+                                <div class="flex items-center justify-between">
+                                    <div>
+                                        <div class="text-sm font-medium text-gray-900">
+                                            {{ $categoryTicket->category_name }}
+                                            <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
+                                                @if(str_contains(strtolower($categoryTicket->ticket_type_name), 'early')) 
+                                                    bg-green-100 text-green-800 
+                                                @else 
+                                                    bg-blue-100 text-blue-800 
+                                                @endif">
+                                                {{ $categoryTicket->ticket_type_name }}
+                                            </span>
+                                        </div>
+                                        <div class="text-sm text-gray-500">
+                                            Rp {{ number_format($categoryTicket->price, 0, ',', '.') }}
+                                            @if($categoryTicket->revenue > 0)
+                                            • Revenue: Rp {{ number_format($categoryTicket->revenue, 0, ',', '.') }}
+                                            @endif
+                                        </div>
+                                    </div>
+                                </div>
                             </div>
                         </div>
-                        <div class="text-right">
-                            <div class="text-2xl font-bold text-gray-900">{{ $category->users_count }}</div>
-                            <div class="text-sm text-gray-500">participants</div>
+                        
+                        <div class="flex items-center space-x-6">
+                            <!-- Total Registrations -->
+                            <div class="text-center">
+                                <div class="text-xl font-bold text-gray-900">{{ $categoryTicket->users_count }}</div>
+                                <div class="text-xs text-gray-500">Total</div>
+                            </div>
+                            
+                            <!-- Paid -->
+                            <div class="text-center">
+                                <div class="text-xl font-bold text-green-600">{{ $categoryTicket->paid_count }}</div>
+                                <div class="text-xs text-green-600">Paid</div>
+                            </div>
+                            
+                            <!-- Pending -->
+                            <div class="text-center">
+                                <div class="text-xl font-bold text-yellow-600">{{ $categoryTicket->pending_count }}</div>
+                                <div class="text-xs text-yellow-600">Pending</div>
+                            </div>
+                            
+                            <!-- Progress Bar -->
+                            <div class="w-20">
+                                @php
+                                $percentage = $categoryTicket->users_count > 0 ? round(($categoryTicket->paid_count / $categoryTicket->users_count) * 100) : 0;
+                                @endphp
+                                <div class="bg-gray-200 rounded-full h-2 mb-1">
+                                    <div class="bg-green-500 h-2 rounded-full transition-all duration-300" style="width: {{ $percentage }}%"></div>
+                                </div>
+                                <div class="text-xs text-center text-gray-500">{{ $percentage }}%</div>
+                            </div>
                         </div>
                     </div>
-                    @endforeach
+                    @endif
+                    @empty
+                    <div class="text-center py-8 text-gray-500">
+                        <i class="fas fa-chart-bar text-4xl text-gray-300 mb-4"></i>
+                        <p>No category statistics available</p>
+                    </div>
+                    @endforelse
+                    
+                    <!-- Summary Row -->
+                    @if($stats['category_stats']->sum('users_count') > 0)
+                    <div class="border-t border-gray-300 pt-4 mt-4">
+                        <div class="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                            <div class="flex items-center">
+                                <div class="flex-shrink-0">
+                                    <span class="inline-flex items-center justify-center h-10 w-10 rounded-full bg-purple-100">
+                                        <i class="fas fa-chart-pie text-purple-600"></i>
+                                    </span>
+                                </div>
+                                <div class="ml-4">
+                                    <div class="text-sm font-bold text-gray-900">TOTAL ALL CATEGORIES</div>
+                                    <div class="text-xs text-gray-500">Combined statistics</div>
+                                </div>
+                            </div>
+                            
+                            <div class="flex items-center space-x-6">
+                                <div class="text-center">
+                                    <div class="text-xl font-bold text-gray-900">{{ $stats['category_stats']->sum('users_count') }}</div>
+                                    <div class="text-xs text-gray-500">Total</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xl font-bold text-green-600">{{ $stats['category_stats']->sum('paid_count') }}</div>
+                                    <div class="text-xs text-green-600">Paid</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-xl font-bold text-yellow-600">{{ $stats['category_stats']->sum('pending_count') }}</div>
+                                    <div class="text-xs text-yellow-600">Pending</div>
+                                </div>
+                                <div class="text-center">
+                                    <div class="text-lg font-bold text-purple-600">Rp {{ number_format($stats['category_stats']->sum('revenue'), 0, ',', '.') }}</div>
+                                    <div class="text-xs text-purple-600">Revenue</div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    @endif
                 </div>
             </div>
         </div>

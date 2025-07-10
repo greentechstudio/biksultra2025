@@ -48,7 +48,7 @@ class DashboardController extends Controller
             'unpaid_potential_revenue' => $unpaidPotentialRevenue,
             'recent_registrations' => User::where('role', '!=', 'admin')->latest()->take(5)->get(),
             'total_recent_registrations' => $totalRegistrations,
-            'category_stats' => RaceCategory::withCount('users')->get(),
+            'category_stats' => $this->getCategoryStatsByTicketType(),
             'active_ticket_types' => TicketType::where('is_active', true)->count(),
             'whatsapp_queue_count' => DB::table('jobs')->where('queue', 'whatsapp')->count(),
             
@@ -317,5 +317,57 @@ class DashboardController extends Controller
         };
 
         return response()->stream($callback, 200, $headers);
+    }
+    
+    /**
+     * Get category statistics grouped by ticket type (Early Bird vs Regular)
+     */
+    private function getCategoryStatsByTicketType()
+    {
+        $categories = RaceCategory::all();
+        $categoryStats = [];
+        
+        foreach ($categories as $category) {
+            // Get ticket types for this category
+            $ticketTypes = TicketType::where('race_category_id', $category->id)->get();
+            
+            foreach ($ticketTypes as $ticketType) {
+                // Count users for this specific ticket type
+                $userCount = User::where('role', '!=', 'admin')
+                    ->where('race_category', $category->name)
+                    ->where('ticket_type_id', $ticketType->id)
+                    ->count();
+                
+                // Count paid users for this ticket type
+                $paidCount = User::where('role', '!=', 'admin')
+                    ->where('race_category', $category->name)
+                    ->where('ticket_type_id', $ticketType->id)
+                    ->where('payment_confirmed', true)
+                    ->count();
+                
+                // Calculate revenue for this ticket type
+                $revenue = User::where('role', '!=', 'admin')
+                    ->where('race_category', $category->name)
+                    ->where('ticket_type_id', $ticketType->id)
+                    ->where('payment_confirmed', true)
+                    ->sum('payment_amount');
+                
+                $categoryStats[] = (object) [
+                    'id' => $category->id . '-' . $ticketType->id,
+                    'category_name' => $category->name,
+                    'ticket_type_name' => $ticketType->name,
+                    'name' => $category->name . ' (' . $ticketType->name . ')',
+                    'price' => $ticketType->price,
+                    'users_count' => $userCount,
+                    'paid_count' => $paidCount,
+                    'pending_count' => $userCount - $paidCount,
+                    'revenue' => $revenue,
+                    'ticket_type' => $ticketType,
+                    'category' => $category
+                ];
+            }
+        }
+        
+        return collect($categoryStats)->sortBy(['category_name', 'ticket_type_name']);
     }
 }
