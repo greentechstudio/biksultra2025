@@ -66,6 +66,21 @@ class CleanupUnpaidRegistrations implements ShouldQueue
                 $this->sendDeletionNotification($user);
                 $notificationCount++;
                 
+                // Decrement ticket type registered count before deleting user
+                if ($user->race_category) {
+                    $ticketType = \App\Models\TicketType::where('category', $user->race_category)->first();
+                    if ($ticketType) {
+                        $ticketType->decrementRegisteredCount();
+                        Log::info('Decremented registered count for ticket type', [
+                            'ticket_type_id' => $ticketType->id,
+                            'category' => $ticketType->category,
+                            'old_count' => $ticketType->registered_count + 1,
+                            'new_count' => $ticketType->registered_count,
+                            'user_id' => $user->id
+                        ]);
+                    }
+                }
+                
                 // Delete user
                 $user->delete();
                 $deletedCount++;
@@ -73,6 +88,7 @@ class CleanupUnpaidRegistrations implements ShouldQueue
                 Log::info('Deleted unpaid user', [
                     'user_id' => $user->id,
                     'email' => $user->email,
+                    'race_category' => $user->race_category,
                     'registered_at' => $user->created_at,
                     'hours_since_registration' => $user->created_at->diffInHours(Carbon::now())
                 ]);

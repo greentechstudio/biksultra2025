@@ -93,12 +93,70 @@ class DashboardController extends Controller
         return view('admin.users', compact('users'));
     }
 
-    public function recentRegistrations()
+    public function recentRegistrations(Request $request)
     {
-        $users = User::where('role', '!=', 'admin')
-                    ->latest()
-                    ->paginate(20);
-        return view('admin.recent-registrations', compact('users'));
+        $query = User::where('role', '!=', 'admin');
+
+        // Filter by payment status
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'paid') {
+                $query->where('payment_confirmed', true);
+            } elseif ($request->payment_status === 'pending') {
+                $query->where('payment_confirmed', false);
+            }
+        }
+
+        // Filter by WhatsApp verification
+        if ($request->filled('whatsapp_verified')) {
+            $query->where('whatsapp_verified', $request->whatsapp_verified === '1');
+        }
+
+        // Filter by race category
+        if ($request->filled('race_category')) {
+            $query->where('race_category', $request->race_category);
+        }
+
+        // Filter by date range
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        // Search by name, email, or WhatsApp
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('whatsapp_number', 'like', "%{$search}%");
+            });
+        }
+
+        // Get total count before pagination
+        $totalCount = $query->count();
+        
+        // Get statistics for current filters
+        $stats = [
+            'total' => $totalCount,
+            'paid' => (clone $query)->where('payment_confirmed', true)->count(),
+            'pending' => (clone $query)->where('payment_confirmed', false)->count(),
+            'whatsapp_verified' => (clone $query)->where('whatsapp_verified', true)->count(),
+            'whatsapp_pending' => (clone $query)->where('whatsapp_verified', false)->count(),
+        ];
+        
+        // Apply pagination
+        $users = $query->latest()->paginate(20)->withQueryString();
+
+        // Get race categories for filter dropdown
+        $raceCategories = User::where('role', '!=', 'admin')
+                             ->whereNotNull('race_category')
+                             ->distinct()
+                             ->pluck('race_category')
+                             ->sort();
+
+        return view('admin.recent-registrations', compact('users', 'totalCount', 'raceCategories', 'stats'));
     }
 
     public function whatsappVerification()
@@ -135,5 +193,103 @@ class DashboardController extends Controller
         $user->update($request->only(['name', 'email']));
 
         return back()->with('success', 'Profile updated successfully.');
+    }
+
+    public function exportRecentRegistrations(Request $request)
+    {
+        $query = User::where('role', '!=', 'admin');
+
+        // Apply same filters as in recentRegistrations method
+        if ($request->filled('payment_status')) {
+            if ($request->payment_status === 'paid') {
+                $query->where('payment_confirmed', true);
+            } elseif ($request->payment_status === 'pending') {
+                $query->where('payment_confirmed', false);
+            }
+        }
+
+        if ($request->filled('whatsapp_verified')) {
+            $query->where('whatsapp_verified', $request->whatsapp_verified === '1');
+        }
+
+        if ($request->filled('race_category')) {
+            $query->where('race_category', $request->race_category);
+        }
+
+        if ($request->filled('date_from')) {
+            $query->whereDate('created_at', '>=', $request->date_from);
+        }
+        if ($request->filled('date_to')) {
+            $query->whereDate('created_at', '<=', $request->date_to);
+        }
+
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function($q) use ($search) {
+                $q->where('name', 'like', "%{$search}%")
+                  ->orWhere('email', 'like', "%{$search}%")
+                  ->orWhere('whatsapp_number', 'like', "%{$search}%");
+            });
+        }
+
+        $users = $query->latest()->get();
+
+        $filename = 'registrations_export_' . date('Y-m-d_H-i-s') . '.csv';
+        
+        $headers = [
+            "Content-type" => "text/csv",
+            "Content-Disposition" => "attachment; filename=$filename",
+            "Pragma" => "no-cache",
+            "Cache-Control" => "must-revalidate, post-check=0, pre-check=0",
+            "Expires" => "0"
+        ];
+
+        $callback = function() use($users) {
+            $file = fopen('php://output', 'w');
+            
+            // Add BOM for UTF-8
+            fprintf($file, chr(0xEF).chr(0xBB).chr(0xBF));
+            
+            // CSV headers
+            fputcsv($file, [
+                'Name',
+                'Email', 
+                'WhatsApp',
+                'Race Category',
+                'Payment Status',
+                'WhatsApp Verified',
+                'Birth Date',
+                'Gender',
+                'Blood Type',
+                'Jersey Size',
+                'Emergency Contact',
+                'Emergency Phone',
+                'Registration Date',
+                'Payment Confirmed Date'
+            ]);
+
+            foreach ($users as $user) {
+                fputcsv($file, [
+                    $user->name,
+                    $user->email,
+                    $user->whatsapp_number,
+                    $user->race_category,
+                    $user->payment_confirmed ? 'Paid' : 'Pending',
+                    $user->whatsapp_verified ? 'Yes' : 'No',
+                    $user->birth_date,
+                    $user->gender,
+                    $user->blood_type,
+                    $user->jersey_size,
+                    $user->emergency_contact,
+                    $user->emergency_phone,
+                    $user->created_at->format('Y-m-d H:i:s'),
+                    $user->payment_confirmed_at ? $user->payment_confirmed_at->format('Y-m-d H:i:s') : ''
+                ]);
+            }
+
+            fclose($file);
+        };
+
+        return response()->stream($callback, 200, $headers);
     }
 }
