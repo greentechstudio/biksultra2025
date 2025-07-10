@@ -26,15 +26,17 @@ class DashboardController extends Controller
         $conversionRate = $totalRegistrations > 0 ? round(($paidRegistrations / $totalRegistrations) * 100, 1) : 0;
         
         // Calculate potential revenue from all registrations
+        // FIXED: Use payment_amount from users table, not current race_categories price
         $totalPotentialRevenue = User::where('role', '!=', 'admin')
-            ->join('race_categories', 'users.race_category', '=', 'race_categories.name')
-            ->sum('race_categories.price');
+            ->whereNotNull('payment_amount')
+            ->sum('payment_amount');
         
         // Calculate unpaid potential revenue (only from pending payments)
+        // FIXED: Use payment_amount from users table, not current race_categories price
         $unpaidPotentialRevenue = User::where('role', '!=', 'admin')
             ->where('payment_confirmed', false)
-            ->join('race_categories', 'users.race_category', '=', 'race_categories.name')
-            ->sum('race_categories.price');
+            ->whereNotNull('payment_amount')
+            ->sum('payment_amount');
         
         $stats = [
             'total_registrations' => $totalRegistrations,
@@ -51,6 +53,7 @@ class DashboardController extends Controller
             'whatsapp_queue_count' => DB::table('jobs')->where('queue', 'whatsapp')->count(),
             
             // Revenue by ticket type
+            // FIXED: Use actual payment_amount from users, not ticket_type price
             'revenue_by_ticket_type' => TicketType::withCount(['users' => function($query) {
                 $query->where('role', '!=', 'admin');
             }])
@@ -60,26 +63,39 @@ class DashboardController extends Controller
             ->get()
             ->map(function($ticketType) {
                 $paidCount = $ticketType->users->count();
-                $revenue = $paidCount * $ticketType->price;
+                
+                // Use actual payment amounts instead of ticket type price
+                $revenue = User::where('role', '!=', 'admin')
+                    ->where('ticket_type_id', $ticketType->id)
+                    ->where('payment_confirmed', true)
+                    ->sum('payment_amount');
+                
                 return (object) [
                     'name' => $ticketType->name,
-                    'price' => $ticketType->price,
+                    'price' => $ticketType->price, // Ticket type price for reference
                     'count' => $ticketType->users_count,
-                    'revenue' => $revenue
+                    'revenue' => $revenue // Actual revenue from payments
                 ];
             }),
             
             // Revenue by race category
+            // FIXED: Use actual payment_amount from users, not current category price
             'revenue_by_category' => RaceCategory::get()
             ->map(function($category) {
                 $totalUsers = User::where('role', '!=', 'admin')->where('race_category', $category->name)->count();
                 $paidUsers = User::where('role', '!=', 'admin')->where('race_category', $category->name)->where('payment_confirmed', true)->count();
-                $revenue = $paidUsers * $category->price;
+                
+                // Use actual payment amounts instead of current category price
+                $revenue = User::where('role', '!=', 'admin')
+                    ->where('race_category', $category->name)
+                    ->where('payment_confirmed', true)
+                    ->sum('payment_amount');
+                
                 return (object) [
                     'name' => $category->name,
-                    'price' => $category->price,
+                    'price' => $category->price, // Current price for reference
                     'count' => $totalUsers,
-                    'revenue' => $revenue
+                    'revenue' => $revenue // Actual revenue from payments
                 ];
             }),
         ];
