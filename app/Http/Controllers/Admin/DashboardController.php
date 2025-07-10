@@ -156,6 +156,16 @@ class DashboardController extends Controller
                              ->pluck('race_category')
                              ->sort();
 
+        // Ensure all variables are defined
+        $totalCount = $totalCount ?? 0;
+        $stats = $stats ?? [
+            'total' => 0,
+            'paid' => 0,
+            'pending' => 0,
+            'whatsapp_verified' => 0,
+            'whatsapp_pending' => 0,
+        ];
+
         return view('admin.recent-registrations', compact('users', 'totalCount', 'raceCategories', 'stats'));
     }
 

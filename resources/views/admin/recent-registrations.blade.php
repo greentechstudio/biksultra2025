@@ -10,7 +10,7 @@
                 <div>
                     <h3 class="text-lg leading-6 font-medium text-gray-900">Recent Registrations</h3>
                     <p class="mt-1 max-w-2xl text-sm text-gray-500">
-                        Total {{ number_format($totalCount) }} registrations found
+                        Total {{ number_format($totalCount ?? $users->total() ?? 0) }} registrations found
                         @if(request()->hasAny(['payment_status', 'whatsapp_verified', 'race_category', 'date_from', 'date_to', 'search']))
                             (filtered)
                         @endif
@@ -92,7 +92,7 @@
                                 id="race_category"
                                 class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
                             <option value="">All Categories</option>
-                            @foreach($raceCategories as $category)
+                            @foreach($raceCategories ?? [] as $category)
                             <option value="{{ $category }}" {{ request('race_category') === $category ? 'selected' : '' }}>
                                 {{ $category }}
                             </option>
@@ -136,23 +136,23 @@
         <div class="border-t border-gray-200 bg-blue-50 px-4 py-3">
             <div class="grid grid-cols-2 md:grid-cols-5 gap-4 text-center">
                 <div>
-                    <div class="text-lg font-semibold text-blue-900">{{ number_format($stats['total']) }}</div>
+                    <div class="text-lg font-semibold text-blue-900">{{ number_format($stats['total'] ?? $users->total() ?? 0) }}</div>
                     <div class="text-xs text-blue-600">Total Found</div>
                 </div>
                 <div>
-                    <div class="text-lg font-semibold text-green-900">{{ number_format($stats['paid']) }}</div>
+                    <div class="text-lg font-semibold text-green-900">{{ number_format($stats['paid'] ?? $users->where('payment_confirmed', true)->count()) }}</div>
                     <div class="text-xs text-green-600">Paid</div>
                 </div>
                 <div>
-                    <div class="text-lg font-semibold text-yellow-900">{{ number_format($stats['pending']) }}</div>
+                    <div class="text-lg font-semibold text-yellow-900">{{ number_format($stats['pending'] ?? $users->where('payment_confirmed', false)->count()) }}</div>
                     <div class="text-xs text-yellow-600">Pending Payment</div>
                 </div>
                 <div>
-                    <div class="text-lg font-semibold text-blue-900">{{ number_format($stats['whatsapp_verified']) }}</div>
+                    <div class="text-lg font-semibold text-blue-900">{{ number_format($stats['whatsapp_verified'] ?? $users->where('whatsapp_verified', true)->count()) }}</div>
                     <div class="text-xs text-blue-600">WhatsApp Verified</div>
                 </div>
                 <div>
-                    <div class="text-lg font-semibold text-gray-900">{{ number_format($stats['whatsapp_pending']) }}</div>
+                    <div class="text-lg font-semibold text-gray-900">{{ number_format($stats['whatsapp_pending'] ?? $users->where('whatsapp_verified', false)->count()) }}</div>
                     <div class="text-xs text-gray-600">WhatsApp Pending</div>
                 </div>
             </div>
