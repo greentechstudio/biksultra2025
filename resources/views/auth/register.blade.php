@@ -339,31 +339,49 @@
     <div class="w-full max-w-4xl mx-auto">
         <div class="glass-effect rounded-2xl overflow-hidden form-card">
             <!-- Header -->
-            <div class="custom-gradient-header text-white p-6">
-                <div class="flex items-center justify-between">
-                    <!-- Logo Kiri -->
-                    <div class="flex-shrink-0">
-                        <img src="{{ asset('images/logoprov.png') }}" alt="Logo Provinsi" class="h-16 w-auto object-contain">
-                    </div>
-                    
-                    <!-- Konten Tengah -->
-                    <div class="text-center flex-1 mx-6">
-                        <h1 class="text-3xl font-bold mb-2">
-                            <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+            <div class="custom-gradient-header text-white p-6 sm:p-6 p-4">
+                <!-- Mobile Layout (320px and up) -->
+                <div class="block sm:hidden">
+                    <!-- Mobile Header - Stacked Layout -->
+                    <div class="text-center mb-4">
+                        <div class="flex justify-center items-center space-x-4 mb-3">
+                            <img src="{{ asset('images/logoprov.png') }}" alt="Logo Provinsi" class="h-10 w-auto object-contain">
+                            <img src="{{ asset('images/pesonaindonesia.png') }}" alt="Pesona Indonesia" class="h-10 w-auto object-contain">
+                        </div>
+                        <h1 class="text-xl font-bold mb-1">
+                            <i class="fas fa-running mr-2"></i>Registrasi Event Lari
                         </h1>
-                        <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+                        <p class="text-gray-200 text-sm">Daftar untuk mengikuti event lari</p>
                     </div>
-                    
-                    <!-- Logo Kanan -->
-                    <div class="flex-shrink-0">
-                        <img src="{{ asset('images/pesonaindonesia.png') }}" alt="Pesona Indonesia" class="h-16 w-auto object-contain">
+                </div>
+                
+                <!-- Desktop Layout (sm and up) -->
+                <div class="hidden sm:block">
+                    <div class="flex items-center justify-between">
+                        <!-- Logo Kiri -->
+                        <div class="flex-shrink-0">
+                            <img src="{{ asset('images/logoprov.png') }}" alt="Logo Provinsi" class="h-16 w-auto object-contain">
+                        </div>
+                        
+                        <!-- Konten Tengah -->
+                        <div class="text-center flex-1 mx-6">
+                            <h1 class="text-3xl font-bold mb-2">
+                                <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+                            </h1>
+                            <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+                        </div>
+                        
+                        <!-- Logo Kanan -->
+                        <div class="flex-shrink-0">
+                            <img src="{{ asset('images/pesonaindonesia.png') }}" alt="Pesona Indonesia" class="h-16 w-auto object-contain">
+                        </div>
                     </div>
                 </div>
             </div>
             
             <!-- Form Content -->
-            <div class="p-8">
-                <form id="registrationForm" method="POST" action="{{ route('register') }}" class="space-y-8">
+            <div class="p-8 sm:p-8 p-4">
+                <form id="registrationForm" method="POST" action="{{ route('register') }}" class="space-y-8 sm:space-y-8 space-y-6">
                     @csrf
                     
                     <!-- Basic Information -->

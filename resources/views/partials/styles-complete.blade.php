@@ -350,4 +350,56 @@
             font-size: 0.9rem;
         }
     }
+
+    /* Mobile specific optimizations for registration form */
+    @media (max-width: 480px) {
+        .custom-gradient-header {
+            padding: 1rem !important;
+        }
+        
+        .form-card {
+            margin: 0.5rem;
+        }
+        
+        .glass-effect {
+            border-radius: 1rem !important;
+        }
+        
+        /* Mobile logo sizing for better proportionality */
+        .custom-gradient-header img {
+            height: 2rem !important; /* 32px */
+            max-width: 80px !important;
+        }
+    }
+
+    /* Extra small mobile devices (320px) */
+    @media (max-width: 320px) {
+        .custom-gradient-header {
+            padding: 0.75rem !important;
+        }
+        
+        .custom-gradient-header h1 {
+            font-size: 1.125rem !important;
+            line-height: 1.5 !important;
+        }
+        
+        .custom-gradient-header p {
+            font-size: 0.875rem !important;
+        }
+        
+        .form-card {
+            margin: 0.25rem;
+        }
+        
+        /* Extra small logo sizing for 320px width */
+        .custom-gradient-header img {
+            height: 1.5rem !important; /* 24px */
+            max-width: 60px !important;
+        }
+        
+        /* Reduce spacing between logos */
+        .custom-gradient-header .flex.space-x-4 {
+            gap: 0.5rem !important;
+        }
+    }
 </style>

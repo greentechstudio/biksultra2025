@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Logo Test</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        .custom-gradient-header {
+            background: linear-gradient(135deg, #ED3D26 0%, #273F0B 50%, #161616 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        /* Mobile specific optimizations for registration form */
+        @media (max-width: 480px) {
+            .custom-gradient-header {
+                padding: 1rem !important;
+            }
+            
+            .form-card {
+                margin: 0.5rem;
+            }
+            
+            .glass-effect {
+                border-radius: 1rem !important;
+            }
+            
+            /* Mobile logo sizing for better proportionality */
+            .custom-gradient-header img {
+                height: 2rem !important; /* 32px */
+                max-width: 80px !important;
+            }
+        }
+
+        /* Extra small mobile devices (320px) */
+        @media (max-width: 320px) {
+            .custom-gradient-header {
+                padding: 0.75rem !important;
+            }
+            
+            .custom-gradient-header h1 {
+                font-size: 1.125rem !important;
+                line-height: 1.5 !important;
+            }
+            
+            .custom-gradient-header p {
+                font-size: 0.875rem !important;
+            }
+            
+            .form-card {
+                margin: 0.25rem;
+            }
+            
+            /* Extra small logo sizing for 320px width */
+            .custom-gradient-header img {
+                height: 1.5rem !important; /* 24px */
+                max-width: 60px !important;
+            }
+            
+            /* Reduce spacing between logos */
+            .custom-gradient-header .flex.space-x-4 {
+                gap: 0.5rem !important;
+            }
+        }
+    </style>
+</head>
+<body class="bg-gray-100 p-4">
+    <div class="max-w-4xl mx-auto">
+        <div class="glass-effect rounded-2xl overflow-hidden form-card">
+            <!-- Header -->
+            <div class="custom-gradient-header text-white p-6 sm:p-6 p-4">
+                <!-- Mobile Layout (320px and up) -->
+                <div class="block sm:hidden">
+                    <!-- Mobile Header - Stacked Layout -->
+                    <div class="text-center mb-4">
+                        <div class="flex justify-center items-center space-x-4 mb-3">
+                            <div class="h-10 w-10 bg-white rounded flex items-center justify-center">
+                                <span class="text-xs text-gray-800">LOGO1</span>
+                            </div>
+                            <div class="h-10 w-10 bg-white rounded flex items-center justify-center">
+                                <span class="text-xs text-gray-800">LOGO2</span>
+                            </div>
+                        </div>
+                        <h1 class="text-xl font-bold mb-1">
+                            <i class="fas fa-running mr-2"></i>Registrasi Event Lari
+                        </h1>
+                        <p class="text-gray-200 text-sm">Daftar untuk mengikuti event lari</p>
+                    </div>
+                </div>
+                
+                <!-- Desktop Layout (sm and up) -->
+                <div class="hidden sm:block">
+                    <div class="flex items-center justify-between">
+                        <!-- Logo Kiri -->
+                        <div class="flex-shrink-0">
+                            <div class="h-16 w-16 bg-white rounded flex items-center justify-center">
+                                <span class="text-sm text-gray-800">LOGO1</span>
+                            </div>
+                        </div>
+                        
+                        <!-- Konten Tengah -->
+                        <div class="text-center flex-1 mx-6">
+                            <h1 class="text-3xl font-bold mb-2">
+                                <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+                            </h1>
+                            <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+                        </div>
+                        
+                        <!-- Logo Kanan -->
+                        <div class="flex-shrink-0">
+                            <div class="h-16 w-16 bg-white rounded flex items-center justify-center">
+                                <span class="text-sm text-gray-800">LOGO2</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Content -->
+            <div class="p-8 sm:p-8 p-4">
+                <div class="text-center text-gray-600">
+                    <p>Test content for mobile layout</p>
+                    <p class="text-sm mt-2">Resize your browser to see the responsive changes</p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>

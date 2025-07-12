@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mobile Logo Test - 320px</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .custom-gradient-header {
+            background: linear-gradient(135deg, #ED3D26 0%, #273F0B 50%, #161616 100%);
+        }
+        
+        .glass-effect {
+            background: rgba(255, 255, 255, 0.95);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+        }
+        
+        .form-container {
+            padding: 1rem;
+            width: 100%;
+            max-width: 320px;
+        }
+        
+        /* Mobile specific optimizations for registration form */
+        @media (max-width: 480px) {
+            .custom-gradient-header {
+                padding: 1rem !important;
+            }
+            
+            .form-card {
+                margin: 0.5rem;
+            }
+            
+            .glass-effect {
+                border-radius: 1rem !important;
+            }
+            
+            /* Mobile logo sizing for better proportionality */
+            .custom-gradient-header img {
+                height: 2rem !important; /* 32px */
+                max-width: 80px !important;
+            }
+        }
+
+        /* Extra small mobile devices (320px) */
+        @media (max-width: 320px) {
+            .custom-gradient-header {
+                padding: 0.75rem !important;
+            }
+            
+            .custom-gradient-header h1 {
+                font-size: 1.125rem !important;
+                line-height: 1.5 !important;
+            }
+            
+            .custom-gradient-header p {
+                font-size: 0.875rem !important;
+            }
+            
+            .form-card {
+                margin: 0.25rem;
+            }
+            
+            /* Extra small logo sizing for 320px width */
+            .custom-gradient-header img {
+                height: 1.5rem !important; /* 24px */
+                max-width: 60px !important;
+            }
+            
+            /* Reduce spacing between logos */
+            .custom-gradient-header .flex.space-x-4 {
+                gap: 0.5rem !important;
+            }
+        }
+        
+        /* Test container styling */
+        .test-container {
+            max-width: 320px;
+            margin: 0 auto;
+        }
+        
+        .size-indicator {
+            background: rgba(255, 255, 255, 0.1);
+            padding: 0.5rem;
+            margin-bottom: 1rem;
+            border-radius: 0.5rem;
+            color: white;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="test-container">
+        <div class="size-indicator">
+            <strong>Testing at 320px width</strong><br>
+            <small>Check logo proportionality</small>
+        </div>
+        
+        <div class="glass-effect rounded-2xl overflow-hidden form-card">
+            <!-- Header -->
+            <div class="custom-gradient-header text-white p-6 sm:p-6 p-4">
+                <!-- Mobile Layout (320px and up) -->
+                <div class="block sm:hidden">
+                    <!-- Mobile Header - Stacked Layout -->
+                    <div class="text-center mb-4">
+                        <div class="flex justify-center items-center space-x-4 mb-3">
+                            <div class="bg-white rounded p-2">
+                                <div style="width: 40px; height: 30px; background: #ED3D26; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">LOGO1</div>
+                            </div>
+                            <div class="bg-white rounded p-2">
+                                <div style="width: 40px; height: 30px; background: #273F0B; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 10px;">LOGO2</div>
+                            </div>
+                        </div>
+                        <h1 class="text-xl font-bold mb-1">
+                            <i class="fas fa-running mr-2"></i>Registrasi Event Lari
+                        </h1>
+                        <p class="text-gray-200 text-sm">Daftar untuk mengikuti event lari</p>
+                    </div>
+                </div>
+                
+                <!-- Desktop Layout (sm and up) -->
+                <div class="hidden sm:block">
+                    <div class="flex items-center justify-between">
+                        <!-- Logo Kiri -->
+                        <div class="flex-shrink-0">
+                            <div class="bg-white rounded p-2">
+                                <div style="width: 60px; height: 45px; background: #ED3D26; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">LOGO1</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Konten Tengah -->
+                        <div class="text-center flex-1 mx-6">
+                            <h1 class="text-3xl font-bold mb-2">
+                                <i class="fas fa-running mr-3"></i>Registrasi Event Lari
+                            </h1>
+                            <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
+                        </div>
+                        
+                        <!-- Logo Kanan -->
+                        <div class="flex-shrink-0">
+                            <div class="bg-white rounded p-2">
+                                <div style="width: 60px; height: 45px; background: #273F0B; border-radius: 4px; display: flex; align-items: center; justify-content: center; color: white; font-size: 12px;">LOGO2</div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Form Content Preview -->
+            <div class="p-8 sm:p-8 p-4">
+                <div class="bg-gray-50 rounded-lg p-6">
+                    <h2 class="text-lg font-semibold text-gray-800 mb-4">Form Preview</h2>
+                    <p class="text-sm text-gray-600">
+                        This is a test of the mobile layout at 320px width. 
+                        The logos should be properly proportioned and not overwhelming the header.
+                    </p>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+</html>
