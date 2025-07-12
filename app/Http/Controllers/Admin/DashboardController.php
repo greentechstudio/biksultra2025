@@ -52,52 +52,12 @@ class DashboardController extends Controller
             'active_ticket_types' => TicketType::where('is_active', true)->count(),
             'whatsapp_queue_count' => DB::table('jobs')->where('queue', 'whatsapp')->count(),
             
-            // Revenue by ticket type
-            // FIXED: Use actual payment_amount from users, not ticket_type price
-            'revenue_by_ticket_type' => TicketType::withCount(['users' => function($query) {
-                $query->where('role', '!=', 'admin');
-            }])
-            ->with(['users' => function($query) {
-                $query->where('role', '!=', 'admin')->where('payment_confirmed', true);
-            }])
-            ->get()
-            ->map(function($ticketType) {
-                $paidCount = $ticketType->users->count();
-                
-                // Use actual payment amounts instead of ticket type price
-                $revenue = User::where('role', '!=', 'admin')
-                    ->where('ticket_type_id', $ticketType->id)
-                    ->where('payment_confirmed', true)
-                    ->sum('payment_amount');
-                
-                return (object) [
-                    'name' => $ticketType->name,
-                    'price' => $ticketType->price, // Ticket type price for reference
-                    'count' => $ticketType->users_count,
-                    'revenue' => $revenue // Actual revenue from payments
-                ];
-            }),
+            // Demographics and Statistics
+            'demographics_stats' => $this->getDemographicsStatistics(),
             
-            // Revenue by race category
-            // FIXED: Use actual payment_amount from users, not current category price
-            'revenue_by_category' => RaceCategory::get()
-            ->map(function($category) {
-                $totalUsers = User::where('role', '!=', 'admin')->where('race_category', $category->name)->count();
-                $paidUsers = User::where('role', '!=', 'admin')->where('race_category', $category->name)->where('payment_confirmed', true)->count();
-                
-                // Use actual payment amounts instead of current category price
-                $revenue = User::where('role', '!=', 'admin')
-                    ->where('race_category', $category->name)
-                    ->where('payment_confirmed', true)
-                    ->sum('payment_amount');
-                
-                return (object) [
-                    'name' => $category->name,
-                    'price' => $category->price, // Current price for reference
-                    'count' => $totalUsers,
-                    'revenue' => $revenue // Actual revenue from payments
-                ];
-            }),
+            // Master A & Master B tables
+            'master_a_users' => $this->getMasterAUsers(),
+            'master_b_users' => $this->getMasterBUsers(),
         ];
 
         return view('admin.dashboard', compact('stats'));
@@ -369,5 +329,227 @@ class DashboardController extends Controller
         }
         
         return collect($categoryStats)->sortBy(['category_name', 'ticket_type_name']);
+    }
+
+    /**
+     * Get demographics statistics for the dashboard
+     */
+    private function getDemographicsStatistics()
+    {
+        $demographics = [];
+        
+        // Get current year for calculations
+        $currentYear = date('Y');
+        
+        // Define age ranges based on birth year ranges
+        $ageRanges = [
+            '15-20' => [$currentYear - 20, $currentYear - 15], // Birth years
+            '21-25' => [$currentYear - 25, $currentYear - 21],
+            '26-30' => [$currentYear - 30, $currentYear - 26],
+            '31-35' => [$currentYear - 35, $currentYear - 31],
+            '36-40' => [$currentYear - 40, $currentYear - 36],
+            '41-45' => [$currentYear - 45, $currentYear - 41],
+            '46-50' => [$currentYear - 50, $currentYear - 46],
+            '51+' => [$currentYear - 70, $currentYear - 51], // 51+ years old
+        ];
+        
+        // Get all available race categories from database (paid users only)
+        $availableCategories = User::where('role', '!=', 'admin')
+            ->where('payment_confirmed', true) // Only paid users
+            ->whereNotNull('race_category')
+            ->distinct()
+            ->pluck('race_category')
+            ->toArray();
+        
+        // If no categories found, use default ones
+        if (empty($availableCategories)) {
+            $availableCategories = ['5K', '10K', '21K', 'Half Marathon', 'Full Marathon'];
+        }
+        
+        // Create chart data structure based on actual birth dates (paid users only)
+        $chartData = [];
+        $ageStats = [];
+        
+        foreach ($ageRanges as $ageGroup => $birthYearRange) {
+            $groupData = [];
+            $totalInGroup = 0;
+            
+            foreach ($availableCategories as $category) {
+                // Get actual count from database using birth_date (paid users only)
+                $count = User::where('role', '!=', 'admin')
+                    ->where('race_category', $category)
+                    ->where('payment_confirmed', true) // Only paid users
+                    ->whereNotNull('birth_date')
+                    ->whereRaw('YEAR(birth_date) BETWEEN ? AND ?', [$birthYearRange[0], $birthYearRange[1]])
+                    ->count();
+                
+                $groupData[$category] = $count;
+                $totalInGroup += $count;
+            }
+            
+            $chartData[$ageGroup] = $groupData;
+            
+            // Calculate paid count for this age group (already filtered, so same as totalInGroup)
+            $paidCount = $totalInGroup; // All users in this data are already paid
+            
+            $ageStats[] = (object) [
+                'group' => $ageGroup,
+                'count' => $totalInGroup,
+                'paid_count' => $paidCount,
+                'pending_count' => 0, // No pending users in this filtered data
+                'percentage' => 0, // Will be calculated after getting total
+                'birth_year_range' => $birthYearRange[0] . ' - ' . $birthYearRange[1]
+            ];
+        }
+        
+        // Calculate age group percentages
+        $totalAgeUsers = collect($ageStats)->sum('count');
+        foreach ($ageStats as $stat) {
+            $stat->percentage = $totalAgeUsers > 0 ? round(($stat->count / $totalAgeUsers) * 100, 1) : 0;
+        }
+        
+        // Race category statistics (paid users only)
+        $raceStats = User::where('role', '!=', 'admin')
+            ->where('payment_confirmed', true) // Only paid users
+            ->whereNotNull('race_category')
+            ->select('race_category')
+            ->selectRaw('COUNT(*) as count')
+            ->selectRaw('COUNT(*) as paid_count') // All users in this query are paid
+            ->groupBy('race_category')
+            ->get()
+            ->map(function($item) {
+                return (object) [
+                    'category' => $item->race_category,
+                    'count' => $item->count,
+                    'paid_count' => $item->paid_count,
+                    'pending_count' => 0, // No pending users in this filtered data
+                    'percentage' => 0 // Will be calculated after getting total
+                ];
+            });
+        
+        // Calculate race category percentages
+        $totalRaceUsers = $raceStats->sum('count');
+        foreach ($raceStats as $stat) {
+            $stat->percentage = $totalRaceUsers > 0 ? round(($stat->count / $totalRaceUsers) * 100, 1) : 0;
+        }
+        
+        // City/Regency statistics (top 10)
+        $cityStats = User::where('role', '!=', 'admin')
+            ->whereNotNull('regency_name')
+            ->select('regency_name')
+            ->selectRaw('COUNT(*) as count')
+            ->selectRaw('COUNT(CASE WHEN payment_confirmed = 1 THEN 1 END) as paid_count')
+            ->groupBy('regency_name')
+            ->orderBy('count', 'desc')
+            ->take(10)
+            ->get()
+            ->map(function($item) {
+                return (object) [
+                    'city' => $item->regency_name,
+                    'count' => $item->count,
+                    'paid_count' => $item->paid_count,
+                    'pending_count' => $item->count - $item->paid_count,
+                    'percentage' => 0 // Will be calculated after getting total
+                ];
+            });
+        
+        // Calculate city percentages
+        $totalCityUsers = $cityStats->sum('count');
+        foreach ($cityStats as $stat) {
+            $stat->percentage = $totalCityUsers > 0 ? round(($stat->count / $totalCityUsers) * 100, 1) : 0;
+        }
+        
+        return [
+            'age_groups' => $ageStats,
+            'race_categories' => $raceStats,
+            'cities' => $cityStats,
+            'chart_data' => $chartData, // Add chart data for Chart.js
+            'totals' => [
+                'age_users' => $totalAgeUsers,
+                'race_users' => $totalRaceUsers,
+                'city_users' => $totalCityUsers
+            ]
+        ];
+    }
+    
+    /**
+     * Get age distribution factor for simulation (legacy method)
+     * This is a temporary method until we have actual age data
+     */
+    private function getAgeDistributionFactor($ageGroup)
+    {
+        // Map legacy age groups to new system
+        $legacyFactors = [
+            '18-25' => 0.25,
+            '26-35' => 0.35,
+            '36-45' => 0.25,
+            '46-55' => 0.10,
+            '56+' => 0.05
+        ];
+        
+        return $legacyFactors[$ageGroup] ?? 0.2;
+    }
+    
+    /**
+     * Get Master A users (age 40-49, category 21K, paid status only)
+     */
+    private function getMasterAUsers()
+    {
+        $currentYear = date('Y');
+        $startYear = $currentYear - 49; // 49 years old
+        $endYear = $currentYear - 40;   // 40 years old
+        
+        return User::where('role', '!=', 'admin')
+            ->where('race_category', '21K')
+            ->where('payment_confirmed', true) // Only paid users
+            ->whereNotNull('birth_date')
+            ->whereRaw('YEAR(birth_date) BETWEEN ? AND ?', [$startYear, $endYear])
+            ->select('id', 'name', 'email', 'birth_date', 'payment_confirmed', 'created_at')
+            ->orderBy('name')
+            ->get()
+            ->map(function($user) {
+                $birthYear = date('Y', strtotime($user->birth_date));
+                $age = date('Y') - $birthYear;
+                return (object) [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'age' => $age,
+                    'birth_year' => $birthYear,
+                    'payment_confirmed' => $user->payment_confirmed,
+                    'created_at' => $user->created_at
+                ];
+            });
+    }
+    
+    /**
+     * Get Master B users (age 50+, category 21K, paid status only)
+     */
+    private function getMasterBUsers()
+    {
+        $currentYear = date('Y');
+        $endYear = $currentYear - 50;   // 50 years old and above
+        
+        return User::where('role', '!=', 'admin')
+            ->where('race_category', '21K')
+            ->where('payment_confirmed', true) // Only paid users
+            ->whereNotNull('birth_date')
+            ->whereRaw('YEAR(birth_date) <= ?', [$endYear])
+            ->select('id', 'name', 'email', 'birth_date', 'payment_confirmed', 'created_at')
+            ->orderBy('name')
+            ->get()
+            ->map(function($user) {
+                $birthYear = date('Y', strtotime($user->birth_date));
+                $age = date('Y') - $birthYear;
+                return (object) [
+                    'id' => $user->id,
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'age' => $age,
+                    'birth_year' => $birthYear,
+                    'payment_confirmed' => $user->payment_confirmed,
+                    'created_at' => $user->created_at
+                ];
+            });
     }
 }
