@@ -200,7 +200,6 @@
                                 </span>
                                 
                                 <!-- Payment Status -->
-                                {{-- Debug: Status = {{ $registration->status }} --}}
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                     @if($registration->status === 'paid') bg-green-100 text-green-800 
                                     @else bg-yellow-100 text-yellow-800 @endif">

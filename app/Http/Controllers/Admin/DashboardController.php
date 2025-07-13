@@ -59,7 +59,7 @@ class DashboardController extends Controller
                         'race_category' => $user->race_category,
                         'jersey_size' => $user->jersey_size,
                         'ticket_type' => $user->ticketType ? $user->ticketType->name : 'N/A',
-                        'status' => $user->payment_confirmed ? 'paid' : 'pending',
+                        'status' => $user->payment_status === 'paid' ? 'paid' : 'pending',
                         'created_at' => $user->created_at
                     ];
                 }),
@@ -92,9 +92,12 @@ class DashboardController extends Controller
         // Filter by payment status
         if ($request->filled('payment_status')) {
             if ($request->payment_status === 'paid') {
-                $query->where('payment_confirmed', true);
+                $query->where('payment_status', 'paid');
             } elseif ($request->payment_status === 'pending') {
-                $query->where('payment_confirmed', false);
+                $query->where(function($q) {
+                    $q->where('payment_status', '!=', 'paid')
+                      ->orWhereNull('payment_status');
+                });
             }
         }
 
@@ -229,9 +232,12 @@ class DashboardController extends Controller
         // Apply same filters as in recentRegistrations method
         if ($request->filled('payment_status')) {
             if ($request->payment_status === 'paid') {
-                $query->where('payment_confirmed', true);
+                $query->where('payment_status', 'paid');
             } elseif ($request->payment_status === 'pending') {
-                $query->where('payment_confirmed', false);
+                $query->where(function($q) {
+                    $q->where('payment_status', '!=', 'paid')
+                      ->orWhereNull('payment_status');
+                });
             }
         }
 
