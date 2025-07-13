@@ -223,6 +223,28 @@ class WhatsAppQueueService
     }
 
     /**
+     * Get queue statistics
+     */
+    public function getQueueStats()
+    {
+        $queue = Cache::get(self::QUEUE_KEY, []);
+        
+        $stats = [
+            'total' => count($queue),
+            'pending' => 0,
+            'processing' => 0,
+            'failed' => 0,
+            'completed' => 0
+        ];
+        
+        foreach ($queue as $item) {
+            $stats[$item['status']]++;
+        }
+        
+        return $stats;
+    }
+
+    /**
      * Clear queue (emergency use)
      */
     public function clearQueue()

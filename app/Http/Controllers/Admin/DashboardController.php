@@ -46,7 +46,23 @@ class DashboardController extends Controller
             'conversion_rate' => $conversionRate,
             'total_potential_revenue' => $totalPotentialRevenue,
             'unpaid_potential_revenue' => $unpaidPotentialRevenue,
-            'recent_registrations' => User::where('role', '!=', 'admin')->latest()->take(5)->get(),
+            'recent_registrations' => User::where('role', '!=', 'admin')
+                ->with('ticketType')
+                ->latest()
+                ->take(5)
+                ->get()
+                ->map(function($user) {
+                    return (object) [
+                        'id' => $user->id,
+                        'name' => $user->name,
+                        'email' => $user->email,
+                        'race_category' => $user->race_category,
+                        'jersey_size' => $user->jersey_size,
+                        'ticket_type' => $user->ticketType ? $user->ticketType->name : 'N/A',
+                        'status' => $user->payment_confirmed ? 'paid' : 'pending',
+                        'created_at' => $user->created_at
+                    ];
+                }),
             'total_recent_registrations' => $totalRegistrations,
             'category_stats' => $this->getCategoryStatsByTicketType(),
             'active_ticket_types' => TicketType::where('is_active', true)->count(),
@@ -71,7 +87,7 @@ class DashboardController extends Controller
 
     public function recentRegistrations(Request $request)
     {
-        $query = User::where('role', '!=', 'admin');
+        $query = User::where('role', '!=', 'admin')->with('ticketType');
 
         // Filter by payment status
         if ($request->filled('payment_status')) {
@@ -90,6 +106,18 @@ class DashboardController extends Controller
         // Filter by race category
         if ($request->filled('race_category')) {
             $query->where('race_category', $request->race_category);
+        }
+
+        // Filter by jersey size
+        if ($request->filled('jersey_size')) {
+            $query->where('jersey_size', $request->jersey_size);
+        }
+
+        // Filter by ticket type
+        if ($request->filled('ticket_type')) {
+            $query->whereHas('ticketType', function($q) use ($request) {
+                $q->where('name', 'like', '%' . $request->ticket_type . '%');
+            });
         }
 
         // Filter by date range
@@ -132,6 +160,19 @@ class DashboardController extends Controller
                              ->pluck('race_category')
                              ->sort();
 
+        // Get jersey sizes for filter dropdown
+        $jerseySizes = User::where('role', '!=', 'admin')
+                          ->whereNotNull('jersey_size')
+                          ->distinct()
+                          ->pluck('jersey_size')
+                          ->sort();
+
+        // Get ticket types for filter dropdown
+        $ticketTypes = TicketType::where('is_active', true)
+                                ->distinct()
+                                ->pluck('name')
+                                ->sort();
+
         // Ensure all variables are defined
         $totalCount = $totalCount ?? 0;
         $stats = $stats ?? [
@@ -142,7 +183,7 @@ class DashboardController extends Controller
             'whatsapp_pending' => 0,
         ];
 
-        return view('admin.recent-registrations', compact('users', 'totalCount', 'raceCategories', 'stats'));
+        return view('admin.recent-registrations', compact('users', 'totalCount', 'raceCategories', 'jerseySizes', 'ticketTypes', 'stats'));
     }
 
     public function whatsappVerification()

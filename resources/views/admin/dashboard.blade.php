@@ -183,16 +183,39 @@
                                 <div class="ml-4">
                                     <div class="text-sm font-medium text-gray-900">{{ $registration->name }}</div>
                                     <div class="text-sm text-gray-500">{{ $registration->email }}</div>
+                                    <div class="text-xs text-gray-400 mt-1">
+                                        <i class="fas fa-tshirt mr-1"></i>{{ $registration->jersey_size ?? 'N/A' }}
+                                    </div>
                                 </div>
                             </div>
-                            <div class="flex items-center">
+                            <div class="flex items-center space-x-2">
+                                <!-- Ticket Type Badge -->
+                                <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
+                                    @if(str_contains(strtolower($registration->ticket_type), 'early'))
+                                        bg-green-100 text-green-800
+                                    @else
+                                        bg-blue-100 text-blue-800
+                                    @endif">
+                                    {{ $registration->ticket_type }}
+                                </span>
+                                
+                                <!-- Payment Status -->
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                     @if($registration->status === 'paid') bg-green-100 text-green-800 
                                     @elseif($registration->status === 'pending') bg-yellow-100 text-yellow-800 
                                     @else bg-red-100 text-red-800 @endif">
+                                    @if($registration->status === 'paid')
+                                        <i class="fas fa-check-circle mr-1"></i>
+                                    @elseif($registration->status === 'pending')
+                                        <i class="fas fa-clock mr-1"></i>
+                                    @else
+                                        <i class="fas fa-times-circle mr-1"></i>
+                                    @endif
                                     {{ ucfirst($registration->status) }}
                                 </span>
-                                <div class="ml-4 text-sm text-gray-500">
+                                
+                                <!-- Race Category -->
+                                <div class="text-sm text-gray-500 font-medium">
                                     {{ $registration->race_category }}
                                 </div>
                             </div>

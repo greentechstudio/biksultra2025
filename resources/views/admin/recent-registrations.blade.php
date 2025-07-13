@@ -61,7 +61,7 @@ use Illuminate\Support\Facades\Route;
         <!-- Filter Panel -->
         <div id="filterPanel" class="border-t border-gray-200 bg-gray-50 px-4 py-4 {{ request()->hasAny(['payment_status', 'whatsapp_verified', 'race_category', 'date_from', 'date_to', 'search']) ? '' : 'hidden' }}">
             <form method="GET" action="{{ route('admin.recent-registrations') }}" class="space-y-4">
-                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
                     <!-- Search -->
                     <div>
                         <label for="search" class="block text-sm font-medium text-gray-700">Search</label>
@@ -85,18 +85,6 @@ use Illuminate\Support\Facades\Route;
                         </select>
                     </div>
 
-                    <!-- WhatsApp Verification -->
-                    <div>
-                        <label for="whatsapp_verified" class="block text-sm font-medium text-gray-700">WhatsApp Status</label>
-                        <select name="whatsapp_verified" 
-                                id="whatsapp_verified"
-                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
-                            <option value="">All Status</option>
-                            <option value="1" {{ request('whatsapp_verified') === '1' ? 'selected' : '' }}>Verified</option>
-                            <option value="0" {{ request('whatsapp_verified') === '0' ? 'selected' : '' }}>Not Verified</option>
-                        </select>
-                    </div>
-
                     <!-- Race Category -->
                     <div>
                         <label for="race_category" class="block text-sm font-medium text-gray-700">Race Category</label>
@@ -109,6 +97,48 @@ use Illuminate\Support\Facades\Route;
                                 {{ $category }}
                             </option>
                             @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Jersey Size -->
+                    <div>
+                        <label for="jersey_size" class="block text-sm font-medium text-gray-700">Jersey Size</label>
+                        <select name="jersey_size" 
+                                id="jersey_size"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">All Sizes</option>
+                            @foreach($jerseySizes ?? [] as $size)
+                            <option value="{{ $size }}" {{ request('jersey_size') === $size ? 'selected' : '' }}>
+                                {{ $size }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- Ticket Type -->
+                    <div>
+                        <label for="ticket_type" class="block text-sm font-medium text-gray-700">Ticket Type</label>
+                        <select name="ticket_type" 
+                                id="ticket_type"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">All Types</option>
+                            @foreach($ticketTypes ?? [] as $type)
+                            <option value="{{ $type }}" {{ request('ticket_type') === $type ? 'selected' : '' }}>
+                                {{ $type }}
+                            </option>
+                            @endforeach
+                        </select>
+                    </div>
+
+                    <!-- WhatsApp Verification -->
+                    <div>
+                        <label for="whatsapp_verified" class="block text-sm font-medium text-gray-700">WhatsApp Status</label>
+                        <select name="whatsapp_verified" 
+                                id="whatsapp_verified"
+                                class="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm">
+                            <option value="">All Status</option>
+                            <option value="1" {{ request('whatsapp_verified') === '1' ? 'selected' : '' }}>Verified</option>
+                            <option value="0" {{ request('whatsapp_verified') === '0' ? 'selected' : '' }}>Not Verified</option>
                         </select>
                     </div>
 
@@ -236,9 +266,25 @@ use Illuminate\Support\Facades\Route;
                                 <div class="text-sm font-medium text-gray-900">{{ $user->race_category }}</div>
                                 <div class="text-xs text-gray-500">{{ $user->created_at->format('d M Y') }}</div>
                                 <div class="text-xs text-gray-400">{{ $user->created_at->format('H:i') }}</div>
-                                @if($user->jersey_size)
-                                <div class="text-xs text-purple-600 mt-1">Jersey: {{ $user->jersey_size }}</div>
-                                @endif
+                                
+                                <div class="flex items-center justify-end space-x-2 mt-1">
+                                    @if($user->jersey_size)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
+                                        <i class="fas fa-tshirt mr-1"></i>{{ $user->jersey_size }}
+                                    </span>
+                                    @endif
+                                    
+                                    @if($user->ticketType)
+                                    <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium
+                                        @if(str_contains(strtolower($user->ticketType->name), 'early'))
+                                            bg-green-100 text-green-800
+                                        @else
+                                            bg-blue-100 text-blue-800
+                                        @endif">
+                                        {{ $user->ticketType->name }}
+                                    </span>
+                                    @endif
+                                </div>
                             </div>
                             
                             <!-- Status Badges -->
