@@ -574,11 +574,11 @@
             box-shadow: var(--shadow-md);
             letter-spacing: var(--tracking-wide);
             text-transform: uppercase;
-            max-width: 100%;
             box-sizing: border-box;
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
+            flex-shrink: 1;
         }
 
         .cta-button::after {
@@ -595,6 +595,60 @@
 
         .cta-button:hover::after {
             transform: translateX(4px);
+        }
+
+        /* Hero buttons container for side-by-side layout */
+        .hero-buttons {
+            display: flex;
+            gap: 20px;
+            align-items: center;
+            flex-wrap: nowrap;
+            justify-content: flex-start;
+        }
+
+        /* Login button styles - complementary to cta-button */
+        .login-button {
+            background: linear-gradient(135deg, #ffffff, #f8f9fa);
+            color: var(--accent-orange);
+            padding: 20px 40px;
+            border: 2px solid var(--accent-orange);
+            border-radius: var(--border-radius-xl);
+            font-size: clamp(1rem, 2.5vw, 1.125rem);
+            font-weight: var(--font-weight-bold);
+            cursor: pointer;
+            transition: var(--transition);
+            text-decoration: none;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            box-shadow: var(--shadow-sm);
+            letter-spacing: var(--tracking-wide);
+            text-transform: uppercase;
+            box-sizing: border-box;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            position: relative;
+            flex-shrink: 0;
+        }
+
+        .login-button::before {
+            content: '👤';
+            font-size: var(--text-lg);
+            transition: var(--transition);
+        }
+
+        .login-button:hover {
+            background: linear-gradient(135deg, var(--accent-orange), var(--dark-orange));
+            color: white;
+            transform: translateY(-3px);
+            box-shadow: var(--shadow-lg);
+            border-color: var(--dark-orange);
+        }
+
+        .login-button:hover::before {
+            transform: scale(1.1);
         }
 
         .hero-image {
@@ -1321,6 +1375,19 @@
                 padding: 16px 35px;
                 font-size: clamp(0.9rem, 3.5vw, 1rem);
             }
+
+            /* Tablet hero buttons layout - keep side by side */
+            .hero-buttons {
+                justify-content: center;
+                gap: 20px;
+                flex-wrap: nowrap;
+            }
+
+            .login-button {
+                padding: 16px 28px;
+                font-size: clamp(0.9rem, 3.5vw, 1rem);
+                flex-shrink: 0;
+            }
             
             .hero-image {
                 order: 2;
@@ -1390,17 +1457,25 @@
             
             .hero {
                 padding: 80px 0 50px;
-                min-height: 80vh;
+                min-height: 100vh;
             }
             
             .hero-content {
                 gap: 32px;
-                max-width: 400px;
+                max-width: 420px;
+                margin: 0 auto;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                width: 100%;
+                margin-bottom: 24px;
             }
             
             .hero-text h1 {
                 font-size: clamp(1.75rem, 9vw, 2.5rem);
                 margin-bottom: 20px;
+                line-height: 1.15;
             }
             
             .hero-text .date {
@@ -1413,11 +1488,31 @@
                 margin-bottom: 30px;
                 font-size: clamp(0.85rem, 4vw, 0.95rem);
             }
-            
-            .cta-button {
-                padding: 14px 28px;
-                font-size: clamp(0.85rem, 4vw, 0.95rem);
+
+            /* Mobile hero buttons adjustments - keep side by side */
+            .hero-buttons {
+                flex-direction: row;
                 gap: 12px;
+                width: 100%;
+                flex-wrap: nowrap;
+                justify-content: center;
+                margin-bottom: 24px;
+            }
+
+            .cta-button {
+                padding: 14px 20px;
+                font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+                gap: 8px;
+                flex: 1;
+                min-width: 0;
+            }
+
+            .login-button {
+                padding: 14px 16px;
+                font-size: clamp(0.8rem, 3.5vw, 0.9rem);
+                gap: 6px;
+                flex: 0 0 auto;
+                min-width: 80px;
             }
             
             .runner-image {
@@ -1673,6 +1768,41 @@
                 white-space: nowrap;
             }
 
+            /* Ultra small mobile hero buttons - keep side by side */
+            .hero-buttons {
+                gap: 8px;
+                width: 100%;
+                flex-wrap: nowrap;
+                justify-content: center;
+            }
+
+            .cta-button {
+                padding: 12px 16px;
+                font-size: 0.8rem;
+                flex: 1;
+                min-width: 0;
+                box-sizing: border-box;
+                border-radius: 8px;
+                margin-bottom: 0;
+                word-break: keep-all;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
+            .login-button {
+                padding: 12px 12px;
+                font-size: 0.8rem;
+                flex: 0 0 auto;
+                min-width: 70px;
+                box-sizing: border-box;
+                border-radius: 8px;
+                word-break: keep-all;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis;
+            }
+
             .registration-supported {
                 margin-top: 16px;
                 gap: 6px;
@@ -1782,4 +1912,130 @@
                 overflow-wrap: break-word;
             }
         }
-    </style>
+
+        /* Medium mobile (425px) */
+        @media (max-width: 425px) {
+            .hero {
+                padding: 70px 0 40px;
+                min-height: 100vh;
+            }
+            
+            .hero-content {
+                gap: 24px;
+                max-width: 380px;
+                margin: 0 auto;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .hero-text h1 {
+                font-size: clamp(1.8rem, 8.5vw, 2.2rem);
+                margin-bottom: 16px;
+                line-height: 1.1;
+            }
+            
+            .hero-text .date {
+                font-size: clamp(0.9rem, 4vw, 1rem);
+                margin-bottom: 20px;
+            }
+            
+            .hashtag {
+                padding: 10px 20px;
+                margin-bottom: 24px;
+                font-size: clamp(0.8rem, 3.8vw, 0.9rem);
+            }
+            
+            .hero-buttons {
+                gap: 10px;
+                width: 100%;
+                margin-bottom: 20px;
+            }
+            
+            .cta-button {
+                padding: 12px 18px;
+                font-size: clamp(0.75rem, 3.5vw, 0.85rem);
+                gap: 6px;
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .login-button {
+                padding: 12px 14px;
+                font-size: clamp(0.75rem, 3.5vw, 0.85rem);
+                gap: 4px;
+                flex: 0 0 auto;
+                min-width: 75px;
+            }
+            
+            .runner-image {
+                max-width: 350px;
+            }
+        }
+
+        /* Small mobile (375px) */
+        @media (max-width: 375px) {
+            .hero {
+                padding: 60px 0 30px;
+                min-height: 100vh;
+            }
+            
+            .hero-content {
+                gap: 20px;
+                max-width: 350px;
+                margin: 0 auto;
+            }
+            
+            .hero-text {
+                padding-right: 0;
+                width: 100%;
+                margin-bottom: 16px;
+            }
+            
+            .hero-text h1 {
+                font-size: clamp(1.6rem, 8vw, 2rem);
+                margin-bottom: 12px;
+                line-height: 1.05;
+            }
+            
+            .hero-text .date {
+                font-size: clamp(0.85rem, 3.8vw, 0.95rem);
+                margin-bottom: 16px;
+            }
+            
+            .hashtag {
+                padding: 8px 16px;
+                margin-bottom: 20px;
+                font-size: clamp(0.75rem, 3.5vw, 0.85rem);
+            }
+            
+            .hero-buttons {
+                gap: 8px;
+                width: 100%;
+                margin-bottom: 16px;
+            }
+            
+            .cta-button {
+                padding: 10px 14px;
+                font-size: clamp(0.7rem, 3.2vw, 0.8rem);
+                gap: 4px;
+                flex: 1;
+                min-width: 0;
+            }
+            
+            .login-button {
+                padding: 10px 12px;
+                font-size: clamp(0.7rem, 3.2vw, 0.8rem);
+                gap: 2px;
+                flex: 0 0 auto;
+                min-width: 70px;
+            }
+            
+            .runner-image {
+                max-width: 320px;
+            }
+        }
+</style>

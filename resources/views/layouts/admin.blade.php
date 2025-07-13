@@ -7,6 +7,18 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <script src="https://cdn.tailwindcss.com"></script>
     <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    
+    <!-- DataTables CSS -->
+    <link href="https://cdn.datatables.net/1.13.7/css/dataTables.tailwindcss.min.css" rel="stylesheet">
+    <link href="https://cdn.datatables.net/responsive/2.5.0/css/responsive.dataTables.min.css" rel="stylesheet">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+    
+    <!-- DataTables JS -->
+    <script src="https://cdn.datatables.net/1.13.7/js/jquery.dataTables.min.js"></script>
+    <script src="https://cdn.datatables.net/1.13.7/js/dataTables.tailwindcss.min.js"></script>
+    <script src="https://cdn.datatables.net/responsive/2.5.0/js/dataTables.responsive.min.js"></script>
     <style>
         @media (max-width: 768px) {
             .sidebar-mobile {
@@ -16,6 +28,36 @@
             .sidebar-mobile.active {
                 transform: translateX(0);
             }
+        }
+        
+        /* DataTables custom styling for Tailwind */
+        .dataTables_wrapper .dataTables_filter input {
+            @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+        }
+        
+        .dataTables_wrapper .dataTables_length select {
+            @apply px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button {
+            @apply px-3 py-2 mx-1 border border-gray-300 rounded text-gray-700 hover:bg-gray-50;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.current {
+            @apply bg-blue-600 text-white border-blue-600 hover:bg-blue-700;
+        }
+        
+        .dataTables_wrapper .dataTables_paginate .paginate_button.disabled {
+            @apply text-gray-400 cursor-not-allowed hover:bg-white;
+        }
+        
+        .dataTables_wrapper .dataTables_info {
+            @apply text-sm text-gray-700;
+        }
+        
+        .dataTables_wrapper .dataTables_length label,
+        .dataTables_wrapper .dataTables_filter label {
+            @apply text-sm font-medium text-gray-700;
         }
     </style>
 </head>

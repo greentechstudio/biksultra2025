@@ -4,10 +4,10 @@
         <div class="registration-content">
             <div class="registration-info">
                 <h2>OPEN<br>REGISTRATION</h2>
-                <p class="registration-details">JUL, 10 2025</p>
+                <p class="registration-details">JUL, 15 2025</p>
                 <div class="early-bird">
-                    <h3>EARLY BIRD</h3>
-                    <p>LIMITED STOCK</p>
+                    <h3>NORMAL PRICE</h3>
+                    <p>TAKE IT FAST</p>
                 </div>
             </div>
             

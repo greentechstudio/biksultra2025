@@ -358,10 +358,10 @@
         </div>
     </div>
 
-    <!-- Demographics Statistics -->
-    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
+    <!-- Demographics Statistics & Quick Actions -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-3 gap-6">
         <!-- Demographics by Age Group Chart -->
-        <div class="bg-white shadow rounded-lg">
+        <div class="lg:col-span-2 bg-white shadow rounded-lg">
             <div class="px-4 py-5 sm:px-6">
                 <h3 class="text-lg leading-6 font-medium text-gray-900">Demographics by Age Group & Race Category</h3>
                 <p class="mt-1 max-w-2xl text-sm text-gray-500">Registration distribution by age groups and race categories (Paid users only)</p>
@@ -436,8 +436,39 @@
             </div>
         </div>
 
-        <!-- Master A & Master B Tables -->
-        <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+        <!-- Quick Actions -->
+        <div class="bg-white shadow rounded-lg">
+            <div class="px-4 py-5 sm:px-6">
+                <h3 class="text-lg leading-6 font-medium text-gray-900">Quick Actions</h3>
+                <p class="mt-1 max-w-2xl text-sm text-gray-500">Common administrative tasks</p>
+            </div>
+            <div class="border-t border-gray-200">
+                <div class="px-4 py-5 sm:px-6">
+                    <div class="space-y-4">
+                        <a href="{{ route('admin.ticket-types.create') }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
+                            <i class="fas fa-plus mr-2"></i>
+                            Add Ticket Type
+                        </a>
+                        <a href="{{ route('admin.settings') }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-cogs mr-2"></i>
+                            Manage Settings
+                        </a>
+                        <a href="{{ route('admin.unpaid-registrations.index') }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fas fa-exclamation-triangle mr-2"></i>
+                            Check Unpaid
+                        </a>
+                        <a href="{{ route('admin.whatsapp-queue.index') }}" class="w-full inline-flex items-center justify-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
+                            <i class="fab fa-whatsapp mr-2"></i>
+                            WhatsApp Queue
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Master A & Master B Tables -->
+    <div class="mt-8 grid grid-cols-1 lg:grid-cols-2 gap-6">
             <!-- Master A: Age 40-49, Category 21K -->
             <div class="bg-white shadow rounded-lg">
                 <div class="px-4 py-5 sm:px-6">
@@ -453,14 +484,20 @@
                                 </div>
                             </div>
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
+                                <table id="masterATable" class="min-w-full divide-y divide-gray-200 display responsive nowrap" style="width:100%">
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Name
                                             </th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Email
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Age
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Birth Year
                                             </th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
@@ -472,11 +509,15 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900">{{ $user->age }}</div>
-                                                <div class="text-xs text-gray-500">Born {{ $user->birth_year }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-xs text-gray-500">{{ $user->birth_year }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -515,14 +556,20 @@
                                 </div>
                             </div>
                             <div class="overflow-x-auto">
-                                <table class="min-w-full divide-y divide-gray-200">
+                                <table id="masterBTable" class="min-w-full divide-y divide-gray-200 display responsive nowrap" style="width:100%">
                                     <thead class="bg-gray-50">
                                         <tr>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Name
                                             </th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Email
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Age
+                                            </th>
+                                            <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                                                Birth Year
                                             </th>
                                             <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
                                                 Status
@@ -534,11 +581,15 @@
                                         <tr>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm font-medium text-gray-900">{{ $user->name }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-500">{{ $user->email }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <div class="text-sm text-gray-900">{{ $user->age }}</div>
-                                                <div class="text-xs text-gray-500">Born {{ $user->birth_year }}</div>
+                                            </td>
+                                            <td class="px-6 py-4 whitespace-nowrap">
+                                                <div class="text-xs text-gray-500">{{ $user->birth_year }}</div>
                                             </td>
                                             <td class="px-6 py-4 whitespace-nowrap">
                                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
@@ -559,36 +610,6 @@
                             </div>
                         @endif
                     </div>
-                </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- Quick Actions -->
-    <div class="mt-8 bg-white shadow rounded-lg">
-        <div class="px-4 py-5 sm:px-6">
-            <h3 class="text-lg leading-6 font-medium text-gray-900">Quick Actions</h3>
-            <p class="mt-1 max-w-2xl text-sm text-gray-500">Common administrative tasks</p>
-        </div>
-        <div class="border-t border-gray-200">
-            <div class="px-4 py-5 sm:px-6">
-                <div class="grid grid-cols-1 md:grid-cols-4 gap-4">
-                    <a href="{{ route('admin.ticket-types.create') }}" class="inline-flex items-center px-4 py-2 border border-transparent text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700">
-                        <i class="fas fa-plus mr-2"></i>
-                        Add Ticket Type
-                    </a>
-                    <a href="{{ route('admin.settings') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fas fa-cogs mr-2"></i>
-                        Manage Settings
-                    </a>
-                    <a href="{{ route('admin.unpaid-registrations.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fas fa-exclamation-triangle mr-2"></i>
-                        Check Unpaid
-                    </a>
-                    <a href="{{ route('admin.whatsapp-queue.index') }}" class="inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50">
-                        <i class="fab fa-whatsapp mr-2"></i>
-                        WhatsApp Queue
-                    </a>
                 </div>
             </div>
         </div>
@@ -918,6 +939,63 @@ document.addEventListener('DOMContentLoaded', function() {
         
     } catch (globalError) {
         console.error('Global error in ApexCharts initialization:', globalError);
+    }
+});
+
+// Initialize DataTables for Master A and Master B
+$(document).ready(function() {
+    // Master A DataTable
+    if ($('#masterATable').length) {
+        $('#masterATable').DataTable({
+            pageLength: 15,
+            responsive: true,
+            order: [[0, 'asc']], // Sort by name
+            language: {
+                search: "Search Master A:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ Master A users",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            },
+            columnDefs: [
+                {
+                    targets: [4], // Status column
+                    orderable: false
+                }
+            ],
+            dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4"<"flex-shrink-0"l><"flex-grow"f>>rtip'
+        });
+    }
+
+    // Master B DataTable
+    if ($('#masterBTable').length) {
+        $('#masterBTable').DataTable({
+            pageLength: 15,
+            responsive: true,
+            order: [[0, 'asc']], // Sort by name
+            language: {
+                search: "Search Master B:",
+                lengthMenu: "Show _MENU_ entries per page",
+                info: "Showing _START_ to _END_ of _TOTAL_ Master B users",
+                paginate: {
+                    first: "First",
+                    last: "Last",
+                    next: "Next",
+                    previous: "Previous"
+                }
+            },
+            columnDefs: [
+                {
+                    targets: [4], // Status column
+                    orderable: false
+                }
+            ],
+            dom: '<"flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4"<"flex-shrink-0"l><"flex-grow"f>>rtip'
+        });
     }
 });
 </script>
