@@ -191,27 +191,24 @@
                             <div class="flex items-center space-x-2">
                                 <!-- Ticket Type Badge -->
                                 <span class="inline-flex items-center px-2 py-1 rounded-full text-xs font-medium
-                                    @if(str_contains(strtolower($registration->ticket_type), 'early'))
+                                    @if($registration->ticket_type && str_contains(strtolower($registration->ticket_type), 'early'))
                                         bg-green-100 text-green-800
                                     @else
                                         bg-blue-100 text-blue-800
                                     @endif">
-                                    {{ $registration->ticket_type }}
+                                    {{ $registration->ticket_type ?? 'Regular' }}
                                 </span>
                                 
                                 <!-- Payment Status -->
+                                {{-- Debug: Status = {{ $registration->status }} --}}
                                 <span class="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium 
                                     @if($registration->status === 'paid') bg-green-100 text-green-800 
-                                    @elseif($registration->status === 'pending') bg-yellow-100 text-yellow-800 
-                                    @else bg-red-100 text-red-800 @endif">
+                                    @else bg-yellow-100 text-yellow-800 @endif">
                                     @if($registration->status === 'paid')
-                                        <i class="fas fa-check-circle mr-1"></i>
-                                    @elseif($registration->status === 'pending')
-                                        <i class="fas fa-clock mr-1"></i>
+                                        <i class="fas fa-check-circle mr-1"></i>Paid
                                     @else
-                                        <i class="fas fa-times-circle mr-1"></i>
+                                        <i class="fas fa-clock mr-1"></i>Pending
                                     @endif
-                                    {{ ucfirst($registration->status) }}
                                 </span>
                                 
                                 <!-- Race Category -->
