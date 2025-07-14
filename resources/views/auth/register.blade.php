@@ -569,7 +569,7 @@
                                 <div class="ticket-type-info">
                                     <h3 class="text-lg font-semibold text-gray-800 ticket-type-name">-</h3>
                                     <p class="text-2xl font-bold text-green-600 ticket-price">Rp 0</p>
-                                    <div class="ticket-quota">
+                                    <div class="ticket-quota hidden">
                                         <small class="text-gray-600">Kuota tersisa: <span class="remaining-quota font-semibold">-</span></small>
                                     </div>
                                 </div>
