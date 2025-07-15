@@ -22,7 +22,7 @@ class Kernel extends ConsoleKernel
     protected function schedule(Schedule $schedule): void
     {
         // Send payment reminders every 30 minutes
-        $schedule->command('registrations:process-unpaid', ['--reminders-only'])
+        $schedule->command('registrations:process-unpaid --reminders')
             ->everyThirtyMinutes()
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/payment-reminders.log'));
