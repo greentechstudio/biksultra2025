@@ -23,12 +23,12 @@ class UnpaidRegistrationsController extends Controller
             
         $needReminders = User::where('payment_status', '!=', 'paid')
             ->whereNull('payment_date')
-            ->where('created_at', '>', Carbon::now()->subHours(6))
+            ->where('created_at', '>', Carbon::now()->subHours(24))
             ->count();
             
         $needCleanup = User::where('payment_status', '!=', 'paid')
             ->whereNull('payment_date')
-            ->where('created_at', '<', Carbon::now()->subHours(6))
+            ->where('created_at', '<', Carbon::now()->subHours(24))
             ->count();
             
         return response()->json([
@@ -46,12 +46,12 @@ class UnpaidRegistrationsController extends Controller
     {
         $reminderUsers = User::where('payment_status', '!=', 'paid')
             ->whereNull('payment_date')
-            ->where('created_at', '>', Carbon::now()->subHours(6))
+            ->where('created_at', '>', Carbon::now()->subHours(24))
             ->get();
             
         $cleanupUsers = User::where('payment_status', '!=', 'paid')
             ->whereNull('payment_date')
-            ->where('created_at', '<', Carbon::now()->subHours(6))
+            ->where('created_at', '<', Carbon::now()->subHours(24))
             ->get();
             
         $reminderCandidates = [];

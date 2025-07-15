@@ -13,6 +13,7 @@ class Kernel extends ConsoleKernel
     protected $commands = [
         \App\Console\Commands\ProcessUnpaidRegistrations::class,
         \App\Console\Commands\RunScheduler::class,
+        \App\Console\Commands\CleanupUnpaidUsers::class,
     ];
 
     /**
@@ -20,15 +21,17 @@ class Kernel extends ConsoleKernel
      */
     protected function schedule(Schedule $schedule): void
     {
+        // Send payment reminders every 30 minutes
         $schedule->command('registrations:process-unpaid', ['--reminders-only'])
-            ->everyFiveMinutes()
+            ->everyThirtyMinutes()
             ->withoutOverlapping()
             ->appendOutputTo(storage_path('logs/payment-reminders.log'));
 
-        $schedule->command('registrations:process-unpaid', ['--cleanup-only'])
-            ->everyThirtyMinutes()
+        // Cleanup unpaid users after 24 hours - run every hour
+        $schedule->command('cleanup:unpaid-users')
+            ->hourly()
             ->withoutOverlapping()
-            ->appendOutputTo(storage_path('logs/cleanup-unpaid.log'));
+            ->appendOutputTo(storage_path('logs/cleanup-unpaid-24h.log'));
     }
 
     /**

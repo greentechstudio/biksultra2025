@@ -1,4 +1,4 @@
-<?php
+ <?php
 
 namespace App\Jobs;
 
@@ -49,9 +49,9 @@ class CleanupUnpaidRegistrations implements ShouldQueue
     {
         Log::info('Starting cleanup of unpaid registrations');
         
-        $cutoffTime = Carbon::now()->subHours(6);
+        $cutoffTime = Carbon::now()->subHours(24);
         
-        // Find users who registered more than 6 hours ago and haven't paid
+        // Find users who registered more than 24 hours ago and haven't paid
         $unpaidUsers = User::where('created_at', '<', $cutoffTime)
             ->where('payment_status', '!=', 'paid')
             ->whereNull('payment_confirmed_at')
@@ -85,7 +85,7 @@ class CleanupUnpaidRegistrations implements ShouldQueue
                 $user->delete();
                 $deletedCount++;
                 
-                Log::info('Deleted unpaid user', [
+                Log::info('Deleted unpaid user after 24 hours', [
                     'user_id' => $user->id,
                     'email' => $user->email,
                     'race_category' => $user->race_category,
@@ -120,7 +120,7 @@ class CleanupUnpaidRegistrations implements ShouldQueue
         
         $message = "⚠️ *PEMBERITAHUAN PENGHAPUSAN DATA* ⚠️\n\n";
         $message .= "Halo *{$user->name}*,\n\n";
-        $message .= "Data registrasi Anda di Amazing Sultra Run telah dihapus karena tidak melakukan pembayaran dalam 6 jam.\n\n";
+        $message .= "Data registrasi Anda di Amazing Sultra Run telah dihapus karena tidak melakukan pembayaran dalam 24 jam.\n\n";
         $message .= "📋 *Detail Registrasi:*\n";
         $message .= "• Nama: {$user->name}\n";
         $message .= "• Email: {$user->email}\n";
@@ -131,7 +131,7 @@ class CleanupUnpaidRegistrations implements ShouldQueue
         $message .= "Jika Anda masih ingin mengikuti event ini, silakan lakukan registrasi ulang di:\n";
         $message .= url('/register') . "\n\n";
         $message .= "⏰ *Reminder:*\n";
-        $message .= "• Pembayaran harus dilakukan dalam 6 jam setelah registrasi\n";
+        $message .= "• Pembayaran harus dilakukan dalam 24 jam setelah registrasi\n";
         $message .= "• Data akan dihapus otomatis jika tidak ada pembayaran\n";
         $message .= "• Lakukan pembayaran segera setelah registrasi\n\n";
         $message .= "📞 Butuh bantuan? Hubungi: +62811-4000-805\n\n";

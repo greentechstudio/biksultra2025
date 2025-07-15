@@ -1691,7 +1691,7 @@ document.addEventListener('DOMContentLoaded', function() {
                         <div class="ticket-type-info">
                             <h3 class="text-lg font-semibold text-gray-800">${ticketType.name} - ${ticketType.category}</h3>
                             <p class="text-2xl font-bold text-green-600">${ticketType.formatted_price || 'Rp 0'}</p>
-                            <div class="ticket-quota ${quotaColor}">
+                            <div class="ticket-quota hidden ${quotaColor}">
                                 <small class="text-gray-600">Kuota tersisa: <span class="remaining-quota font-semibold">${quotaText}</span></small>
                             </div>
                         </div>
