@@ -1,4 +1,4 @@
- <?php
+<?php
 
 namespace App\Jobs;
 
@@ -68,7 +68,9 @@ class CleanupUnpaidRegistrations implements ShouldQueue
                 
                 // Decrement ticket type registered count before deleting user
                 if ($user->race_category) {
-                    $ticketType = \App\Models\TicketType::where('category', $user->race_category)->first();
+                    $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($user) {
+                        $query->where('name', $user->race_category);
+                    })->first();
                     if ($ticketType) {
                         $ticketType->decrementRegisteredCount();
                         Log::info('Decremented registered count for ticket type', [
