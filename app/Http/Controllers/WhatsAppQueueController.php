@@ -128,9 +128,9 @@ class WhatsAppQueueController extends Controller
         foreach ($unpaidUsers as $user) {
             $hoursElapsed = $user->created_at->diffInHours($now);
             $minutesElapsed = $user->created_at->diffInMinutes($now);
-            $timeRemaining = (6 * 60) - $minutesElapsed;
+            $timeRemaining = (24 * 60) - $minutesElapsed;
             
-            if ($hoursElapsed < 6) {
+            if ($hoursElapsed < 24) {
                 $stats['within_6_hours']++;
                 
                 $hoursRem = floor($timeRemaining / 60);
