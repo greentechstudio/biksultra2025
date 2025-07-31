@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Collective Registration JavaScript</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .test-result { padding: 10px; margin: 5px 0; border-radius: 5px; }
+        .pass { background: #d4edda; border: 1px solid #c3e6cb; color: #155724; }
+        .fail { background: #f8d7da; border: 1px solid #f5c6cb; color: #721c24; }
+        .info { background: #d1ecf1; border: 1px solid #bee5eb; color: #0c5460; }
+    </style>
+</head>
+<body>
+    <h1>Test Collective Registration JavaScript Functions</h1>
+    
+    <div id="test-results"></div>
+    
+    <script>
+        function runTests() {
+            const results = [];
+            
+            // Test 1: Check if JavaScript functions are defined
+            if (typeof addParticipant === 'function') {
+                results.push({type: 'pass', message: '✅ Function addParticipant() is defined'});
+            } else {
+                results.push({type: 'fail', message: '❌ Function addParticipant() is not defined'});
+            }
+            
+            if (typeof removeParticipant === 'function') {
+                results.push({type: 'pass', message: '✅ Function removeParticipant() is defined'});
+            } else {
+                results.push({type: 'fail', message: '❌ Function removeParticipant() is not defined'});
+            }
+            
+            if (typeof checkFormCompletion === 'function') {
+                results.push({type: 'pass', message: '✅ Function checkFormCompletion() is defined'});
+            } else {
+                results.push({type: 'fail', message: '❌ Function checkFormCompletion() is not defined'});
+            }
+            
+            if (typeof updateCounters === 'function') {
+                results.push({type: 'pass', message: '✅ Function updateCounters() is defined'});
+            } else {
+                results.push({type: 'fail', message: '❌ Function updateCounters() is not defined'});
+            }
+            
+            // Test 2: Check if variables are defined
+            if (typeof participantCount !== 'undefined') {
+                results.push({type: 'pass', message: `✅ Variable participantCount is defined (value: ${participantCount})`});
+            } else {
+                results.push({type: 'fail', message: '❌ Variable participantCount is not defined'});
+            }
+            
+            // Test 3: Check if DOM elements exist
+            const container = document.getElementById('participantsContainer');
+            if (container) {
+                results.push({type: 'pass', message: '✅ Element participantsContainer exists'});
+                
+                const forms = container.querySelectorAll('.participant-form');
+                if (forms.length === 10) {
+                    results.push({type: 'pass', message: `✅ Initial 10 forms generated (found ${forms.length})`});
+                } else {
+                    results.push({type: 'fail', message: `❌ Expected 10 forms, found ${forms.length}`});
+                }
+            } else {
+                results.push({type: 'fail', message: '❌ Element participantsContainer does not exist'});
+            }
+            
+            const addBtn = document.querySelector('.add-participant-btn');
+            if (addBtn) {
+                results.push({type: 'pass', message: '✅ Add participant button exists'});
+            } else {
+                results.push({type: 'fail', message: '❌ Add participant button does not exist'});
+            }
+            
+            const submitBtn = document.getElementById('submitBtn');
+            if (submitBtn) {
+                results.push({type: 'pass', message: '✅ Submit button exists'});
+            } else {
+                results.push({type: 'fail', message: '❌ Submit button does not exist'});
+            }
+            
+            // Test 4: Check counters
+            const participantCountEl = document.getElementById('participantCount');
+            const completedCountEl = document.getElementById('completedCount');
+            
+            if (participantCountEl && participantCountEl.textContent === '10') {
+                results.push({type: 'pass', message: '✅ Participant counter shows correct value (10)'});
+            } else {
+                const value = participantCountEl ? participantCountEl.textContent : 'element not found';
+                results.push({type: 'fail', message: `❌ Participant counter incorrect (shows: ${value})`});
+            }
+            
+            if (completedCountEl && completedCountEl.textContent === '0') {
+                results.push({type: 'pass', message: '✅ Completed counter shows correct initial value (0)'});
+            } else {
+                const value = completedCountEl ? completedCountEl.textContent : 'element not found';
+                results.push({type: 'fail', message: `❌ Completed counter incorrect (shows: ${value})`});
+            }
+            
+            // Display results
+            const resultsContainer = document.getElementById('test-results');
+            results.forEach(result => {
+                const div = document.createElement('div');
+                div.className = `test-result ${result.type}`;
+                div.textContent = result.message;
+                resultsContainer.appendChild(div);
+            });
+            
+            // Summary
+            const passCount = results.filter(r => r.type === 'pass').length;
+            const failCount = results.filter(r => r.type === 'fail').length;
+            
+            const summary = document.createElement('div');
+            summary.className = `test-result ${failCount === 0 ? 'pass' : 'info'}`;
+            summary.innerHTML = `<strong>SUMMARY: ${passCount} passed, ${failCount} failed</strong>`;
+            resultsContainer.appendChild(summary);
+            
+            if (failCount === 0) {
+                const success = document.createElement('div');
+                success.className = 'test-result pass';
+                success.innerHTML = '<strong>🎉 ALL TESTS PASSED! Collective Registration is ready to use.</strong>';
+                resultsContainer.appendChild(success);
+            }
+        }
+        
+        // Wait for the page to fully load, then run tests
+        if (document.readyState === 'loading') {
+            document.addEventListener('DOMContentLoaded', () => {
+                setTimeout(runTests, 1000); // Wait 1 second for JavaScript to initialize
+            });
+        } else {
+            setTimeout(runTests, 1000);
+        }
+    </script>
+</body>
+</html>

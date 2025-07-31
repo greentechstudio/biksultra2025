@@ -222,10 +222,25 @@ Route::middleware('auth')->group(function () {
         Route::put('/ticket-types/{ticketType}', [\App\Http\Controllers\Admin\TicketTypeController::class, 'update'])->name('ticket-types.update');
         Route::patch('/ticket-types/{ticketType}/toggle-active', [\App\Http\Controllers\Admin\TicketTypeController::class, 'toggleActive'])->name('ticket-types.toggle-active');
         Route::get('/ticket-types/stats', [\App\Http\Controllers\Admin\TicketTypeController::class, 'getStats'])->name('ticket-types.stats');
+        
+        // Clear Rate Limit - Admin only
+        Route::post('/clear-rate-limit', function(\Illuminate\Http\Request $request) {
+            $ip = $request->input('ip');
+            if ($ip) {
+                $rateLimitKey = 'collective_registration_failed:' . $ip;
+                \Illuminate\Support\Facades\Cache::forget($rateLimitKey);
+                return response()->json(['success' => true, 'message' => 'Rate limit cleared for IP: ' . $ip]);
+            } else {
+                // Clear all rate limits
+                \Illuminate\Support\Facades\Cache::flush();
+                return response()->json(['success' => true, 'message' => 'All rate limits cleared']);
+            }
+        })->name('clear-rate-limit');
     });
 });
 
-// Unpaid Registrations API routes
+// Unpaid Registrations API routes - TEMPORARILY COMMENTED OUT
+/*
 Route::prefix('api/unpaid-registrations')->group(function () {
     Route::get('stats', [UnpaidRegistrationsController::class, 'stats']);
     Route::post('dry-run', [UnpaidRegistrationsController::class, 'dryRun']);
@@ -238,6 +253,7 @@ Route::prefix('api/unpaid-registrations')->group(function () {
     Route::get('logs', [UnpaidRegistrationsController::class, 'getLogs']);
     Route::get('jobs', [UnpaidRegistrationsController::class, 'getJobs']);
 });
+*/
 
 // Test routes
 Route::get('/test-debug', function () {

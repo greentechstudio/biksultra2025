@@ -162,7 +162,7 @@
             </h1>
             <p class="text-xl text-gray-600 max-w-4xl mx-auto leading-relaxed">
                 Daftarkan beberapa peserta sekaligus untuk <span class="font-semibold text-red-600">Amazing Sultra Run</span>. 
-                Minimal 1 peserta, maksimal 50 peserta dalam satu kali pendaftaran.
+                <span class="font-semibold text-emerald-600">Minimal 10 peserta</span> dalam satu kali pendaftaran kolektif.
             </p>
         </div>
 

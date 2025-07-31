@@ -18,6 +18,7 @@ use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Str;
 
 class AuthController extends Controller
@@ -1937,6 +1938,44 @@ class AuthController extends Controller
     public function registerKolektif(Request $request)
     {
         try {
+            // ======= BULLETPROOF SECURITY VALIDATION =======
+            // 1. Prevent direct price manipulation
+            if ($request->has('price') || $request->has('registration_fee') || $request->has('amount')) {
+                Log::critical('SECURITY ALERT: Attempted price manipulation in collective registration', [
+                    'ip' => $request->ip(),
+                    'user_agent' => $request->userAgent(),
+                    'request_data' => $request->all(),
+                    'timestamp' => now()
+                ]);
+                
+                return redirect()->back()
+                    ->withErrors(['security' => 'Akses ditolak karena terdeteksi manipulasi data'])
+                    ->withInput();
+            }
+
+            // 2. Rate limiting for collective registration (failed attempts only)
+            $rateLimitKey = 'collective_registration_failed:' . $request->ip();
+            $failedAttempts = Cache::get($rateLimitKey, 0);
+            
+            if ($failedAttempts >= 10) { // Max 10 failed attempts per hour
+                Log::warning('Rate limit exceeded for collective registration', [
+                    'ip' => $request->ip(),
+                    'failed_attempts' => $failedAttempts
+                ]);
+                
+                return redirect()->back()
+                    ->withErrors(['rate_limit' => 'Terlalu banyak percobaan gagal. Silakan coba lagi dalam 1 jam.'])
+                    ->withInput();
+            }
+
+            // 3. Verify session integrity
+            if (!$request->hasValidSignature() && !$request->session()->has('_token')) {
+                Log::warning('Invalid session in collective registration', [
+                    'ip' => $request->ip()
+                ]);
+            }
+
+            // ======= END SECURITY VALIDATION =======
             // Verify reCAPTCHA
             if ($request->has('g-recaptcha-response')) {
                 $recaptchaResult = $this->recaptchaService->verify($request->input('g-recaptcha-response'));
@@ -1951,11 +1990,32 @@ class AuthController extends Controller
             // Get the number of forms submitted
             $participants = $request->input('participants', []);
             
+            // VALIDATION: Minimum 10 participants for collective registration
             if (empty($participants)) {
                 return redirect()->back()
-                    ->withErrors(['participants' => 'Minimal harus ada 1 peserta yang didaftarkan'])
+                    ->withErrors(['participants' => 'Registrasi kolektif minimal harus ada 10 peserta'])
                     ->withInput();
             }
+
+            // Count valid participants (non-empty forms)
+            $validParticipants = 0;
+            foreach ($participants as $participant) {
+                if (!empty($participant['name']) && !empty($participant['email'])) {
+                    $validParticipants++;
+                }
+            }
+
+            if ($validParticipants < 10) {
+                return redirect()->back()
+                    ->withErrors(['participants' => "Registrasi kolektif minimal harus ada 10 peserta. Saat ini hanya {$validParticipants} peserta yang lengkap."])
+                    ->withInput();
+            }
+
+            Log::info('Collective registration started', [
+                'total_forms' => count($participants),
+                'valid_participants' => $validParticipants,
+                'ip' => $request->ip()
+            ]);
 
             $successCount = 0;
             $errors = [];
@@ -2016,10 +2076,48 @@ class AuthController extends Controller
                     $whatsappNumber = $this->formatPhoneNumber($participant['whatsapp_number']);
                     $emergencyPhone = $this->formatPhoneNumber($participant['emergency_contact_phone'] ?? '');
 
-                    // Get ticket type for category (use collective pricing)
+                    // Get ticket type for category (use collective pricing) - SECURITY: Price from DB ONLY
                     $ticketType = $this->getCollectiveTicketTypeForCategory($participant['race_category']);
                     if (!$ticketType) {
                         $errors["participant_" . ($index + 1)] = "Kategori {$participant['race_category']} tidak tersedia";
+                        continue;
+                    }
+
+                    // SECURITY: Validate official price from database - prevent bypass
+                    // Use XenditService to get collective price for this category
+                    $officialPrice = $this->xenditService->getCollectivePrice($participant['race_category']);
+                    if ($officialPrice === false) {
+                        Log::critical('SECURITY ALERT: Invalid ticket type or price manipulation attempt in collective registration', [
+                            'participant_category' => $participant['race_category'],
+                            'participant_index' => $index + 1,
+                            'ip' => $request->ip()
+                        ]);
+                        
+                        $errors["participant_" . ($index + 1)] = "Kategori tidak valid atau harga tidak tersedia";
+                        continue;
+                    }
+
+                    // SECURITY: Double check - ensure we use database price only
+                    Log::info('Price validation debug', [
+                        'ticket_type_price' => $ticketType->price,
+                        'official_price' => $officialPrice,
+                        'ticket_type_id' => $ticketType->id,
+                        'ticket_name' => $ticketType->name,
+                        'participant_category' => $participant['race_category'],
+                        'price_comparison' => $ticketType->price == $officialPrice ? 'MATCH' : 'MISMATCH'
+                    ]);
+                    
+                    if ($ticketType->price != $officialPrice) {
+                        Log::critical('SECURITY ALERT: Price mismatch detected in collective registration', [
+                            'ticket_type_price' => $ticketType->price,
+                            'official_price' => $officialPrice,
+                            'participant_category' => $participant['race_category'],
+                            'ticket_type_id' => $ticketType->id,
+                            'ticket_name' => $ticketType->name,
+                            'ip' => $request->ip()
+                        ]);
+                        
+                        $errors["participant_" . ($index + 1)] = "Kesalahan validasi harga - Ticket: Rp" . number_format($ticketType->price, 0, ',', '.') . ", Official: Rp" . number_format($officialPrice, 0, ',', '.');
                         continue;
                     }
 
@@ -2071,7 +2169,7 @@ class AuthController extends Controller
                         'jersey_size' => $participant['jersey_size'],
                         'race_category' => $participant['race_category'],
                         'ticket_type_id' => $ticketType->id, // Add ticket type ID
-                        'registration_fee' => $ticketType->price, // Add registration fee
+                        'registration_fee' => $officialPrice, // SECURITY: Use validated official price ONLY
                         'whatsapp_number' => $whatsappNumber,
                         'emergency_contact_name' => $participant['emergency_contact_name'],
                         'emergency_contact_phone' => $emergencyPhone,
@@ -2111,6 +2209,10 @@ class AuthController extends Controller
             if ($successCount > 0) {
                 DB::commit();
 
+                // Reset rate limit on successful registration
+                $rateLimitKey = 'collective_registration_failed:' . $request->ip();
+                Cache::forget($rateLimitKey);
+
                 // Send notifications to all successfully registered users
                 $this->sendCollectiveRegistrationNotifications($successfulUsers);
 
@@ -2130,6 +2232,12 @@ class AuthController extends Controller
                 ]);
             } else {
                 DB::rollback();
+                
+                // Increment failed attempt counter
+                $rateLimitKey = 'collective_registration_failed:' . $request->ip();
+                $failedAttempts = Cache::get($rateLimitKey, 0);
+                Cache::put($rateLimitKey, $failedAttempts + 1, 3600); // 1 hour
+                
                 return redirect()->back()
                     ->withErrors($errors ?: ['general' => 'Tidak ada peserta yang berhasil didaftarkan'])
                     ->withInput();
@@ -2137,6 +2245,12 @@ class AuthController extends Controller
 
         } catch (\Exception $e) {
             DB::rollback();
+            
+            // Increment failed attempt counter for exceptions
+            $rateLimitKey = 'collective_registration_failed:' . $request->ip();
+            $failedAttempts = Cache::get($rateLimitKey, 0);
+            Cache::put($rateLimitKey, $failedAttempts + 1, 3600); // 1 hour
+            
             Log::error('Collective registration failed', [
                 'error' => $e->getMessage(),
                 'trace' => $e->getTraceAsString()
@@ -2153,12 +2267,36 @@ class AuthController extends Controller
      */
     private function sendCollectiveRegistrationNotifications($users)
     {
-        // Calculate total amount for all participants
+        // Calculate total amount for all participants - SECURITY: From DB only
         $totalAmount = 0;
         $participantDetails = [];
         
         foreach ($users as $user) {
-            $totalAmount += $user->registration_fee;
+            // SECURITY: Re-validate price from database to prevent manipulation
+            $validatedPrice = $this->xenditService->getCollectivePrice($user->race_category);
+            if ($validatedPrice === false || $validatedPrice != $user->registration_fee) {
+                Log::critical('SECURITY ALERT: Price manipulation detected in collective payment calculation', [
+                    'user_id' => $user->id,
+                    'stored_fee' => $user->registration_fee,
+                    'db_price' => $validatedPrice,
+                    'race_category' => $user->race_category
+                ]);
+                
+                // Use database price as authoritative source
+                if ($validatedPrice !== false) {
+                    $user->update(['registration_fee' => $validatedPrice]);
+                    $totalAmount += $validatedPrice;
+                } else {
+                    Log::error('Failed to validate price for collective payment', [
+                        'user_id' => $user->id,
+                        'race_category' => $user->race_category
+                    ]);
+                    continue; // Skip this user if price validation fails
+                }
+            } else {
+                $totalAmount += $user->registration_fee;
+            }
+            
             $participantDetails[] = [
                 'name' => $user->name,
                 'category' => $user->race_category,
@@ -2233,7 +2371,36 @@ class AuthController extends Controller
                 $firstUser = $users[0]; // Use first user as the primary payer
                 $collectiveDescription = "Amazing Sultra Run - Registrasi Kolektif (" . count($users) . " peserta)";
                 
-                // Create collective payment invoice
+                // SECURITY: Validate total amount before creating invoice
+                if ($totalAmount <= 0) {
+                    Log::critical('SECURITY ALERT: Invalid total amount for collective payment', [
+                        'total_amount' => $totalAmount,
+                        'participant_count' => count($users),
+                        'first_user_id' => $firstUser->id
+                    ]);
+                    throw new \Exception('Invalid payment amount calculated');
+                }
+
+                // SECURITY: Double-check amount calculation
+                $recalculatedTotal = 0;
+                foreach ($users as $checkUser) {
+                    $checkPrice = $this->xenditService->getCollectivePrice($checkUser->race_category);
+                    if ($checkPrice === false) {
+                        throw new \Exception('Price validation failed for user ID: ' . $checkUser->id . ' with category: ' . $checkUser->race_category);
+                    }
+                    $recalculatedTotal += $checkPrice;
+                }
+
+                if ($recalculatedTotal !== $totalAmount) {
+                    Log::critical('SECURITY ALERT: Amount mismatch in collective payment', [
+                        'calculated_total' => $totalAmount,
+                        'recalculated_total' => $recalculatedTotal,
+                        'difference' => abs($totalAmount - $recalculatedTotal)
+                    ]);
+                    throw new \Exception('Payment amount validation failed');
+                }
+                
+                // Create collective payment invoice with security validation
                 $paymentResult = $this->xenditService->createInvoice(
                     $firstUser,
                     $totalAmount, // Total amount for all participants
@@ -2322,7 +2489,12 @@ class AuthController extends Controller
                 $query->where('name', $categoryName);
             })
             ->where('is_active', true)
-            ->where('name', 'LIKE', '%olektif%') // Case insensitive search for "Kolektif" or "kolektif"
+            ->where(function($query) {
+                $query->where('name', 'LIKE', '%kolektif%')
+                      ->orWhere('name', 'LIKE', '%Kolektif%')
+                      ->orWhere('name', 'LIKE', '%collective%')
+                      ->orWhere('name', 'LIKE', '%Collective%');
+            })
             ->first();
             
             if (!$ticketType) {

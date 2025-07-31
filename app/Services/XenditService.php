@@ -397,7 +397,7 @@ class XenditService
      * SECURITY: Validate and get official price from database
      * This prevents price manipulation attacks
      */
-    private function validateAndGetOfficialPrice(User $user): float
+    public function validateAndGetOfficialPrice(User $user): float
     {
         try {
             // SECURITY: Always get price from ticket_types table (source of truth)
@@ -453,6 +453,74 @@ class XenditService
                 'error' => $e->getMessage()
             ]);
             throw $e;
+        }
+    }
+    
+    /**
+     * Get official collective price for a specific race category
+     * Used for collective registration pricing validation
+     */
+    public function getCollectivePrice(string $raceCategory)
+    {
+        try {
+            // Get collective ticket type for the race category
+            // Priority: First look for tickets with "kolektif" in the name, then fallback to any active ticket
+            $ticketType = \App\Models\TicketType::where('is_active', true)
+                ->whereHas('raceCategory', function($query) use ($raceCategory) {
+                    $query->where('name', $raceCategory);
+                })
+                ->where(function($query) {
+                    $query->where('name', 'like', '%kolektif%')
+                          ->orWhere('name', 'like', '%Kolektif%')
+                          ->orWhere('name', 'like', '%collective%')
+                          ->orWhere('name', 'like', '%Collective%');
+                })
+                ->first();
+            
+            // If no specific collective ticket found, use any active ticket for the category
+            if (!$ticketType) {
+                $ticketType = \App\Models\TicketType::where('is_active', true)
+                    ->whereHas('raceCategory', function($query) use ($raceCategory) {
+                        $query->where('name', $raceCategory);
+                    })
+                    ->first();
+            }
+            
+            if (!$ticketType) {
+                \Log::warning('No valid ticket type found for collective registration', [
+                    'race_category' => $raceCategory
+                ]);
+                return false;
+            }
+            
+            // For collective registration, use the ticket price
+            $collectivePrice = (float) $ticketType->price;
+            
+            if ($collectivePrice <= 0) {
+                \Log::warning('Invalid collective price detected', [
+                    'race_category' => $raceCategory,
+                    'price' => $collectivePrice,
+                    'ticket_type_id' => $ticketType->id,
+                    'ticket_name' => $ticketType->name
+                ]);
+                return false;
+            }
+            
+            \Log::info('Collective price validated', [
+                'race_category' => $raceCategory,
+                'price' => $collectivePrice,
+                'ticket_type_id' => $ticketType->id,
+                'ticket_name' => $ticketType->name
+            ]);
+            
+            return $collectivePrice;
+            
+        } catch (\Exception $e) {
+            \Log::error('Collective price validation failed', [
+                'race_category' => $raceCategory,
+                'error' => $e->getMessage()
+            ]);
+            return false;
         }
     }
 }
