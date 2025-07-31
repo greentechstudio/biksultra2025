@@ -2609,21 +2609,21 @@ class AuthController extends Controller
                         'email' => 'peserta1@example.com',
                         'bib_name' => 'RUNNER1',
                         'race_category_name' => '5K',
-                        'registration_fee' => 125000
+                        'registration_fee' => 150000
                     ],
                     (object)[
                         'name' => 'Peserta 2',
                         'email' => 'peserta2@example.com',
                         'bib_name' => 'RUNNER2',
                         'race_category_name' => '10K',
-                        'registration_fee' => 150000
+                        'registration_fee' => 200000
                     ],
                     (object)[
                         'name' => 'Peserta 3',
                         'email' => 'peserta3@example.com',
                         'bib_name' => 'RUNNER3',
                         'race_category_name' => '21K',
-                        'registration_fee' => 175000
+                        'registration_fee' => 250000
                     ]
                 ],
                 'errors' => []
