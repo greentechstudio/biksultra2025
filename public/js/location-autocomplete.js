@@ -134,7 +134,9 @@ class LocationAutocomplete {
         console.log('Searching for:', query); // Debug log
         
         try {
-            const url = `/api/location/search?q=${encodeURIComponent(query)}`;
+            // Use the URL provided by the Laravel view or fallback to relative path
+            const baseUrl = window.locationSearchUrl || '/api/location/search';
+            const url = `${baseUrl}?q=${encodeURIComponent(query)}`;
             console.log('Fetching URL:', url); // Debug log
             
             const response = await fetch(url);

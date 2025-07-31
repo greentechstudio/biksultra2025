@@ -17,6 +17,8 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Str;
 
 class AuthController extends Controller
 {
@@ -57,6 +59,45 @@ class AuthController extends Controller
         $eventSources = EventSource::active()->get();
 
         return view('auth.register-random-password', compact('jerseySizes', 'raceCategories', 'bloodTypes', 'eventSources'));
+    }
+
+    /**
+     * Show the collective registration form (multi-form for multiple users)
+     */
+    public function showRegisterKolektif()
+    {
+        try {
+            // Use correct column names based on table structure
+            $jerseySizes = JerseySize::select('id', 'name')->where('active', 1)->get();
+            $raceCategories = RaceCategory::select('id', 'name')->where('active', 1)->get();
+            $bloodTypes = BloodType::select('id', 'name')->where('active', 1)->get();
+            $eventSources = EventSource::select('id', 'name')->where('active', 1)->get();
+
+            // Debug info with counts
+            \Log::info('Register Kolektif Raw Data:', [
+                'jerseySizes_count' => $jerseySizes->count(),
+                'raceCategories_count' => $raceCategories->count(),
+                'bloodTypes_count' => $bloodTypes->count(),
+                'eventSources_count' => $eventSources->count(),
+                'jerseySizes' => $jerseySizes->toArray(),
+                'raceCategories' => $raceCategories->toArray(),
+                'bloodTypes' => $bloodTypes->toArray(),
+                'eventSources' => $eventSources->toArray()
+            ]);
+
+            return view('auth.register-kolektif', compact('jerseySizes', 'raceCategories', 'bloodTypes', 'eventSources'));
+        } catch (\Exception $e) {
+            \Log::error('Error loading register kolektif data: ' . $e->getMessage());
+            \Log::error('Stack trace: ' . $e->getTraceAsString());
+            
+            // Fallback to empty arrays
+            $jerseySizes = [];
+            $raceCategories = [];
+            $bloodTypes = [];
+            $eventSources = [];
+            
+            return view('auth.register-kolektif', compact('jerseySizes', 'raceCategories', 'bloodTypes', 'eventSources'));
+        }
     }
 
     public function register(Request $request)
@@ -238,6 +279,16 @@ class AuthController extends Controller
 
         // Increment registered count for ticket type
         $ticketType->increment('registered_count');
+
+        // Generate Xendit external_id for regular registration
+        $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+        $user->update(['xendit_external_id' => $externalId]);
+
+        Log::info('Generated xendit_external_id for regular registration', [
+            'user_id' => $user->id,
+            'email' => $user->email,
+            'xendit_external_id' => $externalId
+        ]);
 
         // Send WhatsApp activation message and verify account automatically
         $activationResult = $this->sendActivationMessage($user);
@@ -578,6 +629,51 @@ class AuthController extends Controller
     }
 
     /**
+     * Send collective payment link to the group leader
+     */
+    private function sendCollectivePaymentLink($user, $invoiceUrl, $participantDetails, $totalAmount)
+    {
+        try {
+            // Create participant list for the message
+            $participantList = "";
+            foreach ($participantDetails as $index => $participant) {
+                $participantList .= ($index + 1) . ". " . $participant['name'] . " - " . $participant['category'] . " (Rp " . number_format($participant['fee'], 0, ',', '.') . ")\n";
+            }
+
+            $message = "🏃‍♂️ *AMAZING SULTRA RUN - PEMBAYARAN KOLEKTIF*\n\n";
+            $message .= "Halo " . $user->name . "! 👋\n\n";
+            $message .= "Registrasi kolektif berhasil untuk " . count($participantDetails) . " peserta:\n\n";
+            $message .= $participantList;
+            $message .= "\n💰 *TOTAL PEMBAYARAN: Rp " . number_format($totalAmount, 0, ',', '.') . "*\n\n";
+            $message .= "Silakan lakukan pembayaran melalui link berikut:\n";
+            $message .= "🔗 " . $invoiceUrl . "\n\n";
+            $message .= "ℹ️ *Petunjuk Pembayaran:*\n";
+            $message .= "• Link ini berlaku untuk SEMUA peserta dalam grup Anda\n";
+            $message .= "• Setelah pembayaran berhasil, SEMUA peserta akan otomatis terdaftar\n";
+            $message .= "• Batas waktu pembayaran: 24 jam\n";
+            $message .= "• Jersey akan dikirim ke alamat grup leader\n\n";
+            $message .= "Terima kasih! 🙏\n";
+            $message .= "Tim Amazing Sultra Run";
+
+            $this->whatsappService->sendMessage($user->whatsapp_number, $message);
+
+            Log::info('Collective payment link sent', [
+                'user_id' => $user->id,
+                'total_participants' => count($participantDetails),
+                'total_amount' => $totalAmount,
+                'invoice_url' => $invoiceUrl
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send collective payment link', [
+                'user_id' => $user->id,
+                'total_participants' => count($participantDetails),
+                'error' => $e->getMessage()
+            ]);
+        }
+    }
+
+    /**
      * API registration endpoint
      */
     public function registerApi(Request $request)
@@ -765,12 +861,17 @@ class AuthController extends Controller
             // Increment registered count for ticket type
             $ticketType->increment('registered_count');
 
+            // Generate Xendit external_id for API registration
+            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $user->update(['xendit_external_id' => $externalId]);
+
             Log::info('User created successfully', [
                 'user_id' => $user->id,
                 'email' => $user->email,
                 'registration_number' => $user->registration_number,
                 'ticket_type_id' => $ticketType->id,
-                'category' => $request->category
+                'category' => $request->category,
+                'xendit_external_id' => $externalId
             ]);
 
             // Generate and send random password
@@ -1155,12 +1256,43 @@ class AuthController extends Controller
                 $ticketType->increment('registered_count');
             }
 
-            // Generate and send password via WhatsApp
-            try {
-                $tempPassword = 'ASR' . rand(1000, 9999);
-                $user->update(['password' => Hash::make($tempPassword)]);
+        // Generate and send password via WhatsApp
+        try {
+            // Generate Xendit external_id for simple API registration
+            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $user->update(['xendit_external_id' => $externalId]);
 
-                // Try to send WhatsApp message with login credentials
+            // Create Xendit invoice for simple API registration
+            try {
+                $invoice = $this->xenditService->createInvoice($user);
+                if ($invoice && isset($invoice['success']) && $invoice['success'] && isset($invoice['data'])) {
+                    $invoiceData = $invoice['data'];
+                    $user->update([
+                        'xendit_invoice_id' => $invoiceData['id'],
+                        'xendit_invoice_url' => $invoiceData['invoice_url'],
+                        'status' => 'registered'
+                    ]);
+                    
+                    Log::info('Simple API invoice created successfully', [
+                        'user_id' => $user->id,
+                        'invoice_id' => $invoiceData['id'],
+                        'invoice_url' => $invoiceData['invoice_url']
+                    ]);
+                } else {
+                    Log::warning('Simple API invoice creation failed', [
+                        'user_id' => $user->id,
+                        'response' => $invoice
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Simple API invoice creation error', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
+            $tempPassword = 'ASR' . rand(1000, 9999);
+            $user->update(['password' => Hash::make($tempPassword)]);                // Try to send WhatsApp message with login credentials
                 $whatsappSent = false;
                 try {
                     $whatsappSent = $this->sendWelcomeWhatsAppMessage($user, $tempPassword);
@@ -1305,10 +1437,44 @@ class AuthController extends Controller
                 $ticketType->increment('registered_count');
             }
 
+            // Generate Xendit external_id for ultra simple API registration
+            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $user->update(['xendit_external_id' => $externalId]);
+
+            // Create Xendit invoice for ultra simple API registration
+            try {
+                $invoice = $this->xenditService->createInvoice($user);
+                if ($invoice && isset($invoice['success']) && $invoice['success'] && isset($invoice['data'])) {
+                    $invoiceData = $invoice['data'];
+                    $user->update([
+                        'xendit_invoice_id' => $invoiceData['id'],
+                        'xendit_invoice_url' => $invoiceData['invoice_url'],
+                        'status' => 'registered'
+                    ]);
+                    
+                    Log::info('Ultra simple API invoice created successfully', [
+                        'user_id' => $user->id,
+                        'invoice_id' => $invoiceData['id'],
+                        'invoice_url' => $invoiceData['invoice_url']
+                    ]);
+                } else {
+                    Log::warning('Ultra simple API invoice creation failed', [
+                        'user_id' => $user->id,
+                        'response' => $invoice
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Ultra simple API invoice creation error', [
+                    'user_id' => $user->id,
+                    'error' => $e->getMessage()
+                ]);
+            }
+
             Log::info('Ultra simple registration completed', [
                 'user_id' => $user->id,
                 'registration_number' => $user->registration_number,
-                'ticket_type_id' => $ticketTypeId
+                'ticket_type_id' => $ticketTypeId,
+                'xendit_external_id' => $externalId
             ]);
 
             return response()->json([
@@ -1763,5 +1929,464 @@ class AuthController extends Controller
             ]);
             return [];
         }
+    }
+
+    /**
+     * Process collective registration (multiple users at once)
+     */
+    public function registerKolektif(Request $request)
+    {
+        try {
+            // Verify reCAPTCHA
+            if ($request->has('g-recaptcha-response')) {
+                $recaptchaResult = $this->recaptchaService->verify($request->input('g-recaptcha-response'));
+
+                if (!$recaptchaResult['success']) {
+                    return redirect()->back()
+                        ->withErrors(['recaptcha' => 'reCAPTCHA verification failed: ' . $recaptchaResult['message']])
+                        ->withInput();
+                }
+            }
+
+            // Get the number of forms submitted
+            $participants = $request->input('participants', []);
+            
+            if (empty($participants)) {
+                return redirect()->back()
+                    ->withErrors(['participants' => 'Minimal harus ada 1 peserta yang didaftarkan'])
+                    ->withInput();
+            }
+
+            $successCount = 0;
+            $errors = [];
+            $registrationNumbers = [];
+            $successfulUsers = []; // Array to store successfully registered users
+
+            DB::beginTransaction();
+
+            foreach ($participants as $index => $participant) {
+                try {
+                    // Skip empty forms
+                    if (empty($participant['name']) || empty($participant['email'])) {
+                        continue;
+                    }
+
+                    // Validate individual participant data directly
+                    $validationRules = [
+                        'name' => 'required|string|max:255',
+                        'email' => 'required|string|email|max:255',
+                        'bib_name' => 'required|string|max:255',
+                        'whatsapp_number' => 'required|string|max:15',
+                        'gender' => 'required|in:Laki-laki,Perempuan',
+                        'birth_place' => 'required|string|max:255',
+                        'birth_date' => 'required|date|before:today',
+                        'regency_search' => 'nullable|string|max:255',
+                        'regency_id' => 'nullable|integer',
+                        'regency_name' => 'nullable|string|max:255',
+                        'province_name' => 'nullable|string|max:255',
+                        'address' => 'required|string|max:500',
+                        'jersey_size' => 'required|string|max:10',
+                        'race_category' => 'required|string|max:255',
+                        'emergency_contact_name' => 'required|string|max:255',
+                        'emergency_contact_phone' => 'required|string|max:20',
+                        'blood_type' => 'required|string|max:5',
+                        'occupation' => 'required|string|max:255',
+                        'event_source' => 'required|string|max:255',
+                    ];
+
+                    // Check if email already exists
+                    $existingUser = User::where('email', $participant['email'])->first();
+                    if ($existingUser) {
+                        $errors["participant_" . ($index + 1)] = "Email {$participant['email']} sudah terdaftar";
+                        continue;
+                    }
+
+                    // Validate participant data directly
+                    $validator = Validator::make($participant, $validationRules);
+
+                    if ($validator->fails()) {
+                        $errors["participant_" . ($index + 1)] = $validator->errors()->first();
+                        continue;
+                    }
+
+                    // Generate unique registration number
+                    $registrationNumber = $this->generateRegistrationNumber();
+
+                    // Format phone numbers
+                    $whatsappNumber = $this->formatPhoneNumber($participant['whatsapp_number']);
+                    $emergencyPhone = $this->formatPhoneNumber($participant['emergency_contact_phone'] ?? '');
+
+                    // Get ticket type for category (use collective pricing)
+                    $ticketType = $this->getCollectiveTicketTypeForCategory($participant['race_category']);
+                    if (!$ticketType) {
+                        $errors["participant_" . ($index + 1)] = "Kategori {$participant['race_category']} tidak tersedia";
+                        continue;
+                    }
+
+                    // Check quota
+                    if ($ticketType->registered_count >= $ticketType->quota) {
+                        $errors["participant_" . ($index + 1)] = "Kuota kategori {$participant['race_category']} sudah habis";
+                        continue;
+                    }
+
+                    // Auto-resolve location data
+                    $locationData = null;
+                    
+                    // Check if regency data is provided directly (from autocomplete)
+                    if (isset($participant['regency_id']) && isset($participant['regency_name']) && isset($participant['province_name'])) {
+                        $locationData = [
+                            'regency_id' => $participant['regency_id'],
+                            'regency_name' => $participant['regency_name'],
+                            'province_name' => $participant['province_name']
+                        ];
+                        Log::info('Using direct regency data for participant', [
+                            'index' => $index + 1,
+                            'location_data' => $locationData
+                        ]);
+                    } elseif (isset($participant['regency_search'])) {
+                        // Fallback to auto-resolution if search term provided
+                        $locationData = $this->resolveLocationData($participant['regency_search']);
+                        Log::info('Auto-resolved location data for participant', [
+                            'index' => $index + 1,
+                            'search_term' => $participant['regency_search'],
+                            'location_data' => $locationData
+                        ]);
+                    }
+
+                    // Create user
+                    $user = User::create([
+                        'name' => $participant['name'],
+                        'email' => $participant['email'],
+                        'phone' => $whatsappNumber,
+                        'password' => bcrypt(Str::random(12)), // Random password
+                        'registration_number' => $registrationNumber,
+                        'bib_name' => $participant['bib_name'],
+                        'gender' => $participant['gender'],
+                        'birth_place' => $participant['birth_place'],
+                        'birth_date' => $participant['birth_date'],
+                        'address' => $participant['address'],
+                        'regency_id' => $locationData['regency_id'] ?? null,
+                        'regency_name' => $locationData['regency_name'] ?? null,
+                        'province_name' => $locationData['province_name'] ?? null,
+                        'jersey_size' => $participant['jersey_size'],
+                        'race_category' => $participant['race_category'],
+                        'ticket_type_id' => $ticketType->id, // Add ticket type ID
+                        'registration_fee' => $ticketType->price, // Add registration fee
+                        'whatsapp_number' => $whatsappNumber,
+                        'emergency_contact_name' => $participant['emergency_contact_name'],
+                        'emergency_contact_phone' => $emergencyPhone,
+                        'group_community' => $participant['group_community'] ?? null,
+                        'blood_type' => $participant['blood_type'],
+                        'occupation' => $participant['occupation'],
+                        'medical_history' => $participant['medical_history'] ?? null,
+                        'event_source' => $participant['event_source'],
+                        'payment_status' => 'pending',
+                        'status' => 'pending',
+                    ]);
+
+                    // Update ticket type registered count
+                    $ticketType->increment('registered_count');
+
+                    $successCount++;
+                    $registrationNumbers[] = $registrationNumber;
+                    $successfulUsers[] = $user; // Store successful user for notifications
+
+                    Log::info('Collective registration participant created', [
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                        'registration_number' => $registrationNumber,
+                        'index' => $index + 1
+                    ]);
+
+                } catch (\Exception $e) {
+                    Log::error('Error in collective registration for participant', [
+                        'index' => $index + 1,
+                        'participant' => $participant,
+                        'error' => $e->getMessage()
+                    ]);
+                    $errors["participant_" . ($index + 1)] = "Gagal mendaftarkan peserta: " . $e->getMessage();
+                }
+            }
+
+            if ($successCount > 0) {
+                DB::commit();
+
+                // Send notifications to all successfully registered users
+                $this->sendCollectiveRegistrationNotifications($successfulUsers);
+
+                $message = "Berhasil mendaftarkan {$successCount} peserta. ";
+                if (!empty($errors)) {
+                    $message .= "Terdapat " . count($errors) . " peserta yang gagal didaftarkan.";
+                }
+                $message .= " Notifikasi WhatsApp sedang dikirim ke masing-masing peserta.";
+
+                // Redirect to success page with data
+                return redirect()->route('register.kolektif.success')->with([
+                    'success_message' => $message,
+                    'registration_numbers' => $registrationNumbers,
+                    'successful_users' => $successfulUsers,
+                    'errors' => $errors,
+                    'success_count' => $successCount
+                ]);
+            } else {
+                DB::rollback();
+                return redirect()->back()
+                    ->withErrors($errors ?: ['general' => 'Tidak ada peserta yang berhasil didaftarkan'])
+                    ->withInput();
+            }
+
+        } catch (\Exception $e) {
+            DB::rollback();
+            Log::error('Collective registration failed', [
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return redirect()->back()
+                ->withErrors(['general' => 'Registrasi kolektif gagal: ' . $e->getMessage()])
+                ->withInput();
+        }
+    }
+
+    /**
+     * Send WhatsApp notifications to all successfully registered users in collective registration
+     */
+    private function sendCollectiveRegistrationNotifications($users)
+    {
+        // Calculate total amount for all participants
+        $totalAmount = 0;
+        $participantDetails = [];
+        
+        foreach ($users as $user) {
+            $totalAmount += $user->registration_fee;
+            $participantDetails[] = [
+                'name' => $user->name,
+                'category' => $user->race_category,
+                'fee' => $user->registration_fee
+            ];
+        }
+
+        // Send password and activation message to each participant
+        foreach ($users as $user) {
+            try {
+                // Generate Xendit external_id for each user (like in regular registration)
+                $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+                $user->update(['xendit_external_id' => $externalId]);
+
+                Log::info('Generated xendit_external_id for collective registration user', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'xendit_external_id' => $externalId
+                ]);
+
+                // Generate and send random password
+                $passwordResult = $this->randomPasswordService->generateAndSendPassword(
+                    $user,
+                    $this->whatsappService,
+                    'simple'
+                );
+
+                if ($passwordResult['success']) {
+                    Log::info('Password sent for collective registration user', [
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                        'password_sent' => $passwordResult['password_sent']
+                    ]);
+
+                    // Send activation message
+                    $activationResult = $this->sendActivationMessage($user);
+
+                    if ($activationResult['success']) {
+                        // Automatically verify WhatsApp if message sent successfully
+                        $user->update([
+                            'whatsapp_verified' => true,
+                            'whatsapp_verified_at' => now(),
+                            'status' => 'verified'
+                        ]);
+
+                        Log::info('Collective registration user activated via WhatsApp', [
+                            'user_id' => $user->id,
+                            'email' => $user->email,
+                            'whatsapp' => $user->whatsapp_number
+                        ]);
+                    }
+                } else {
+                    Log::error('Failed to send password for collective registration user', [
+                        'user_id' => $user->id,
+                        'email' => $user->email,
+                        'error' => $passwordResult['message']
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Exception in collective registration individual notification', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
+        }
+
+        // Create ONE collective payment invoice for all participants
+        if (!empty($users)) {
+            try {
+                $firstUser = $users[0]; // Use first user as the primary payer
+                $collectiveDescription = "Amazing Sultra Run - Registrasi Kolektif (" . count($users) . " peserta)";
+                
+                // Create collective payment invoice
+                $paymentResult = $this->xenditService->createInvoice(
+                    $firstUser,
+                    $totalAmount, // Total amount for all participants
+                    $collectiveDescription
+                );
+
+                if ($paymentResult['success']) {
+                    // Update all users with the same invoice ID for tracking
+                    foreach ($users as $user) {
+                        $user->update([
+                            'xendit_invoice_id' => $paymentResult['invoice_id'] ?? null,
+                            'xendit_invoice_url' => $paymentResult['invoice_url'] ?? null,
+                            'payment_description' => $collectiveDescription,
+                            'status' => 'registered' // Update status to registered
+                        ]);
+                        
+                        Log::info('Updated collective registration user with payment data', [
+                            'user_id' => $user->id,
+                            'xendit_external_id' => $user->xendit_external_id,
+                            'xendit_invoice_id' => $paymentResult['invoice_id'] ?? null
+                        ]);
+                    }
+
+                    // Send collective payment link to the first user (group leader)
+                    $this->sendCollectivePaymentLink($firstUser, $paymentResult['invoice_url'], $participantDetails, $totalAmount);
+
+                    Log::info('Collective payment invoice created', [
+                        'primary_user_id' => $firstUser->id,
+                        'total_participants' => count($users),
+                        'total_amount' => $totalAmount,
+                        'invoice_url' => $paymentResult['invoice_url']
+                    ]);
+                } else {
+                    Log::error('Failed to create collective payment invoice', [
+                        'primary_user_id' => $firstUser->id,
+                        'total_participants' => count($users),
+                        'total_amount' => $totalAmount,
+                        'error' => $paymentResult['message']
+                    ]);
+                }
+            } catch (\Exception $e) {
+                Log::error('Exception in collective payment creation', [
+                    'total_participants' => count($users),
+                    'total_amount' => $totalAmount,
+                    'error' => $e->getMessage(),
+                    'trace' => $e->getTraceAsString()
+                ]);
+            }
+        }
+    }
+
+    /**
+     * Get ticket type for a given race category
+     */
+    private function getTicketTypeForCategory($categoryName)
+    {
+        try {
+            // First try using the getCurrentTicketType method
+            $ticketType = \App\Models\TicketType::getCurrentTicketType($categoryName);
+            
+            // If not found, try manual search with race category relationship
+            if (!$ticketType) {
+                $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($categoryName) {
+                    $query->where('name', $categoryName);
+                })->where('is_active', true)->first();
+            }
+            
+            return $ticketType;
+        } catch (\Exception $e) {
+            Log::error('Error getting ticket type for category', [
+                'category' => $categoryName,
+                'error' => $e->getMessage()
+            ]);
+            return null;
+        }
+    }
+
+    /**
+     * Get collective ticket type (special price) for a given race category
+     */
+    private function getCollectiveTicketTypeForCategory($categoryName)
+    {
+        try {
+            // Look for collective ticket types (with "Kolektif" in name)
+            $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($categoryName) {
+                $query->where('name', $categoryName);
+            })
+            ->where('is_active', true)
+            ->where('name', 'LIKE', '%olektif%') // Case insensitive search for "Kolektif" or "kolektif"
+            ->first();
+            
+            if (!$ticketType) {
+                Log::warning('No collective ticket type found for category, using regular price', [
+                    'category' => $categoryName
+                ]);
+                // Fallback to regular ticket type
+                return $this->getTicketTypeForCategory($categoryName);
+            }
+            
+            return $ticketType;
+        } catch (\Exception $e) {
+            Log::error('Error getting collective ticket type for category', [
+                'category' => $categoryName,
+                'error' => $e->getMessage()
+            ]);
+            // Fallback to regular ticket type
+            return $this->getTicketTypeForCategory($categoryName);
+        }
+    }
+
+    /**
+     * Display collective registration success page
+     */
+    public function collectiveSuccess()
+    {
+        // Check if we have success data in session
+        if (!session()->has('success_message')) {
+            // For testing, we can create sample data
+            if (app()->environment('local')) {
+                session([
+                    'success_message' => 'Test: Berhasil mendaftarkan 3 peserta. Notifikasi WhatsApp sedang dikirim ke masing-masing peserta.',
+                    'registration_numbers' => ['ASR202500001', 'ASR202500002', 'ASR202500003'],
+                    'success_count' => 3,
+                    'successful_users' => collect([
+                        (object)[
+                            'name' => 'Test User 1',
+                            'email' => 'test1@example.com',
+                            'bib_name' => 'RUNNER1',
+                            'race_category_name' => '5K',
+                            'registration_fee' => 125000
+                        ],
+                        (object)[
+                            'name' => 'Test User 2',
+                            'email' => 'test2@example.com',
+                            'bib_name' => 'RUNNER2',
+                            'race_category_name' => '10K',
+                            'registration_fee' => 150000
+                        ],
+                        (object)[
+                            'name' => 'Test User 3',
+                            'email' => 'test3@example.com',
+                            'bib_name' => 'RUNNER3',
+                            'race_category_name' => '21K',
+                            'registration_fee' => 175000
+                        ]
+                    ]),
+                    'errors' => []
+                ]);
+            } else {
+                return redirect()->route('register.kolektif')->with('error', 'No registration data found.');
+            }
+        }
+
+        return view('auth.collective-success');
     }
 }

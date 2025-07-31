@@ -101,7 +101,7 @@
                             </a>
                         </li>
                         
-                        @if(auth()->user()->isAdmin())
+                        @if(auth()->check() && auth()->user()->isAdmin())
                         <!-- Admin Only Menu -->
                         <li class="nav-item">
                             <hr class="text-white-50 my-2">

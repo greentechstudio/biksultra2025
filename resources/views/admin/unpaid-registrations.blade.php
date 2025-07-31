@@ -24,7 +24,7 @@
             <div class="p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h5 class="text-lg font-medium">Within 6 Hours</h5>
+                        <h5 class="text-lg font-medium">Within 24 Hours</h5>
                         <h3 id="within-6-hours" class="text-2xl font-bold">0</h3>
                     </div>
                     <div class="flex-shrink-0">
@@ -38,7 +38,7 @@
             <div class="p-5">
                 <div class="flex items-center justify-between">
                     <div>
-                        <h5 class="text-lg font-medium">Over 6 Hours</h5>
+                        <h5 class="text-lg font-medium">Over 24 Hours</h5>
                         <h3 id="over-6-hours" class="text-2xl font-bold">0</h3>
                     </div>
                     <div class="flex-shrink-0">
@@ -163,15 +163,15 @@ function updateUnpaidStatus(data) {
             let statusText = 'Safe';
             let timeRemainingClass = 'bg-green-100 text-green-800';
             
-            if (user.minutes_elapsed > 300) { // > 5 hours
+            if (user.minutes_elapsed > 1200) { // > 20 hours
                 statusClass = 'bg-red-100 text-red-800';
                 statusText = 'Critical';
                 timeRemainingClass = 'bg-red-100 text-red-800';
-            } else if (user.minutes_elapsed > 240) { // > 4 hours
+            } else if (user.minutes_elapsed > 960) { // > 16 hours
                 statusClass = 'bg-yellow-100 text-yellow-800';
                 statusText = 'Warning';
                 timeRemainingClass = 'bg-yellow-100 text-yellow-800';
-            } else if (user.minutes_elapsed > 180) { // > 3 hours
+            } else if (user.minutes_elapsed > 720) { // > 12 hours
                 statusClass = 'bg-blue-100 text-blue-800';
                 statusText = 'Monitor';
                 timeRemainingClass = 'bg-blue-100 text-blue-800';
@@ -240,7 +240,7 @@ function forceReminders() {
 }
 
 function forceCleanup() {
-    if (confirm('⚠️ This will delete all registrations older than 6 hours without payment!\\n\\nAre you sure you want to proceed?')) {
+    if (confirm('⚠️ This will delete all registrations older than 24 hours without payment!\\n\\nAre you sure you want to proceed?')) {
         fetch('/admin/whatsapp-queue/force-cleanup', {
             method: 'POST',
             headers: {

@@ -15,9 +15,12 @@
             <div class="registration-form">
                 <h3>Daftar Sekarang!</h3>
                 <p>Jangan lewatkan kesempatan untuk menjadi bagian dari Amazing Sultra Run 2025</p>
-                <a href="https://www.amazingsultrarun.com/register" class="cta-button">
-                    REGISTER
-                </a>
+                
+                <div class="registration-buttons" style="display: flex; flex-direction: column; gap: 12px; margin: 20px 0;">
+                    <a href="https://www.amazingsultrarun.com/register" class="cta-button">
+                        <i class="fas fa-user"></i> Register
+                    </a>
+                </div>
                 
                 <div class="registration-supported">
                     <span class="supported-text">Supported by :</span>

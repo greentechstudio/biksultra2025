@@ -34,7 +34,7 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h5 class="card-title">Within 6 Hours</h5>
+                                            <h5 class="card-title">Within 24 Hours</h5>
                                             <h3 id="within-6-hours">0</h3>
                                         </div>
                                         <div class="align-self-center">
@@ -49,7 +49,7 @@
                                 <div class="card-body">
                                     <div class="d-flex justify-content-between">
                                         <div>
-                                            <h5 class="card-title">Over 6 Hours</h5>
+                                            <h5 class="card-title">Over 24 Hours</h5>
                                             <h3 id="over-6-hours">0</h3>
                                         </div>
                                         <div class="align-self-center">
@@ -173,13 +173,13 @@ function updateUnpaidStatus(data) {
             let statusClass = 'success';
             let statusText = 'Safe';
             
-            if (user.minutes_elapsed > 300) { // > 5 hours
+            if (user.minutes_elapsed > 1200) { // > 20 hours
                 statusClass = 'danger';
                 statusText = 'Critical';
-            } else if (user.minutes_elapsed > 240) { // > 4 hours
+            } else if (user.minutes_elapsed > 960) { // > 16 hours
                 statusClass = 'warning';
                 statusText = 'Warning';
-            } else if (user.minutes_elapsed > 180) { // > 3 hours
+            } else if (user.minutes_elapsed > 720) { // > 12 hours
                 statusClass = 'info';
                 statusText = 'Monitor';
             }
@@ -227,7 +227,7 @@ function forceReminders() {
 }
 
 function forceCleanup() {
-    if (confirm('⚠️ This will delete all registrations older than 6 hours without payment!\n\nAre you sure you want to proceed?')) {
+    if (confirm('⚠️ This will delete all registrations older than 24 hours without payment!\n\nAre you sure you want to proceed?')) {
         fetch('/admin/whatsapp-queue/force-cleanup', {
             method: 'POST',
             headers: {

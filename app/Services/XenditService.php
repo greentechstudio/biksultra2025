@@ -31,33 +31,64 @@ class XenditService
 
     /**
      * Create invoice for user registration payment
+     * SECURITY: Price is ALWAYS taken from ticket_types.price database
+     * Any provided amount parameter is validated against database price
      */
     public function createInvoice(User $user, $amount = null, $description = 'Amazing Sultra Run Registration Fee')
     {
-        try {
-            // Additional validation
-            if (empty($this->apiKey)) {
-                throw new \Exception('Xendit API key is not configured');
-            }
+        // SECURITY: Validate first - these exceptions should NOT be caught
+        if (empty($this->apiKey)) {
+            throw new \Exception('Xendit API key is not configured');
+        }
+        
+        // SECURITY: Always validate price against database - NEVER trust any input
+        $officialAmount = $this->validateAndGetOfficialPrice($user);
+        
+        // If amount is provided, validate it matches official price
+        if ($amount !== null) {
+            // Convert both to float for accurate comparison
+            $providedAmount = (float) $amount;
+            $officialAmountFloat = (float) $officialAmount;
             
-            // SECURITY: Always validate price against database - NEVER trust client input
-            $officialAmount = $this->validateAndGetOfficialPrice($user);
-            
-            // If amount is provided, validate it matches official price
-            if ($amount !== null && $amount !== $officialAmount) {
-                \Log::warning('Price manipulation attempt detected', [
+            if (abs($providedAmount - $officialAmountFloat) > 0.01) { // Allow for floating point precision
+                \Log::critical('SECURITY ALERT: Price manipulation attempt detected', [
                     'user_id' => $user->id,
                     'email' => $user->email,
-                    'provided_amount' => $amount,
-                    'official_amount' => $officialAmount,
-                    'ip' => request()->ip(),
-                    'user_agent' => request()->userAgent()
+                    'provided_amount' => $providedAmount,
+                    'official_amount' => $officialAmountFloat,
+                    'difference' => $providedAmount - $officialAmountFloat,
+                    'ip' => request()->ip() ?? 'unknown',
+                    'user_agent' => request()->userAgent() ?? 'unknown',
+                    'timestamp' => now(),
+                    'action' => 'transaction_blocked'
                 ]);
-                throw new \Exception('Price manipulation detected. Transaction blocked.');
+                throw new \Exception('Security violation: Price manipulation detected. Transaction blocked for security reasons.');
             }
             
-            // Use official price from database
-            $amount = $officialAmount;
+            \Log::info('Amount validation passed', [
+                'user_id' => $user->id,
+                'provided_amount' => $providedAmount,
+                'official_amount' => $officialAmountFloat,
+                'status' => 'validated'
+            ]);
+        }
+        
+        // SECURITY: Always use official price from database (never trust input)
+        $amount = (float) $officialAmount;
+        
+        // Additional security checks
+        if ($amount <= 0 || $amount > 10000000) { // Max 10 million IDR
+            \Log::critical('SECURITY ALERT: Invalid amount detected', [
+                'user_id' => $user->id,
+                'amount' => $amount,
+                'category' => $user->race_category,
+                'action' => 'transaction_blocked'
+            ]);
+            throw new \Exception('Security violation: Invalid amount detected.');
+        }
+        
+        // Now proceed with invoice creation
+        try {
             
             $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
             
@@ -228,61 +259,85 @@ class XenditService
                 return false;
             }
 
-            // Find user by external_id
-            $user = User::where('xendit_external_id', $payload['external_id'])->first();
+            // For collective payments, find all users with the same invoice_id
+            $users = User::where(function($query) use ($payload) {
+                $query->where('xendit_external_id', $payload['external_id'])
+                      ->orWhere('xendit_invoice_id', $payload['id'] ?? null);
+            })->get();
             
-            if (!$user) {
-                Log::warning('User not found for external_id', ['external_id' => $payload['external_id']]);
+            if ($users->isEmpty()) {
+                Log::warning('No users found for external_id or invoice_id', [
+                    'external_id' => $payload['external_id'],
+                    'invoice_id' => $payload['id'] ?? null
+                ]);
                 return false;
             }
 
-            Log::info('User found for webhook processing', [
-                'user_id' => $user->id,
-                'user_email' => $user->email,
-                'current_status' => $user->status,
-                'current_payment_status' => $user->payment_status,
-                'webhook_status' => $payload['status']
+            Log::info('Users found for webhook processing', [
+                'user_count' => $users->count(),
+                'first_user_id' => $users->first()->id,
+                'webhook_status' => $payload['status'],
+                'is_collective' => $users->count() > 1
             ]);
 
-            // Update user payment status
-            $updateData = [
-                'xendit_callback_data' => $payload,
-                'payment_status' => strtolower($payload['status'])
-            ];
+            $processedUsers = [];
 
-            if (strtolower($payload['status']) === 'paid') {
-                $updateData['payment_confirmed'] = true;
-                $updateData['payment_confirmed_at'] = now();
-                $updateData['paid_at'] = now();
-                $updateData['payment_method'] = $payload['payment_method'] ?? 'xendit';
-                $updateData['xendit_payment_id'] = $payload['id'] ?? null;
-                $updateData['status'] = 'active';
-                
-                Log::info('Payment confirmed, updating user to active status', [
+            // Update all matching users (for collective payments)
+            foreach ($users as $user) {
+                Log::info('Processing user in webhook', [
                     'user_id' => $user->id,
-                    'payment_method' => $updateData['payment_method'],
-                    'xendit_payment_id' => $updateData['xendit_payment_id']
+                    'user_email' => $user->email,
+                    'current_status' => $user->status,
+                    'current_payment_status' => $user->payment_status,
+                    'webhook_status' => $payload['status']
                 ]);
-            } elseif (strtolower($payload['status']) === 'expired') {
-                $updateData['status'] = 'expired';
-                Log::info('Payment expired, updating user status', ['user_id' => $user->id]);
-            } elseif (strtolower($payload['status']) === 'failed') {
-                $updateData['status'] = 'failed';
-                Log::info('Payment failed, updating user status', ['user_id' => $user->id]);
+
+                // Update user payment status
+                $updateData = [
+                    'xendit_callback_data' => $payload,
+                    'payment_status' => strtolower($payload['status'])
+                ];
+
+                if (strtolower($payload['status']) === 'paid') {
+                    $updateData['payment_confirmed'] = true;
+                    $updateData['payment_confirmed_at'] = now();
+                    $updateData['paid_at'] = now();
+                    $updateData['payment_method'] = $payload['payment_method'] ?? 'xendit';
+                    $updateData['xendit_payment_id'] = $payload['id'] ?? null;
+                    $updateData['status'] = 'active';
+                    
+                    Log::info('Payment confirmed, updating user to active status', [
+                        'user_id' => $user->id,
+                        'payment_method' => $updateData['payment_method'],
+                        'xendit_payment_id' => $updateData['xendit_payment_id']
+                    ]);
+                } elseif (strtolower($payload['status']) === 'expired') {
+                    $updateData['status'] = 'expired';
+                    Log::info('Payment expired, updating user status', ['user_id' => $user->id]);
+                } elseif (strtolower($payload['status']) === 'failed') {
+                    $updateData['status'] = 'failed';
+                    Log::info('Payment failed, updating user status', ['user_id' => $user->id]);
+                }
+
+                $user->update($updateData);
+                $processedUsers[] = $user;
+
+                Log::info('User payment status updated successfully', [
+                    'user_id' => $user->id,
+                    'old_status' => $user->getOriginal('status'),
+                    'new_status' => $user->status,
+                    'old_payment_status' => $user->getOriginal('payment_status'),
+                    'new_payment_status' => $user->payment_status,
+                    'external_id' => $payload['external_id']
+                ]);
             }
 
-            $user->update($updateData);
+            // If this was a collective payment and it's paid, send confirmation to all participants
+            if (count($processedUsers) > 1 && strtolower($payload['status']) === 'paid') {
+                $this->sendCollectivePaymentConfirmation($processedUsers, $payload);
+            }
 
-            Log::info('User payment status updated successfully', [
-                'user_id' => $user->id,
-                'old_status' => $user->getOriginal('status'),
-                'new_status' => $user->status,
-                'old_payment_status' => $user->getOriginal('payment_status'),
-                'new_payment_status' => $user->payment_status,
-                'external_id' => $payload['external_id']
-            ]);
-
-            return $user;
+            return $processedUsers;
         } catch (\Exception $e) {
             Log::error('Webhook processing error', [
                 'error' => $e->getMessage(),
@@ -294,25 +349,62 @@ class XenditService
     }
 
     /**
+     * Send collective payment confirmation to all participants
+     */
+    private function sendCollectivePaymentConfirmation($users, $payload)
+    {
+        try {
+            foreach ($users as $user) {
+                $message = "🎉 *PEMBAYARAN BERHASIL!* 🎉\n\n";
+                $message .= "Halo *{$user->name}*!\n\n";
+                $message .= "Pembayaran kolektif untuk Amazing Sultra Run telah berhasil dikonfirmasi!\n\n";
+                $message .= "📋 *Detail Registrasi:*\n";
+                $message .= "• Nama: {$user->name}\n";
+                $message .= "• Kategori: {$user->race_category}\n";
+                $message .= "• Jersey: {$user->jersey_size}\n";
+                $message .= "• Status: TERDAFTAR ✅\n\n";
+                $message .= "🎽 Jersey akan dikirim ke alamat grup leader sebelum hari event.\n\n";
+                $message .= "📱 Untuk informasi lebih lanjut, silakan login ke:\n";
+                $message .= "🔗 " . url('/login') . "\n\n";
+                $message .= "Terima kasih dan selamat berlari! 🏃‍♂️🏃‍♀️\n\n";
+                $message .= "_Tim Amazing Sultra Run_";
+
+                // Use WhatsApp service to send message
+                try {
+                    app('App\Services\WhatsAppService')->sendMessage($user->whatsapp_number, $message);
+                    
+                    Log::info('Collective payment confirmation sent', [
+                        'user_id' => $user->id,
+                        'user_name' => $user->name,
+                        'whatsapp' => $user->whatsapp_number
+                    ]);
+                } catch (\Exception $e) {
+                    Log::error('Failed to send collective payment confirmation', [
+                        'user_id' => $user->id,
+                        'error' => $e->getMessage()
+                    ]);
+                }
+            }
+        } catch (\Exception $e) {
+            Log::error('Exception in sendCollectivePaymentConfirmation', [
+                'error' => $e->getMessage(),
+                'user_count' => count($users)
+            ]);
+        }
+    }
+
+    /**
      * SECURITY: Validate and get official price from database
      * This prevents price manipulation attacks
      */
     private function validateAndGetOfficialPrice(User $user): float
     {
         try {
-            // Get current ticket type for user's category
+            // SECURITY: Always get price from ticket_types table (source of truth)
+            // Never trust user input or stored user.registration_fee for price validation
             $ticketType = \App\Models\TicketType::getCurrentTicketType($user->race_category);
             
             if (!$ticketType) {
-                // Fallback to user's stored registration fee if ticket type not found
-                if ($user->registration_fee && $user->registration_fee > 0) {
-                    \Log::info('Using fallback registration fee for user', [
-                        'user_id' => $user->id,
-                        'category' => $user->race_category,
-                        'fallback_fee' => $user->registration_fee
-                    ]);
-                    return (float) $user->registration_fee;
-                }
                 throw new \Exception('No valid ticket type found for category: ' . $user->race_category);
             }
             
@@ -323,16 +415,33 @@ class XenditService
             
             $officialPrice = (float) $ticketType->price;
             
-            // Additional sanity check
+            // Additional sanity checks
             if ($officialPrice <= 0) {
                 throw new \Exception('Invalid ticket price: ' . $officialPrice);
             }
             
-            \Log::info('Official price validated', [
+            // Security check: If user has stored registration_fee, verify it matches current price
+            if ($user->registration_fee && $user->registration_fee > 0) {
+                if ($user->registration_fee !== $officialPrice) {
+                    \Log::warning('User stored registration_fee does not match current ticket price', [
+                        'user_id' => $user->id,
+                        'category' => $user->race_category,
+                        'stored_fee' => $user->registration_fee,
+                        'current_price' => $officialPrice,
+                        'ticket_type_id' => $ticketType->id
+                    ]);
+                    
+                    // For security, always use current ticket price from database
+                    // This prevents price manipulation via stored user data
+                }
+            }
+            
+            \Log::info('Official price validated from ticket_types database', [
                 'user_id' => $user->id,
                 'category' => $user->race_category,
                 'ticket_type_id' => $ticketType->id,
-                'official_price' => $officialPrice
+                'official_price' => $officialPrice,
+                'source' => 'ticket_types.price'
             ]);
             
             return $officialPrice;

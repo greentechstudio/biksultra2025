@@ -63,7 +63,7 @@ class UnpaidRegistrationsController extends Controller
                     'name' => $user->name,
                     'phone' => $user->phone,
                     'minutes_ago' => $minutesAgo,
-                    'hours_left' => 6 - $user->created_at->diffInHours(now())
+                    'hours_left' => 24 - $user->created_at->diffInHours(now())
                 ];
             }
         }
@@ -224,9 +224,9 @@ class UnpaidRegistrationsController extends Controller
                 'created_at' => $user->created_at->toISOString(),
                 'hours_ago' => $hoursAgo,
                 'minutes_ago' => $minutesAgo,
-                'status' => $hoursAgo > 6 ? 'expired' : 'active',
+                'status' => $hoursAgo > 24 ? 'expired' : 'active',
                 'needs_reminder' => $minutesAgo >= 30 && $minutesAgo % 30 === 0,
-                'time_left' => max(0, 6 - $hoursAgo)
+                'time_left' => max(0, 24 - $hoursAgo)
             ];
         }
         

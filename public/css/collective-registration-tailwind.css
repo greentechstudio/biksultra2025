@@ -1,0 +1,250 @@
+/* Custom Tailwind CSS for Collective Registration */
+
+/* Custom animations */
+@keyframes fadeInUp {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+@keyframes slideInRight {
+    from {
+        opacity: 0;
+        transform: translateX(20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateX(0);
+    }
+}
+
+@keyframes pulse-subtle {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.02);
+    }
+}
+
+/* Animation classes */
+.animate-fade-in-up {
+    animation: fadeInUp 0.6s ease-out;
+}
+
+.animate-slide-in-right {
+    animation: slideInRight 0.4s ease-out;
+}
+
+.animate-pulse-subtle {
+    animation: pulse-subtle 2s infinite;
+}
+
+/* Custom form enhancements */
+.participant-form-modern {
+    position: relative;
+    background: linear-gradient(145deg, #ffffff 0%, #f8fafc 100%);
+    border: 1px solid #e2e8f0;
+    border-radius: 16px;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    overflow: hidden;
+}
+
+.participant-form-modern::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 4px;
+    background: linear-gradient(90deg, #dc2626, #ef4444, #f87171);
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.participant-form-modern:hover::before {
+    opacity: 1;
+}
+
+.participant-form-modern:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04);
+    border-color: #dc2626;
+}
+
+.participant-form-modern.completed {
+    border-color: #10b981;
+    background: linear-gradient(145deg, #f0fdf4 0%, #ffffff 100%);
+}
+
+.participant-form-modern.completed::before {
+    background: linear-gradient(90deg, #10b981, #34d399, #6ee7b7);
+    opacity: 1;
+}
+
+/* Enhanced input styles */
+.input-modern {
+    position: relative;
+    transition: all 0.2s ease;
+}
+
+.input-modern input,
+.input-modern select,
+.input-modern textarea {
+    background-color: #f8fafc;
+    border: 1px solid #e2e8f0;
+    transition: all 0.2s ease;
+}
+
+.input-modern input:focus,
+.input-modern select:focus,
+.input-modern textarea:focus {
+    background-color: #ffffff;
+    border-color: #dc2626;
+    box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.1);
+    transform: translateY(-1px);
+}
+
+/* Progress indicator */
+.progress-ring {
+    position: relative;
+    display: inline-block;
+}
+
+.progress-ring svg {
+    transform: rotate(-90deg);
+}
+
+.progress-ring .progress-circle {
+    transition: stroke-dashoffset 0.5s ease;
+}
+
+/* Custom buttons */
+.btn-gradient-red {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 50%, #991b1b 100%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-red:hover {
+    background-position: right center;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(220, 38, 38, 0.3);
+}
+
+.btn-gradient-green {
+    background: linear-gradient(135deg, #059669 0%, #047857 50%, #065f46 100%);
+    background-size: 200% 200%;
+    transition: all 0.3s ease;
+}
+
+.btn-gradient-green:hover {
+    background-position: right center;
+    transform: translateY(-1px);
+    box-shadow: 0 10px 20px rgba(5, 150, 105, 0.3);
+}
+
+/* Loading states */
+.loading-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 9999;
+}
+
+.loading-spinner {
+    width: 50px;
+    height: 50px;
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #dc2626;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/* Form validation states */
+.field-valid {
+    border-color: #10b981 !important;
+    background-color: #f0fdf4 !important;
+}
+
+.field-invalid {
+    border-color: #ef4444 !important;
+    background-color: #fef2f2 !important;
+}
+
+.field-valid:focus {
+    box-shadow: 0 0 0 3px rgba(16, 185, 129, 0.1) !important;
+}
+
+.field-invalid:focus {
+    box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.1) !important;
+}
+
+/* Mobile optimizations */
+@media (max-width: 768px) {
+    .participant-form-modern {
+        margin-bottom: 1rem;
+    }
+    
+    .participant-form-modern:hover {
+        transform: none;
+    }
+}
+
+/* Dark mode support (optional) */
+@media (prefers-color-scheme: dark) {
+    .participant-form-modern {
+        background: linear-gradient(145deg, #1f2937 0%, #111827 100%);
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .input-modern input,
+    .input-modern select,
+    .input-modern textarea {
+        background-color: #1f2937;
+        border-color: #374151;
+        color: #f3f4f6;
+    }
+    
+    .input-modern input:focus,
+    .input-modern select:focus,
+    .input-modern textarea:focus {
+        background-color: #111827;
+    }
+}
+
+/* Accessibility improvements */
+.focus-visible {
+    outline: 2px solid #dc2626;
+    outline-offset: 2px;
+}
+
+.sr-only {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0, 0, 0, 0);
+    white-space: nowrap;
+    border: 0;
+}

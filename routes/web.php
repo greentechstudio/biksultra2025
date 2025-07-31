@@ -65,6 +65,11 @@ Route::post('/validate-whatsapp', [AuthController::class, 'validateWhatsAppAjax'
 Route::get('/register-random-password', [AuthController::class, 'showRegisterRandomPassword'])->name('register.random-password')->middleware('guest');
 Route::post('/register-random-password', [AuthController::class, 'registerWithRandomPassword'])->name('register.random-password.post')->middleware('guest');
 
+// Collective Registration (Multi-form)
+Route::get('/register-kolektif', [AuthController::class, 'showRegisterKolektif'])->name('register.kolektif')->middleware('guest');
+Route::post('/register-kolektif', [AuthController::class, 'registerKolektif'])->name('register.kolektif.post')->middleware('guest');
+Route::get('/register-kolektif/success', [AuthController::class, 'collectiveSuccess'])->name('register.kolektif.success');
+
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
