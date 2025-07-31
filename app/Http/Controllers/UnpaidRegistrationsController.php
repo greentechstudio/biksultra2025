@@ -7,7 +7,13 @@ use App\Jobs\SendPaymentReminders;
 use App\Models\User;
 use Carbon\Carbon;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Log;
+            $users[] = [
+                'id' => $user->id,
+                'name' => $user->name,
+                'phone' => $user->phone,
+                'hours_ago' => $hoursAgo,
+                'status' => $hoursAgo > 24 ? 'expired' : 'active'
+            ];inate\Support\Facades\Log;
 use Illuminate\Support\Str;
 
 class UnpaidRegistrationsController extends Controller
