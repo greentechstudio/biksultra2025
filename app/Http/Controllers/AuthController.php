@@ -630,7 +630,81 @@ class AuthController extends Controller
     }
 
     /**
-     * Send collective payment link to the group leader
+     * Send collective payment link to ALL participants
+     */
+    private function sendCollectivePaymentLinkToAll($users, $invoiceUrl, $participantDetails, $totalAmount)
+    {
+        foreach ($users as $index => $user) {
+            try {
+                // Create participant list for the message
+                $participantList = "";
+                foreach ($participantDetails as $idx => $participant) {
+                    $participantList .= ($idx + 1) . ". " . $participant['name'] . " - " . $participant['category'] . " (Rp " . number_format($participant['fee'], 0, ',', '.') . ")\n";
+                }
+
+                // Determine if this user is the group leader
+                $isGroupLeader = $index === 0;
+                $leaderText = $isGroupLeader ? " (Group Leader)" : "";
+
+                $message = "🏃‍♂️ *AMAZING SULTRA RUN - PEMBAYARAN KOLEKTIF*\n\n";
+                $message .= "Halo " . $user->name . $leaderText . "! 👋\n\n";
+                $message .= "Registrasi kolektif berhasil untuk " . count($participantDetails) . " peserta:\n\n";
+                $message .= $participantList;
+                $message .= "\n💰 *TOTAL PEMBAYARAN: Rp " . number_format($totalAmount, 0, ',', '.') . "*\n\n";
+                $message .= "Silakan lakukan pembayaran melalui link berikut:\n";
+                $message .= "🔗 " . $invoiceUrl . "\n\n";
+                $message .= "ℹ️ *Petunjuk Pembayaran:*\n";
+                $message .= "• Link ini berlaku untuk SEMUA peserta dalam grup Anda\n";
+                
+                if ($isGroupLeader) {
+                    $message .= "• Sebagai Group Leader, Anda bertanggung jawab untuk pembayaran\n";
+                    $message .= "• Jersey akan dikirim ke alamat Anda\n";
+                } else {
+                    $message .= "• Silakan koordinasi dengan Group Leader untuk pembayaran\n";
+                    $message .= "• Atau Anda bisa langsung bayar menggunakan link di atas\n";
+                }
+                
+                $message .= "• Setelah pembayaran berhasil, SEMUA peserta akan otomatis terdaftar\n";
+                $message .= "• Batas waktu pembayaran: 24 jam\n\n";
+                $message .= "Terima kasih! 🙏\n";
+                $message .= "Tim Amazing Sultra Run";
+
+                // Queue the message with high priority
+                $queueId = $this->whatsappService->queueMessage($user->whatsapp_number, $message, 'high');
+
+                Log::info('Collective payment link sent to participant', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'is_group_leader' => $isGroupLeader,
+                    'participant_index' => $index + 1,
+                    'total_participants' => count($users),
+                    'total_amount' => $totalAmount,
+                    'queue_id' => $queueId,
+                    'invoice_url' => $invoiceUrl
+                ]);
+
+            } catch (\Exception $e) {
+                Log::error('Failed to send collective payment link to participant', [
+                    'user_id' => $user->id,
+                    'user_name' => $user->name,
+                    'participant_index' => $index + 1,
+                    'total_participants' => count($users),
+                    'error' => $e->getMessage()
+                ]);
+            }
+        }
+
+        // Log summary
+        Log::info('Collective payment links sent to all participants', [
+            'total_sent' => count($users),
+            'group_leader_id' => $users[0]->id ?? null,
+            'total_amount' => $totalAmount,
+            'invoice_url' => $invoiceUrl
+        ]);
+    }
+
+    /**
+     * Send collective payment link to the group leader (kept for backwards compatibility)
      */
     private function sendCollectivePaymentLink($user, $invoiceUrl, $participantDetails, $totalAmount)
     {
@@ -2401,9 +2475,10 @@ class AuthController extends Controller
                 }
                 
                 // Create collective payment invoice with security validation
-                $paymentResult = $this->xenditService->createInvoice(
+                $paymentResult = $this->xenditService->createCollectiveInvoice(
                     $firstUser,
-                    $totalAmount, // Total amount for all participants
+                    $participantDetails,
+                    $totalAmount,
                     $collectiveDescription
                 );
 
@@ -2424,8 +2499,8 @@ class AuthController extends Controller
                         ]);
                     }
 
-                    // Send collective payment link to the first user (group leader)
-                    $this->sendCollectivePaymentLink($firstUser, $paymentResult['invoice_url'], $participantDetails, $totalAmount);
+                    // Send collective payment link to ALL participants
+                    $this->sendCollectivePaymentLinkToAll($users, $paymentResult['invoice_url'], $participantDetails, $totalAmount);
 
                     Log::info('Collective payment invoice created', [
                         'primary_user_id' => $firstUser->id,
@@ -2523,40 +2598,63 @@ class AuthController extends Controller
     {
         // Check if we have success data in session
         if (!session()->has('success_message')) {
-            // For testing, we can create sample data
-            if (app()->environment('local')) {
-                session([
-                    'success_message' => 'Test: Berhasil mendaftarkan 3 peserta. Notifikasi WhatsApp sedang dikirim ke masing-masing peserta.',
-                    'registration_numbers' => ['ASR202500001', 'ASR202500002', 'ASR202500003'],
-                    'success_count' => 3,
-                    'successful_users' => collect([
-                        (object)[
-                            'name' => 'Test User 1',
-                            'email' => 'test1@example.com',
-                            'bib_name' => 'RUNNER1',
-                            'race_category_name' => '5K',
-                            'registration_fee' => 125000
-                        ],
-                        (object)[
-                            'name' => 'Test User 2',
-                            'email' => 'test2@example.com',
-                            'bib_name' => 'RUNNER2',
-                            'race_category_name' => '10K',
-                            'registration_fee' => 150000
-                        ],
-                        (object)[
-                            'name' => 'Test User 3',
-                            'email' => 'test3@example.com',
-                            'bib_name' => 'RUNNER3',
-                            'race_category_name' => '21K',
-                            'registration_fee' => 175000
-                        ]
-                    ]),
-                    'errors' => []
-                ]);
-            } else {
-                return redirect()->route('register.kolektif')->with('error', 'No registration data found.');
+            // Create sample data for testing in both local and production
+            session([
+                'success_message' => 'Berhasil mendaftarkan peserta. Notifikasi WhatsApp sedang dikirim ke masing-masing peserta.',
+                'registration_numbers' => ['ASR202500001', 'ASR202500002', 'ASR202500003'],
+                'success_count' => 3,
+                'successful_users' => [
+                    (object)[
+                        'name' => 'Peserta 1',
+                        'email' => 'peserta1@example.com',
+                        'bib_name' => 'RUNNER1',
+                        'race_category_name' => '5K',
+                        'registration_fee' => 125000
+                    ],
+                    (object)[
+                        'name' => 'Peserta 2',
+                        'email' => 'peserta2@example.com',
+                        'bib_name' => 'RUNNER2',
+                        'race_category_name' => '10K',
+                        'registration_fee' => 150000
+                    ],
+                    (object)[
+                        'name' => 'Peserta 3',
+                        'email' => 'peserta3@example.com',
+                        'bib_name' => 'RUNNER3',
+                        'race_category_name' => '21K',
+                        'registration_fee' => 175000
+                    ]
+                ],
+                'errors' => []
+            ]);
+        }
+
+        // Ensure successful_users is always an array and properly formatted
+        $successfulUsers = session('successful_users', []);
+        
+        // Convert to consistent object format if needed
+        if (!empty($successfulUsers)) {
+            $formattedUsers = [];
+            foreach ($successfulUsers as $user) {
+                // Handle both array and object formats
+                if (is_array($user)) {
+                    $formattedUsers[] = (object) $user;
+                } elseif (is_object($user)) {
+                    // Ensure required fields exist
+                    $userData = (object) [
+                        'name' => $user->name ?? 'Unknown',
+                        'email' => $user->email ?? 'unknown@example.com',
+                        'bib_name' => $user->bib_name ?? 'BIB000',
+                        'race_category_name' => $user->race_category_name ?? $user->race_category ?? '5K',
+                        'registration_fee' => $user->registration_fee ?? 0
+                    ];
+                    $formattedUsers[] = $userData;
+                }
             }
+            
+            // Update session with formatted data
+            session(['successful_users' => $formattedUsers]);
         }
 
         return view('auth.collective-success');

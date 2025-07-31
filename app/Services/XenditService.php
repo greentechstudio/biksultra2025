@@ -523,4 +523,135 @@ class XenditService
             return false;
         }
     }
+
+    /**
+     * Create invoice for collective registration payment
+     * SECURITY: Price is validated for each participant beforehand
+     */
+    public function createCollectiveInvoice(User $primaryUser, array $participants, float $totalAmount, string $description = 'Amazing Sultra Run - Collective Registration')
+    {
+        // SECURITY: Validate configuration
+        if (empty($this->apiKey)) {
+            throw new \Exception('Xendit API key is not configured');
+        }
+
+        // SECURITY: Validate total amount
+        if ($totalAmount <= 0 || $totalAmount > 50000000) { // Max 50 million IDR for collective
+            \Log::critical('SECURITY ALERT: Invalid collective amount detected', [
+                'primary_user_id' => $primaryUser->id,
+                'total_amount' => $totalAmount,
+                'participant_count' => count($participants),
+                'action' => 'transaction_blocked'
+            ]);
+            throw new \Exception('Security violation: Invalid collective amount detected.');
+        }
+
+        // SECURITY: Validate participant count
+        if (count($participants) < 10 || count($participants) > 100) { // Max 100 participants
+            \Log::warning('Invalid participant count for collective registration', [
+                'primary_user_id' => $primaryUser->id,
+                'participant_count' => count($participants)
+            ]);
+            throw new \Exception('Invalid participant count for collective registration.');
+        }
+
+        try {
+            $externalId = 'AMAZING-COLLECTIVE-' . $primaryUser->id . '-' . time();
+            
+            // Build items array for each participant
+            $items = [];
+            foreach ($participants as $participant) {
+                $items[] = [
+                    'name' => 'Registration: ' . $participant['name'] . ' (' . $participant['category'] . ')',
+                    'quantity' => 1,
+                    'price' => $participant['fee'],
+                    'category' => 'Registration Fee'
+                ];
+            }
+
+            $payload = [
+                'external_id' => $externalId,
+                'amount' => $totalAmount,
+                'description' => $description,
+                'invoice_duration' => 86400, // 24 hours
+                'customer' => [
+                    'given_names' => $primaryUser->name . ' (Group Leader)',
+                    'email' => $primaryUser->email,
+                    'mobile_number' => $primaryUser->phone ?: $primaryUser->whatsapp_number,
+                ],
+                'customer_notification_preference' => [
+                    'invoice_created' => ['whatsapp', 'sms', 'email'],
+                    'invoice_reminder' => ['whatsapp', 'sms', 'email'],
+                    'invoice_paid' => ['whatsapp', 'sms', 'email'],
+                    'invoice_expired' => ['whatsapp', 'sms', 'email']
+                ],
+                'success_redirect_url' => url('/payment/success'),
+                'failure_redirect_url' => url('/payment/failed'),
+                'currency' => 'IDR',
+                'items' => $items
+            ];
+
+            \Log::info('Creating Xendit collective invoice', [
+                'primary_user_id' => $primaryUser->id,
+                'external_id' => $externalId,
+                'total_amount' => $totalAmount,
+                'participant_count' => count($participants),
+                'payload' => $payload
+            ]);
+
+            $response = Http::withBasicAuth($this->apiKey, '')
+                ->post($this->baseUrl . '/v2/invoices', $payload);
+
+            if ($response->successful()) {
+                $invoiceData = $response->json();
+                
+                \Log::info('Xendit collective invoice created successfully', [
+                    'primary_user_id' => $primaryUser->id,
+                    'external_id' => $externalId,
+                    'invoice_id' => $invoiceData['id'] ?? null,
+                    'invoice_url' => $invoiceData['invoice_url'] ?? null,
+                    'total_amount' => $totalAmount,
+                    'participant_count' => count($participants)
+                ]);
+
+                return [
+                    'success' => true,
+                    'invoice_id' => $invoiceData['id'] ?? null,
+                    'invoice_url' => $invoiceData['invoice_url'] ?? null,
+                    'external_id' => $externalId,
+                    'amount' => $totalAmount,
+                    'data' => $invoiceData
+                ];
+            } else {
+                $errorMessage = $response->json()['message'] ?? 'Unknown error from Xendit';
+                
+                \Log::error('Failed to create Xendit collective invoice', [
+                    'primary_user_id' => $primaryUser->id,
+                    'external_id' => $externalId,
+                    'error' => $errorMessage,
+                    'status_code' => $response->status(),
+                    'response_body' => $response->body()
+                ]);
+
+                return [
+                    'success' => false,
+                    'message' => $errorMessage
+                ];
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Exception creating Xendit collective invoice', [
+                'primary_user_id' => $primaryUser->id,
+                'total_amount' => $totalAmount,
+                'participant_count' => count($participants),
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Failed to create collective payment invoice: ' . $e->getMessage()
+            ];
+        }
+    }
 }
