@@ -850,7 +850,7 @@ document.addEventListener('DOMContentLoaded', function() {
 <!-- Initialize Location Autocomplete for all forms -->
 <script>
 // Set the correct API URL for location search
-window.locationSearchUrl = '{{ url("api/location/search") }}';
+window.locationSearchUrl = '/api/location/search';
 
 document.addEventListener('DOMContentLoaded', function() {
     console.log('DOM loaded, checking for LocationAutocomplete...');

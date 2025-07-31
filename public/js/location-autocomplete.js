@@ -134,18 +134,38 @@ class LocationAutocomplete {
         console.log('Searching for:', query); // Debug log
         
         try {
-            // Use the URL provided by the Laravel view or fallback to relative path
-            const baseUrl = window.locationSearchUrl || '/api/location/search';
+            // Always use relative path to avoid HTTPS/HTTP mixed content issues
+            let baseUrl = '/api/location/search';
+            
+            // If window.locationSearchUrl is set and is relative, use it
+            if (window.locationSearchUrl && window.locationSearchUrl.startsWith('/')) {
+                baseUrl = window.locationSearchUrl;
+            }
+            
             const url = `${baseUrl}?q=${encodeURIComponent(query)}`;
             console.log('Fetching URL:', url); // Debug log
             
-            const response = await fetch(url);
+            // Add timeout and better error handling
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 10000); // 10 second timeout
             
+            const response = await fetch(url, {
+                signal: controller.signal,
+                headers: {
+                    'Accept': 'application/json',
+                    'Content-Type': 'application/json',
+                    'X-Requested-With': 'XMLHttpRequest'
+                }
+            });
+            
+            clearTimeout(timeoutId);
             console.log('Response status:', response.status); // Debug log
             
             if (!response.ok) {
                 console.error('Response not OK:', response.status, response.statusText);
-                throw new Error('Search failed');
+                // Show fallback suggestions instead of completely failing
+                this.showFallbackSuggestions(query);
+                return;
             }
             
             const suggestions = await response.json();
@@ -155,8 +175,43 @@ class LocationAutocomplete {
             
         } catch (error) {
             console.error('Location search error:', error);
-            this.hideSuggestions();
+            
+            // Check if it's a network error or server block
+            if (error.name === 'TypeError' && error.message.includes('Failed to fetch')) {
+                console.warn('Network request blocked or failed, showing fallback suggestions');
+                this.showFallbackSuggestions(query);
+            } else if (error.name === 'AbortError') {
+                console.warn('Request timeout, showing fallback suggestions');
+                this.showFallbackSuggestions(query);
+            } else {
+                this.hideSuggestions();
+            }
         }
+    }
+    
+    showFallbackSuggestions(query) {
+        // Common Indonesian cities/regencies as fallback
+        const fallbackData = [
+            { id: '001', name: 'Kendari', province_name: 'Sulawesi Tenggara' },
+            { id: '002', name: 'Kolaka', province_name: 'Sulawesi Tenggara' },
+            { id: '003', name: 'Bau-Bau', province_name: 'Sulawesi Tenggara' },
+            { id: '004', name: 'Makassar', province_name: 'Sulawesi Selatan' },
+            { id: '005', name: 'Jakarta Pusat', province_name: 'DKI Jakarta' },
+            { id: '006', name: 'Surabaya', province_name: 'Jawa Timur' },
+            { id: '007', name: 'Bandung', province_name: 'Jawa Barat' },
+            { id: '008', name: 'Yogyakarta', province_name: 'DI Yogyakarta' },
+            { id: '009', name: 'Semarang', province_name: 'Jawa Tengah' },
+            { id: '010', name: 'Medan', province_name: 'Sumatera Utara' }
+        ];
+        
+        // Filter fallback data based on query
+        const filtered = fallbackData.filter(item => 
+            item.name.toLowerCase().includes(query.toLowerCase()) ||
+            item.province_name.toLowerCase().includes(query.toLowerCase())
+        );
+        
+        console.log('Showing fallback suggestions:', filtered);
+        this.showSuggestions(filtered);
     }
     
     showSuggestions(suggestions) {
