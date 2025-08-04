@@ -2128,12 +2128,15 @@ class AuthController extends Controller
                         'event_source' => 'required|string|max:255',
                     ];
 
-                    // Check if email already exists
+                    // Check if email already exists - DISABLED for collective registration
+                    // Allow same email for collective registration
+                    /*
                     $existingUser = User::where('email', $participant['email'])->first();
                     if ($existingUser) {
                         $errors["participant_" . ($index + 1)] = "Email {$participant['email']} sudah terdaftar";
                         continue;
                     }
+                    */
 
                     // Validate participant data directly
                     $validator = Validator::make($participant, $validationRules);
