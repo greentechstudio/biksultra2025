@@ -1109,20 +1109,26 @@ document.addEventListener('DOMContentLoaded', function() {
     let hasReachedEnd = false;
     let autoCloseTimer = null;
     
+    // TEMPORARY: Disable SatuWakaf feature for testing
+    // Simulate wakaf already completed
+    isWakafVerified = true;
+    localStorage.setItem('wakafVerified', 'true');
+    localStorage.setItem('wakafVerifiedTime', new Date().toISOString());
+    
     // Check if wakaf is already verified from previous session
     const storedWakafStatus = localStorage.getItem('wakafVerified');
     const wakafVerifiedTime = localStorage.getItem('wakafVerifiedTime');
     const storedTermsStatus = localStorage.getItem('termsAccepted');
     const termsAcceptedTime = localStorage.getItem('termsAcceptedTime');
     
-    // Check if wakaf verification is still valid (within 15 minutes)
-    if (storedWakafStatus === 'true' && wakafVerifiedTime) {
+    // FORCE SKIP WAKAF FOR TESTING - Check if wakaf verification is still valid (within 15 minutes)
+    if (true) { // Always consider wakaf as verified for testing
         const verifiedTime = new Date(wakafVerifiedTime);
         const currentTime = new Date();
         const timeDiff = currentTime - verifiedTime;
         const minutesDiff = timeDiff / (1000 * 60);
         
-        if (minutesDiff < 15) {
+        // if (minutesDiff < 15) {
             // Wakaf still valid
             isWakafVerified = true;
             
@@ -1178,7 +1184,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     wakafPaymentModal.style.display = 'none';
                 }
             }
-        } else {
+        /*} else {
             // Wakaf verification expired, clear storage and show wakaf modal
             localStorage.removeItem('wakafVerified');
             localStorage.removeItem('wakafVerifiedTime');
@@ -1194,18 +1200,25 @@ document.addEventListener('DOMContentLoaded', function() {
             if (termsModal) {
                 termsModal.style.display = 'none';
             }
-        }
+        }*/
     } else {
-        // No valid wakaf verification, show wakaf modal first
-        showWakafPaymentModal();
+        // DISABLED FOR TESTING - No valid wakaf verification, show wakaf modal first
+        // showWakafPaymentModal();
         
-        // Hide both terms modal and form until wakaf is completed
+        // TESTING: Skip to terms modal instead
+        showTermsModal();
+        
+        // Show form container but keep it hidden until terms are accepted
         if (formContainer) {
+            formContainer.style.display = 'block';
+        }
+        // Hide both terms modal and form until wakaf is completed
+        /*if (formContainer) {
             formContainer.style.display = 'none';
         }
         if (termsModal) {
             termsModal.style.display = 'none';
-        }
+        }*/
     }
 
     // Wakaf Payment Modal Functions
