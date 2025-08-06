@@ -32,7 +32,8 @@ class CacheLocationData extends Command
         try {
             $this->redis = new RedisClient([
                 'host' => '127.0.0.1',
-                'port' => 6379,
+                'port' => 60977,
+                'password' => 'GSozWrvKtn18hzjCZ6j',
                 'timeout' => 5
             ]);
         } catch (\Exception $e) {
