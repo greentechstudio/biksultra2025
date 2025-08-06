@@ -2764,6 +2764,14 @@ class AuthController extends Controller
         }
 
         try {
+            // Log request data for debugging
+            Log::info('Wakaf registration request data', [
+                'jersey_size_id' => $request->jersey_size_id,
+                'name' => $request->name,
+                'email' => $request->email,
+                'has_jersey_size_id' => !empty($request->jersey_size_id)
+            ]);
+            
             // Format phone numbers
             $whatsappNumber = $this->formatPhoneNumber($request->whatsapp_number);
             $phone = $request->phone ? $this->formatPhoneNumber($request->phone) : null;
@@ -2776,7 +2784,13 @@ class AuthController extends Controller
             $jerseySize = null;
             if ($request->jersey_size_id) {
                 $jerseyRecord = \App\Models\JerseySize::find($request->jersey_size_id);
-                $jerseySize = $jerseyRecord ? $jerseyRecord->size : null;
+                $jerseySize = $jerseyRecord ? $jerseyRecord->name : null; // Use 'name' field, not 'size'
+                
+                Log::info('Jersey size retrieved for wakaf user', [
+                    'jersey_size_id' => $request->jersey_size_id,
+                    'jersey_size' => $jerseySize,
+                    'jersey_record_found' => !is_null($jerseyRecord)
+                ]);
             }
             
             // Get race category name for consistency
