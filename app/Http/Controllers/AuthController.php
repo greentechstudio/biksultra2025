@@ -2769,6 +2769,19 @@ class AuthController extends Controller
             $phone = $request->phone ? $this->formatPhoneNumber($request->phone) : null;
             $emergencyPhone = $this->formatPhoneNumber($request->emergency_contact_phone);
 
+            // Generate unique registration number
+            $registrationNumber = $this->generateRegistrationNumber();
+            
+            // Get jersey size name for consistency
+            $jerseySize = null;
+            if ($request->jersey_size_id) {
+                $jerseyRecord = \App\Models\JerseySize::find($request->jersey_size_id);
+                $jerseySize = $jerseyRecord ? $jerseyRecord->size : null;
+            }
+            
+            // Get race category name for consistency
+            $raceCategoryName = $wakafTicketType->raceCategory ? $wakafTicketType->raceCategory->name : 'wakaf';
+
             // Create user with temporary password
             $temporaryPassword = 'temp_' . time();
             $user = User::create([
@@ -2777,6 +2790,12 @@ class AuthController extends Controller
                 'password' => Hash::make($temporaryPassword),
                 'whatsapp_number' => $whatsappNumber,
                 'phone' => $phone,
+                'role' => 'user',
+                'status' => 'pending',
+                'registration_number' => $registrationNumber,
+                'is_active' => true,
+                'payment_status' => 'pending',
+                'ticket_type_id' => $wakafTicketType->id, // Add ticket type ID
                 'bib_name' => $request->bib_name,
                 'birth_place' => $request->birth_place,
                 'birth_date' => $request->birth_date,
@@ -2792,8 +2811,10 @@ class AuthController extends Controller
                 'regency_name' => $request->regency_name,
                 'province_name' => $request->province_name,
                 'jersey_size_id' => $request->jersey_size_id,
-                'event_source' => $request->event_source,
+                'jersey_size' => $jerseySize, // Add jersey size string
+                'race_category' => $raceCategoryName, // Add race category string
                 'race_category_id' => $wakafTicketType->race_category_id,
+                'event_source' => $request->event_source,
                 'registration_date' => now(),
                 'is_verified' => false,
                 'is_collective' => false,
@@ -2814,12 +2835,25 @@ class AuthController extends Controller
                 'xendit_external_id' => $externalId
             ]);
 
-            // Generate and send automatic password via WhatsApp
-            $passwordResult = $this->randomPasswordService->generateAndSendPassword($user);
+            // Generate and send random password (same as regular registration)
+            $passwordResult = $this->randomPasswordService->generateAndSendPassword(
+                $user,
+                $this->whatsappService,
+                'simple'
+            );
             
-            if (!$passwordResult) {
+            if (!$passwordResult['success']) {
                 // Log warning but continue with registration
-                \Log::warning('Failed to send automatic password via WhatsApp for wakaf user: ' . $user->email);
+                Log::warning('Failed to send automatic password via WhatsApp for wakaf user', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'error' => $passwordResult['message'] ?? 'Unknown error'
+                ]);
+            } else {
+                Log::info('Password sent successfully to wakaf user', [
+                    'user_id' => $user->id,
+                    'email' => $user->email
+                ]);
             }
 
             // Create invoice using XenditService (same as regular registration)
@@ -2830,6 +2864,9 @@ class AuthController extends Controller
             );
 
             if ($invoiceData['success']) {
+                // Update user with xendit_url for completeness
+                $user->update(['xendit_url' => $invoiceData['invoice_url']]);
+                
                 // Send payment link via WhatsApp (same as regular registration)
                 $this->sendPaymentLink($user, $invoiceData['invoice_url']);
 
@@ -2839,6 +2876,12 @@ class AuthController extends Controller
                 Log::info('Wakaf registration completed successfully', [
                     'user_id' => $user->id,
                     'email' => $user->email,
+                    'registration_number' => $user->registration_number,
+                    'ticket_type_id' => $user->ticket_type_id,
+                    'jersey_size' => $user->jersey_size,
+                    'race_category' => $user->race_category,
+                    'xendit_external_id' => $user->xendit_external_id,
+                    'xendit_url' => $user->xendit_url,
                     'invoice_id' => $invoiceData['invoice_id'],
                     'invoice_url' => $invoiceData['invoice_url']
                 ]);
