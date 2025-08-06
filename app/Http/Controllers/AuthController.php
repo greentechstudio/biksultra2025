@@ -2713,17 +2713,8 @@ class AuthController extends Controller
             'name' => 'required|string|max:255',
             'bib_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
-            'whatsapp_number' => [
-                'required',
-                'string',
-                'regex:/^(\+62|62|0)[0-9]{9,12}$/',
-                'unique:users,whatsapp_number'
-            ],
-            'phone' => [
-                'nullable',
-                'string',
-                'regex:/^(\+62|62|0)[0-9]{9,12}$/',
-            ],
+            'whatsapp_number' => 'required|string|max:15|unique:users,whatsapp_number',
+            'phone' => 'nullable|string|max:15',
             'birth_place' => 'required|string|max:255',
             'birth_date' => 'required|date|before:today',
             'gender' => 'required|in:Laki-laki,Perempuan',
@@ -2732,11 +2723,7 @@ class AuthController extends Controller
             'occupation' => 'required|string|max:255',
             'medical_history' => 'nullable|string|max:1000',
             'emergency_contact_name' => 'required|string|max:255',
-            'emergency_contact_phone' => [
-                'required',
-                'string',
-                'regex:/^(\+62|62|0)[0-9]{9,12}$/',
-            ],
+            'emergency_contact_phone' => 'required|string|max:20|regex:/^[0-9+\-\s]+$/',
             'address' => 'required|string|max:1000',
             'regency_id' => 'required|string|max:255',
             'regency_name' => 'required|string|max:255',
@@ -2746,8 +2733,17 @@ class AuthController extends Controller
         ];
 
         Log::info('Wakaf registration starting validation');
-        $request->validate($validationRules);
-        Log::info('Wakaf registration validation passed');
+        
+        try {
+            $request->validate($validationRules);
+            Log::info('Wakaf registration validation passed');
+        } catch (\Illuminate\Validation\ValidationException $e) {
+            Log::error('Wakaf registration validation failed', [
+                'errors' => $e->errors(),
+                'input' => $request->except(['password', 'g-recaptcha-response'])
+            ]);
+            throw $e;
+        }
 
         // Validate regency_id from Redis cache
         if (!$this->validateRegencyFromRedis($request->regency_id)) {
