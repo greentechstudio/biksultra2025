@@ -651,72 +651,78 @@ class AuthController extends Controller
     /**
      * Send collective payment link to ALL participants
      */
-    private function sendCollectivePaymentLinkToAll($users, $invoiceUrl, $participantDetails, $totalAmount)
+    private function sendCollectivePaymentLinkToLeader($users, $invoiceUrl, $participantDetails, $totalAmount)
     {
-        foreach ($users as $index => $user) {
-            try {
-                // Create participant list for the message
-                $participantList = "";
-                foreach ($participantDetails as $idx => $participant) {
-                    $participantList .= ($idx + 1) . ". " . $participant['name'] . " - " . $participant['category'] . " (Rp " . number_format($participant['fee'], 0, ',', '.') . ")\n";
-                }
-
-                // Determine if this user is the group leader
-                $isGroupLeader = $index === 0;
-                $leaderText = $isGroupLeader ? " (Group Leader)" : "";
-
-                $message = "🏃‍♂️ *AMAZING SULTRA RUN - PEMBAYARAN KOLEKTIF*\n\n";
-                $message .= "Halo " . $user->name . $leaderText . "! 👋\n\n";
-                $message .= "Registrasi kolektif berhasil untuk " . count($participantDetails) . " peserta:\n\n";
-                $message .= $participantList;
-                $message .= "\n💰 *TOTAL PEMBAYARAN: Rp " . number_format($totalAmount, 0, ',', '.') . "*\n\n";
-                $message .= "Silakan lakukan pembayaran melalui link berikut:\n";
-                $message .= "🔗 " . $invoiceUrl . "\n\n";
-                $message .= "ℹ️ *Petunjuk Pembayaran:*\n";
-                $message .= "• Link ini berlaku untuk SEMUA peserta dalam grup Anda\n";
-                
-                if ($isGroupLeader) {
-                    $message .= "• Sebagai Group Leader, Anda bertanggung jawab untuk pembayaran\n";
-                    $message .= "• Jersey akan dikirim ke alamat Anda\n";
-                } else {
-                    $message .= "• Silakan koordinasi dengan Group Leader untuk pembayaran\n";
-                    $message .= "• Atau Anda bisa langsung bayar menggunakan link di atas\n";
-                }
-                
-                $message .= "• Setelah pembayaran berhasil, SEMUA peserta akan otomatis terdaftar\n";
-                $message .= "• Batas waktu pembayaran: 24 jam\n\n";
-                $message .= "Terima kasih! 🙏\n";
-                $message .= "Tim Amazing Sultra Run";
-
-                // Queue the message with high priority
-                $queueId = $this->whatsappService->queueMessage($user->whatsapp_number, $message, 'high');
-
-                Log::info('Collective payment link sent to participant', [
-                    'user_id' => $user->id,
-                    'user_name' => $user->name,
-                    'is_group_leader' => $isGroupLeader,
-                    'participant_index' => $index + 1,
-                    'total_participants' => count($users),
-                    'total_amount' => $totalAmount,
-                    'queue_id' => $queueId,
-                    'invoice_url' => $invoiceUrl
-                ]);
-
-            } catch (\Exception $e) {
-                Log::error('Failed to send collective payment link to participant', [
-                    'user_id' => $user->id,
-                    'user_name' => $user->name,
-                    'participant_index' => $index + 1,
-                    'total_participants' => count($users),
-                    'error' => $e->getMessage()
-                ]);
-            }
+        // ONLY send payment link to Group Leader (first participant - index 0)
+        if (empty($users)) {
+            Log::warning('No users provided for collective payment notification');
+            return;
         }
 
-        // Log summary
-        Log::info('Collective payment links sent to all participants', [
-            'total_sent' => count($users),
-            'group_leader_id' => $users[0]->id ?? null,
+        $groupLeader = $users[0]; // First participant is the group leader
+
+        try {
+            // Create participant list for the message
+            $participantList = "";
+            foreach ($participantDetails as $idx => $participant) {
+                $participantList .= ($idx + 1) . ". " . $participant['name'] . " - " . $participant['category'] . " (Rp " . number_format($participant['fee'], 0, ',', '.') . ")\n";
+            }
+
+            $message = "🏃‍♂️ *AMAZING SULTRA RUN - PEMBAYARAN KOLEKTIF*\n\n";
+            $message .= "Halo " . $groupLeader->name . " (Group Leader)! 👋\n\n";
+            $message .= "Registrasi kolektif berhasil untuk " . count($participantDetails) . " peserta:\n\n";
+            $message .= $participantList;
+            $message .= "\n💰 *TOTAL PEMBAYARAN: Rp " . number_format($totalAmount, 0, ',', '.') . "*\n\n";
+            $message .= "Silakan lakukan pembayaran melalui link berikut:\n";
+            $message .= "🔗 " . $invoiceUrl . "\n\n";
+            $message .= "ℹ️ *Petunjuk Pembayaran:*\n";
+            $message .= "• Sebagai Group Leader, Anda bertanggung jawab untuk pembayaran kolektif\n";
+            $message .= "• Link ini berlaku untuk SEMUA peserta dalam grup Anda\n";
+            $message .= "• Jersey akan dikirim ke alamat Group Leader\n";
+            $message .= "• Setelah pembayaran berhasil, SEMUA peserta akan otomatis terdaftar\n";
+            $message .= "• Batas waktu pembayaran: 24 jam\n\n";
+            $message .= "Anggota lain tidak akan menerima pesan invoice. Silakan koordinasikan pembayaran dengan tim Anda.\n\n";
+            $message .= "Terima kasih! 🙏\n";
+            $message .= "Tim Amazing Sultra Run";
+
+            // Queue the message with high priority ONLY to Group Leader
+            $queueId = $this->whatsappService->queueMessage($groupLeader->whatsapp_number, $message, 'high');
+
+            Log::info('Collective payment link sent ONLY to Group Leader', [
+                'group_leader_id' => $groupLeader->id,
+                'group_leader_name' => $groupLeader->name,
+                'group_leader_whatsapp' => $groupLeader->whatsapp_number,
+                'total_participants' => count($users),
+                'total_amount' => $totalAmount,
+                'queue_id' => $queueId,
+                'invoice_url' => $invoiceUrl,
+                'policy' => 'ONLY_LEADER_RECEIVES_INVOICE'
+            ]);
+
+            // Log that other participants did NOT receive payment messages
+            for ($i = 1; $i < count($users); $i++) {
+                Log::info('Participant did NOT receive payment message (as intended)', [
+                    'user_id' => $users[$i]->id,
+                    'user_name' => $users[$i]->name,
+                    'participant_index' => $i + 1,
+                    'status' => 'PAYMENT_MESSAGE_SKIPPED_FOR_NON_LEADER'
+                ]);
+            }
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send collective payment link to Group Leader', [
+                'group_leader_id' => $groupLeader->id,
+                'group_leader_name' => $groupLeader->name,
+                'total_participants' => count($users),
+                'error' => $e->getMessage()
+            ]);
+        }
+
+        // Log summary - payment link sent ONLY to Group Leader
+        Log::info('Collective payment notification completed - ONLY Group Leader notified', [
+            'group_leader_notified' => 1,
+            'other_participants_skipped' => count($users) - 1,
+            'group_leader_id' => $groupLeader->id,
             'total_amount' => $totalAmount,
             'invoice_url' => $invoiceUrl
         ]);
@@ -2400,65 +2406,89 @@ class AuthController extends Controller
             ];
         }
 
-        // Send password and activation message to each participant
-        foreach ($users as $user) {
-            try {
-                // Generate Xendit external_id for each user (like in regular registration)
-                $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
-                $user->update(['xendit_external_id' => $externalId]);
+        // Send password and activation message ONLY to Group Leader (first participant)
+        // Other participants will be managed by the Group Leader
+        $groupLeader = $users[0]; // First participant is the group leader
+        
+        // Generate Xendit external_id for ALL users (required for database integrity)
+        foreach ($users as $index => $user) {
+            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $user->update(['xendit_external_id' => $externalId]);
 
-                Log::info('Generated xendit_external_id for collective registration user', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'xendit_external_id' => $externalId
+            Log::info('Generated xendit_external_id for collective registration user', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'xendit_external_id' => $externalId,
+                'is_group_leader' => $index === 0
+            ]);
+        }
+
+        // Send password and activation ONLY to Group Leader
+        try {
+            // Generate and send random password to Group Leader only
+            $passwordResult = $this->randomPasswordService->generateAndSendPassword(
+                $groupLeader,
+                $this->whatsappService,
+                'simple'
+            );
+
+            if ($passwordResult['success']) {
+                Log::info('Password sent ONLY to Group Leader for collective registration', [
+                    'group_leader_id' => $groupLeader->id,
+                    'group_leader_email' => $groupLeader->email,
+                    'password_sent' => $passwordResult['password_sent'],
+                    'total_participants_managed' => count($users)
                 ]);
 
-                // Generate and send random password
-                $passwordResult = $this->randomPasswordService->generateAndSendPassword(
-                    $user,
-                    $this->whatsappService,
-                    'simple'
-                );
+                // Send activation message to Group Leader only
+                $activationResult = $this->sendActivationMessage($groupLeader);
 
-                if ($passwordResult['success']) {
-                    Log::info('Password sent for collective registration user', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'password_sent' => $passwordResult['password_sent']
+                if ($activationResult['success']) {
+                    // Automatically verify WhatsApp ONLY for Group Leader
+                    $groupLeader->update([
+                        'whatsapp_verified' => true,
+                        'whatsapp_verified_at' => now(),
+                        'status' => 'verified'
                     ]);
 
-                    // Send activation message
-                    $activationResult = $this->sendActivationMessage($user);
-
-                    if ($activationResult['success']) {
-                        // Automatically verify WhatsApp if message sent successfully
-                        $user->update([
-                            'whatsapp_verified' => true,
-                            'whatsapp_verified_at' => now(),
-                            'status' => 'verified'
+                    // Mark other participants as pending (no WhatsApp verification)
+                    for ($i = 1; $i < count($users); $i++) {
+                        $users[$i]->update([
+                            'whatsapp_verified' => false,
+                            'whatsapp_verified_at' => null,
+                            'status' => 'pending' // Will be updated after payment
                         ]);
-
-                        Log::info('Collective registration user activated via WhatsApp', [
-                            'user_id' => $user->id,
-                            'email' => $user->email,
-                            'whatsapp' => $user->whatsapp_number
+                        
+                        Log::info('Non-leader participant status set to pending (no notifications sent)', [
+                            'user_id' => $users[$i]->id,
+                            'user_name' => $users[$i]->name,
+                            'participant_index' => $i + 1,
+                            'managed_by_leader' => $groupLeader->id,
+                            'notifications_policy' => 'LEADER_ONLY'
                         ]);
                     }
-                } else {
-                    Log::error('Failed to send password for collective registration user', [
-                        'user_id' => $user->id,
-                        'email' => $user->email,
-                        'error' => $passwordResult['message']
+
+                    Log::info('Group Leader activated via WhatsApp - manages all participants', [
+                        'group_leader_id' => $groupLeader->id,
+                        'group_leader_email' => $groupLeader->email,
+                        'group_leader_whatsapp' => $groupLeader->whatsapp_number,
+                        'total_participants_managed' => count($users)
                     ]);
                 }
-            } catch (\Exception $e) {
-                Log::error('Exception in collective registration individual notification', [
-                    'user_id' => $user->id,
-                    'email' => $user->email,
-                    'error' => $e->getMessage(),
-                    'trace' => $e->getTraceAsString()
+            } else {
+                Log::error('Failed to send password to Group Leader for collective registration', [
+                    'group_leader_id' => $groupLeader->id,
+                    'group_leader_email' => $groupLeader->email,
+                    'error' => $passwordResult['message']
                 ]);
             }
+        } catch (\Exception $e) {
+            Log::error('Exception in collective registration Group Leader notification', [
+                'group_leader_id' => $groupLeader->id,
+                'group_leader_email' => $groupLeader->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
         }
 
         // Create ONE collective payment invoice for all participants
@@ -2521,8 +2551,8 @@ class AuthController extends Controller
                         ]);
                     }
 
-                    // Send collective payment link to ALL participants
-                    $this->sendCollectivePaymentLinkToAll($users, $paymentResult['invoice_url'], $participantDetails, $totalAmount);
+                    // Send collective payment link ONLY to Group Leader (first participant)
+                    $this->sendCollectivePaymentLinkToLeader($users, $paymentResult['invoice_url'], $participantDetails, $totalAmount);
 
                     Log::info('Collective payment invoice created', [
                         'primary_user_id' => $firstUser->id,
