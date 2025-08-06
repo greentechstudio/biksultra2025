@@ -2856,6 +2856,31 @@ class AuthController extends Controller
                 ]);
             }
 
+            // Send WhatsApp activation message and verify account automatically (same as regular registration)
+            $activationResult = $this->sendActivationMessage($user);
+
+            if ($activationResult['success']) {
+                // Automatically verify WhatsApp if message sent successfully
+                $user->update([
+                    'whatsapp_verified' => true,
+                    'whatsapp_verified_at' => now(),
+                    'status' => 'verified' // Change status to verified
+                ]);
+
+                Log::info('Wakaf user registered and WhatsApp verified automatically', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'whatsapp' => $user->whatsapp_number
+                ]);
+            } else {
+                Log::warning('Wakaf user registered but WhatsApp activation failed', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'whatsapp' => $user->whatsapp_number,
+                    'error' => $activationResult['message']
+                ]);
+            }
+
             // Create invoice using XenditService (same as regular registration)
             $invoiceData = $this->xenditService->createInvoice(
                 $user,
