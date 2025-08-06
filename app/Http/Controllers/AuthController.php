@@ -2688,15 +2688,25 @@ class AuthController extends Controller
      */
     public function registerWakaf(Request $request)
     {
+        // Log request received
+        Log::info('Wakaf registration request received', [
+            'email' => $request->email,
+            'name' => $request->name,
+            'whatsapp_number' => $request->whatsapp_number,
+            'has_recaptcha' => $request->has('g-recaptcha-response')
+        ]);
+
         // Verify reCAPTCHA
         if ($request->has('g-recaptcha-response')) {
             $recaptchaResult = $this->recaptchaService->verify($request->input('g-recaptcha-response'));
 
             if (!$recaptchaResult['success']) {
+                Log::warning('Wakaf registration reCAPTCHA failed', ['result' => $recaptchaResult]);
                 return redirect()->back()
                     ->withErrors(['recaptcha' => 'reCAPTCHA verification failed: ' . $recaptchaResult['message']])
                     ->withInput();
             }
+            Log::info('Wakaf registration reCAPTCHA verified successfully');
         }
 
         $validationRules = [
@@ -2735,7 +2745,9 @@ class AuthController extends Controller
             'event_source' => 'required|string',
         ];
 
+        Log::info('Wakaf registration starting validation');
         $request->validate($validationRules);
+        Log::info('Wakaf registration validation passed');
 
         // Validate regency_id from Redis cache
         if (!$this->validateRegencyFromRedis($request->regency_id)) {
@@ -2792,6 +2804,8 @@ class AuthController extends Controller
                 'is_collective' => false,
             ]);
 
+            Log::info('Wakaf user created successfully', ['user_id' => $user->id, 'email' => $user->email]);
+
             // Create registration with wakaf ticket type
             $registration = Registration::create([
                 'user_id' => $user->id,
@@ -2828,9 +2842,17 @@ class AuthController extends Controller
                 // Login user
                 Auth::login($user);
 
+                Log::info('Wakaf registration completed successfully', [
+                    'user_id' => $user->id,
+                    'registration_id' => $registration->id,
+                    'email' => $user->email,
+                    'invoice_id' => $invoiceData['id']
+                ]);
+
                 return redirect()->route('dashboard.invoice', ['id' => $registration->id])
                     ->with('success', 'Registrasi Wakaf berhasil! Link pembayaran telah dibuat. Silakan lakukan pembayaran untuk menyelesaikan pendaftaran.');
             } else {
+                Log::error('Wakaf registration failed to create invoice', ['user_id' => $user->id]);
                 return redirect()->back()
                     ->withErrors(['payment' => 'Gagal membuat invoice pembayaran. Silakan coba lagi.'])
                     ->withInput();
