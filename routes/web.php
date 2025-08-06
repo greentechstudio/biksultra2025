@@ -73,6 +73,7 @@ Route::get('/register-kolektif/success', [AuthController::class, 'collectiveSucc
 // Wakaf Registration
 Route::get('/wakaf-register', [AuthController::class, 'showWakafRegister'])->name('register.wakaf')->middleware('guest');
 Route::post('/wakaf-register', [AuthController::class, 'registerWakaf'])->name('register.wakaf.post')->middleware('guest');
+Route::get('/wakaf-success', [AuthController::class, 'wakafSuccess'])->name('wakaf.success');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');

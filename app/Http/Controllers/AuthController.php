@@ -2925,8 +2925,22 @@ class AuthController extends Controller
                     'invoice_url' => $invoiceData['invoice_url']
                 ]);
 
-                return redirect()->route('login')
-                    ->with('success', 'Registrasi Wakaf berhasil! Link pembayaran telah dikirim ke WhatsApp Anda. Silakan lakukan pembayaran untuk menyelesaikan pendaftaran.');
+                // Store success data in session for wakaf success page
+                session([
+                    'wakaf_success_data' => [
+                        'user_name' => $user->name,
+                        'email' => $user->email,
+                        'registration_number' => $user->registration_number,
+                        'race_category' => $user->race_category,
+                        'jersey_size' => $user->jersey_size,
+                        'whatsapp_number' => $user->whatsapp_number,
+                        'invoice_url' => $invoiceData['invoice_url'],
+                        'amount' => $wakafTicketType->price,
+                        'message' => 'Registrasi Wakaf berhasil! Link pembayaran telah dikirim ke WhatsApp Anda. Silakan lakukan pembayaran untuk menyelesaikan pendaftaran.'
+                    ]
+                ]);
+
+                return redirect()->route('wakaf.success');
             } else {
                 Log::error('Wakaf registration failed to create invoice', [
                     'user_id' => $user->id,
@@ -2943,6 +2957,26 @@ class AuthController extends Controller
                 ->withErrors(['registration' => 'Registrasi gagal. Silakan coba lagi.'])
                 ->withInput();
         }
+    }
+
+    /**
+     * Display wakaf registration success page
+     */
+    public function wakafSuccess()
+    {
+        // Check if we have success data in session
+        if (!session()->has('wakaf_success_data')) {
+            // Redirect to login if no success data
+            return redirect()->route('login')
+                ->with('error', 'Session wakaf tidak ditemukan. Silakan coba lagi.');
+        }
+
+        $successData = session('wakaf_success_data');
+        
+        // Clear the session data after retrieving it
+        session()->forget('wakaf_success_data');
+
+        return view('auth.wakaf-success', compact('successData'));
     }
 
     /**
