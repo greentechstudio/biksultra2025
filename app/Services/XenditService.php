@@ -402,14 +402,35 @@ class XenditService
         try {
             // SECURITY: Always get price from ticket_types table (source of truth)
             // Never trust user input or stored user.registration_fee for price validation
-            $ticketType = \App\Models\TicketType::getCurrentTicketType($user->race_category);
             
-            if (!$ticketType) {
-                throw new \Exception('No valid ticket type found for category: ' . $user->race_category);
+            $ticketType = null;
+            
+            // First priority: Use ticket_type_id if available (works for all registration types including wakaf)
+            if ($user->ticket_type_id) {
+                $ticketType = \App\Models\TicketType::find($user->ticket_type_id);
+                \Log::info('Attempting to get ticket type by ID', [
+                    'user_id' => $user->id,
+                    'ticket_type_id' => $user->ticket_type_id,
+                    'found' => !is_null($ticketType)
+                ]);
             }
             
-            // Validate ticket is still active and has quota
-            if (!$ticketType->isCurrentlyActive()) {
+            // Fallback: Use getCurrentTicketType method (for backward compatibility)
+            if (!$ticketType && $user->race_category) {
+                $ticketType = \App\Models\TicketType::getCurrentTicketType($user->race_category);
+                \Log::info('Fallback to getCurrentTicketType', [
+                    'user_id' => $user->id,
+                    'race_category' => $user->race_category,
+                    'found' => !is_null($ticketType)
+                ]);
+            }
+            
+            if (!$ticketType) {
+                throw new \Exception('No valid ticket type found for user ID: ' . $user->id . ', category: ' . $user->race_category . ', ticket_type_id: ' . $user->ticket_type_id);
+            }
+            
+            // For special ticket types like 'wakaf', skip active/quota validation
+            if (!in_array($ticketType->name, ['wakaf']) && !$ticketType->isCurrentlyActive()) {
                 throw new \Exception('Ticket type is no longer active or quota exceeded');
             }
             
@@ -438,10 +459,13 @@ class XenditService
             
             \Log::info('Official price validated from ticket_types database', [
                 'user_id' => $user->id,
+                'user_ticket_type_id' => $user->ticket_type_id,
                 'category' => $user->race_category,
                 'ticket_type_id' => $ticketType->id,
+                'ticket_type_name' => $ticketType->name,
                 'official_price' => $officialPrice,
-                'source' => 'ticket_types.price'
+                'source' => 'ticket_types.price',
+                'method' => $user->ticket_type_id ? 'direct_ticket_type_id' : 'getCurrentTicketType_fallback'
             ]);
             
             return $officialPrice;
@@ -449,6 +473,7 @@ class XenditService
         } catch (\Exception $e) {
             \Log::error('Price validation failed', [
                 'user_id' => $user->id,
+                'user_ticket_type_id' => $user->ticket_type_id,
                 'category' => $user->race_category,
                 'error' => $e->getMessage()
             ]);
