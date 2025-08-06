@@ -7,6 +7,8 @@ use App\Models\JerseySize;
 use App\Models\RaceCategory;
 use App\Models\BloodType;
 use App\Models\EventSource;
+use App\Models\TicketType;
+use App\Models\Registration;
 use App\Services\XenditService;
 use App\Services\RandomPasswordService;
 use App\Services\RecaptchaService;
@@ -99,6 +101,24 @@ class AuthController extends Controller
             
             return view('auth.register-kolektif', compact('jerseySizes', 'raceCategories', 'bloodTypes', 'eventSources'));
         }
+    }
+
+    /**
+     * Show the wakaf registration form (only 5K category with wakaf ticket type)
+     */
+    public function showWakafRegister()
+    {
+        $jerseySizes = JerseySize::active()->get();
+        $bloodTypes = BloodType::active()->get();
+        $eventSources = EventSource::active()->get();
+        
+        // Get wakaf ticket type for 5K category
+        $wakafTicketType = TicketType::where('name', 'wakaf')
+            ->where('is_active', true)
+            ->with('raceCategory')
+            ->first();
+
+        return view('auth.register-wakaf', compact('jerseySizes', 'bloodTypes', 'eventSources', 'wakafTicketType'));
     }
 
     public function register(Request $request)
@@ -2661,5 +2681,159 @@ class AuthController extends Controller
         }
 
         return view('auth.collective-success');
+    }
+
+    /**
+     * Process wakaf registration (same as regular registration but restricted to wakaf ticket type)
+     */
+    public function registerWakaf(Request $request)
+    {
+        // Verify reCAPTCHA
+        if ($request->has('g-recaptcha-response')) {
+            $recaptchaResult = $this->recaptchaService->verify($request->input('g-recaptcha-response'));
+
+            if (!$recaptchaResult['success']) {
+                return redirect()->back()
+                    ->withErrors(['recaptcha' => 'reCAPTCHA verification failed: ' . $recaptchaResult['message']])
+                    ->withInput();
+            }
+        }
+
+        $validationRules = [
+            'name' => 'required|string|max:255',
+            'bib_name' => 'required|string|max:255',
+            'email' => 'required|string|email|max:255|unique:users',
+            'whatsapp_number' => [
+                'required',
+                'string',
+                'regex:/^(\+62|62|0)[0-9]{9,12}$/',
+                'unique:users,whatsapp_number'
+            ],
+            'phone' => [
+                'nullable',
+                'string',
+                'regex:/^(\+62|62|0)[0-9]{9,12}$/',
+            ],
+            'birth_place' => 'required|string|max:255',
+            'birth_date' => 'required|date|before:today',
+            'gender' => 'required|in:Laki-laki,Perempuan',
+            'group_community' => 'nullable|string|max:255',
+            'blood_type' => 'required|string',
+            'occupation' => 'required|string|max:255',
+            'medical_history' => 'nullable|string|max:1000',
+            'emergency_contact_name' => 'required|string|max:255',
+            'emergency_contact_phone' => [
+                'required',
+                'string',
+                'regex:/^(\+62|62|0)[0-9]{9,12}$/',
+            ],
+            'address' => 'required|string|max:1000',
+            'regency_id' => 'required|exists:regencies,id',
+            'regency_name' => 'required|string|max:255',
+            'province_name' => 'required|string|max:255',
+            'jersey_size_id' => 'required|exists:jersey_sizes,id',
+            'event_source' => 'required|string',
+        ];
+
+        $request->validate($validationRules);
+
+        // Get wakaf ticket type
+        $wakafTicketType = TicketType::where('name', 'wakaf')
+            ->where('is_active', true)
+            ->with('raceCategory')
+            ->first();
+
+        if (!$wakafTicketType) {
+            return redirect()->back()
+                ->withErrors(['wakaf' => 'Pendaftaran Wakaf saat ini tidak tersedia.'])
+                ->withInput();
+        }
+
+        try {
+            // Format phone numbers
+            $whatsappNumber = $this->formatPhoneNumber($request->whatsapp_number);
+            $phone = $request->phone ? $this->formatPhoneNumber($request->phone) : null;
+            $emergencyPhone = $this->formatPhoneNumber($request->emergency_contact_phone);
+
+            // Create user with temporary password
+            $temporaryPassword = 'temp_' . time();
+            $user = User::create([
+                'name' => $request->name,
+                'email' => $request->email,
+                'password' => Hash::make($temporaryPassword),
+                'whatsapp_number' => $whatsappNumber,
+                'phone' => $phone,
+                'bib_name' => $request->bib_name,
+                'birth_place' => $request->birth_place,
+                'birth_date' => $request->birth_date,
+                'gender' => $request->gender,
+                'group_community' => $request->group_community,
+                'blood_type' => $request->blood_type,
+                'occupation' => $request->occupation,
+                'medical_history' => $request->medical_history,
+                'emergency_contact_name' => $request->emergency_contact_name,
+                'emergency_contact_phone' => $emergencyPhone,
+                'address' => $request->address,
+                'regency_id' => $request->regency_id,
+                'regency_name' => $request->regency_name,
+                'province_name' => $request->province_name,
+                'jersey_size_id' => $request->jersey_size_id,
+                'event_source' => $request->event_source,
+                'race_category_id' => $wakafTicketType->race_category_id,
+                'registration_date' => now(),
+                'is_verified' => false,
+                'is_collective' => false,
+            ]);
+
+            // Create registration with wakaf ticket type
+            $registration = Registration::create([
+                'user_id' => $user->id,
+                'race_category_id' => $wakafTicketType->race_category_id,
+                'jersey_size_id' => $request->jersey_size_id,
+                'registration_fee' => $wakafTicketType->price,
+                'registration_date' => now(),
+                'status' => 'pending',
+                'payment_status' => 'pending',
+                'ticket_type_id' => $wakafTicketType->id,
+            ]);
+
+            // Generate and send automatic password via WhatsApp
+            $passwordResult = $this->randomPasswordService->generateAndSendPassword($user);
+            
+            if (!$passwordResult) {
+                // Log warning but continue with registration
+                \Log::warning('Failed to send automatic password via WhatsApp for wakaf user: ' . $user->email);
+            }
+
+            // Update registered count
+            $wakafTicketType->increment('registered_count');
+
+            // Create invoice using XenditService
+            $invoiceData = $this->xenditService->createInvoice($user, $registration, $wakafTicketType->price);
+
+            if ($invoiceData && isset($invoiceData['invoice_url'])) {
+                $registration->update([
+                    'xendit_invoice_id' => $invoiceData['id'],
+                    'xendit_invoice_url' => $invoiceData['invoice_url'],
+                    'xendit_external_id' => $invoiceData['external_id'],
+                ]);
+
+                // Login user
+                Auth::login($user);
+
+                return redirect()->route('dashboard.invoice', ['id' => $registration->id])
+                    ->with('success', 'Registrasi Wakaf berhasil! Link pembayaran telah dibuat. Silakan lakukan pembayaran untuk menyelesaikan pendaftaran.');
+            } else {
+                return redirect()->back()
+                    ->withErrors(['payment' => 'Gagal membuat invoice pembayaran. Silakan coba lagi.'])
+                    ->withInput();
+            }
+
+        } catch (\Exception $e) {
+            \Log::error('Wakaf registration error: ' . $e->getMessage());
+            return redirect()->back()
+                ->withErrors(['registration' => 'Registrasi gagal. Silakan coba lagi.'])
+                ->withInput();
+        }
     }
 }
