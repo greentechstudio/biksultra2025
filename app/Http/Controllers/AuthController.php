@@ -8,7 +8,6 @@ use App\Models\RaceCategory;
 use App\Models\BloodType;
 use App\Models\EventSource;
 use App\Models\TicketType;
-use App\Models\Registration;
 use App\Services\XenditService;
 use App\Services\RandomPasswordService;
 use App\Services\RecaptchaService;
@@ -2802,16 +2801,17 @@ class AuthController extends Controller
 
             Log::info('Wakaf user created successfully', ['user_id' => $user->id, 'email' => $user->email]);
 
-            // Create registration with wakaf ticket type
-            $registration = Registration::create([
+            // Update registered count
+            $wakafTicketType->increment('registered_count');
+
+            // Generate Xendit external_id for wakaf registration
+            $externalId = 'AMAZING-WAKAF-' . $user->id . '-' . time();
+            $user->update(['xendit_external_id' => $externalId]);
+
+            Log::info('Generated xendit_external_id for wakaf registration', [
                 'user_id' => $user->id,
-                'race_category_id' => $wakafTicketType->race_category_id,
-                'jersey_size_id' => $request->jersey_size_id,
-                'registration_fee' => $wakafTicketType->price,
-                'registration_date' => now(),
-                'status' => 'pending',
-                'payment_status' => 'pending',
-                'ticket_type_id' => $wakafTicketType->id,
+                'email' => $user->email,
+                'xendit_external_id' => $externalId
             ]);
 
             // Generate and send automatic password via WhatsApp
@@ -2822,35 +2822,36 @@ class AuthController extends Controller
                 \Log::warning('Failed to send automatic password via WhatsApp for wakaf user: ' . $user->email);
             }
 
-            // Update registered count
-            $wakafTicketType->increment('registered_count');
+            // Create invoice using XenditService (same as regular registration)
+            $invoiceData = $this->xenditService->createInvoice(
+                $user,
+                null, // Let the service use the user's race category price
+                'Amazing Sultra Run Wakaf Registration Fee - ' . $user->name
+            );
 
-            // Create invoice using XenditService
-            $invoiceData = $this->xenditService->createInvoice($user, $registration, $wakafTicketType->price);
-
-            if ($invoiceData && isset($invoiceData['invoice_url'])) {
-                $registration->update([
-                    'xendit_invoice_id' => $invoiceData['id'],
-                    'xendit_invoice_url' => $invoiceData['invoice_url'],
-                    'xendit_external_id' => $invoiceData['external_id'],
-                ]);
+            if ($invoiceData['success']) {
+                // Send payment link via WhatsApp (same as regular registration)
+                $this->sendPaymentLink($user, $invoiceData['invoice_url']);
 
                 // Login user
                 Auth::login($user);
 
                 Log::info('Wakaf registration completed successfully', [
                     'user_id' => $user->id,
-                    'registration_id' => $registration->id,
                     'email' => $user->email,
-                    'invoice_id' => $invoiceData['id']
+                    'invoice_id' => $invoiceData['invoice_id'],
+                    'invoice_url' => $invoiceData['invoice_url']
                 ]);
 
-                return redirect()->route('dashboard.invoice', ['id' => $registration->id])
-                    ->with('success', 'Registrasi Wakaf berhasil! Link pembayaran telah dibuat. Silakan lakukan pembayaran untuk menyelesaikan pendaftaran.');
+                return redirect()->route('login')
+                    ->with('success', 'Registrasi Wakaf berhasil! Link pembayaran telah dikirim ke WhatsApp Anda. Silakan lakukan pembayaran untuk menyelesaikan pendaftaran.');
             } else {
-                Log::error('Wakaf registration failed to create invoice', ['user_id' => $user->id]);
+                Log::error('Wakaf registration failed to create invoice', [
+                    'user_id' => $user->id,
+                    'error' => $invoiceData['message']
+                ]);
                 return redirect()->back()
-                    ->withErrors(['payment' => 'Gagal membuat invoice pembayaran. Silakan coba lagi.'])
+                    ->withErrors(['payment' => 'Gagal membuat invoice pembayaran: ' . $invoiceData['message']])
                     ->withInput();
             }
 
