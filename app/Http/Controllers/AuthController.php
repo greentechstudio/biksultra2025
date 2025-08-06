@@ -2728,7 +2728,7 @@ class AuthController extends Controller
                 'regex:/^(\+62|62|0)[0-9]{9,12}$/',
             ],
             'address' => 'required|string|max:1000',
-            'regency_id' => 'required|exists:regencies,id',
+            'regency_id' => 'required|string|max:255',
             'regency_name' => 'required|string|max:255',
             'province_name' => 'required|string|max:255',
             'jersey_size_id' => 'required|exists:jersey_sizes,id',
@@ -2736,6 +2736,13 @@ class AuthController extends Controller
         ];
 
         $request->validate($validationRules);
+
+        // Validate regency_id from Redis cache
+        if (!$this->validateRegencyFromRedis($request->regency_id)) {
+            return redirect()->back()
+                ->withErrors(['regency_id' => 'Kota/Kabupaten yang dipilih tidak valid.'])
+                ->withInput();
+        }
 
         // Get wakaf ticket type
         $wakafTicketType = TicketType::where('name', 'wakaf')
@@ -2834,6 +2841,54 @@ class AuthController extends Controller
             return redirect()->back()
                 ->withErrors(['registration' => 'Registrasi gagal. Silakan coba lagi.'])
                 ->withInput();
+        }
+    }
+
+    /**
+     * Validate regency ID from Redis cache
+     */
+    private function validateRegencyFromRedis($regencyId)
+    {
+        try {
+            $redis = new \Predis\Client([
+                'host' => '127.0.0.1',
+                'port' => 60977,
+                'password' => 'GSozWrvKtn18hzjCZ6j',
+                'timeout' => 5
+            ]);
+
+            $allRegenciesJson = $redis->get('all_regencies');
+            
+            if (!$allRegenciesJson) {
+                // If Redis cache is empty, allow any regency ID (fallback)
+                \Log::warning('Redis regencies cache is empty, allowing regency ID: ' . $regencyId);
+                return true;
+            }
+
+            $allRegencies = json_decode($allRegenciesJson, true);
+            
+            if (!is_array($allRegencies)) {
+                \Log::warning('Invalid regencies data in Redis');
+                return true; // Fallback to allow
+            }
+
+            // Check if regency ID exists in cache
+            foreach ($allRegencies as $regency) {
+                if (isset($regency['id']) && $regency['id'] == $regencyId) {
+                    return true;
+                }
+            }
+
+            \Log::info('Regency ID not found in Redis cache', ['regency_id' => $regencyId]);
+            return false;
+
+        } catch (\Exception $e) {
+            \Log::error('Error validating regency from Redis', [
+                'regency_id' => $regencyId,
+                'error' => $e->getMessage()
+            ]);
+            // On error, allow the regency (fallback behavior)
+            return true;
         }
     }
 }
