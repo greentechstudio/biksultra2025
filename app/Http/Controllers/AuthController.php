@@ -1826,9 +1826,58 @@ class AuthController extends Controller
                             'valid' => true,
                             'message' => 'Nomor WhatsApp valid dan aktif'
                         ];
+                    } else if ($data['data'] === true && !is_array($data['data'])) {
+                        // Handle case where data is just boolean true without jid/lid (10 digit number issue)
+                        // Try adding 0 after 62 for 10 digit numbers
+                        Log::info('WhatsApp validation returned true without jid/lid, trying with 0 prefix', [
+                            'original_number' => $formattedNumber
+                        ]);
+                        
+                        // Check if this is a 10 digit number (original 10 digits becomes 62 + 10 = 12, but for 0-prefixed becomes 62 + 9 = 11)
+                        if ((strlen($formattedNumber) === 11 || strlen($formattedNumber) === 12) && str_starts_with($formattedNumber, '62')) {
+                            $newFormattedNumber = '620' . substr($formattedNumber, 2);
+                            
+                            Log::info('Retrying WhatsApp validation with 0 prefix', [
+                                'original' => $formattedNumber,
+                                'new_format' => $newFormattedNumber
+                            ]);
+                            
+                            // Retry validation with the new format
+                            $retryResponse = Http::timeout(3)->get($apiUrl, [
+                                'api_key' => $apiKey,
+                                'sender' => $sender,
+                                'number' => $newFormattedNumber
+                            ]);
+                            
+                            if ($retryResponse->successful()) {
+                                $retryData = $retryResponse->json();
+                                
+                                Log::info('WhatsApp API retry response received', [
+                                    'phone' => $newFormattedNumber,
+                                    'response' => $retryData
+                                ]);
+                                
+                                if (isset($retryData['status']) && $retryData['status'] === true) {
+                                    if (is_array($retryData['data']) && isset($retryData['data']['exists']) && $retryData['data']['exists'] === true) {
+                                        return [
+                                            'success' => true,
+                                            'valid' => true,
+                                            'message' => 'Nomor WhatsApp valid dan aktif'
+                                        ];
+                                    }
+                                }
+                            }
+                        }
+                        
+                        // If retry failed or not applicable, treat as invalid
+                        return [
+                            'success' => true,
+                            'valid' => false,
+                            'message' => 'Nomor tidak terdaftar di WhatsApp'
+                        ];
                     } else {
                         // Either data is not array structure or exists=false
-                        // This handles cases like {"status":true,"data":true} which should be invalid
+                        // This handles cases like {"status":true,"data":false}
                         return [
                             'success' => true,
                             'valid' => false,
