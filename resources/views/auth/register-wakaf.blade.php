@@ -1053,7 +1053,7 @@
                     <!-- Submit Button -->
                     <div class="text-center">
                         <button type="submit" class="w-full btn-custom-primary text-white font-bold py-4 px-8 rounded-lg">
-                            <i class="fas fa-hand-holding-heart mr-2"></i>Daftar Wakaf 5K
+                            <i class="fas fa-hand-holding-heart mr-2"></i>Daftar
                         </button>
                         
                         <p class="mt-4 text-sm text-gray-600">
@@ -2310,7 +2310,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     
                     // Re-enable submit button
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-hand-holding-heart mr-2"></i>Daftar Wakaf 5K';
+                    submitBtn.innerHTML = '<i class="fas fa-hand-holding-heart mr-2"></i>Daftar';
                     submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 });
             });
