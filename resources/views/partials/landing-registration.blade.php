@@ -20,6 +20,9 @@
                     <a href="https://www.amazingsultrarun.com/register" class="cta-button">
                         <i class="fas fa-user"></i> Register
                     </a>
+                    <a href="https://www.amazingsultrarun.com/wakaf-register" class="cta-button" style="background: linear-gradient(135deg, #059669, #10b981); border: 2px solid #059669; box-shadow: 0 4px 15px rgba(5, 150, 105, 0.3);">
+                        <i class="fas fa-hand-holding-heart"></i> REGISTER 5K WAKAF
+                    </a>
                 </div>
                 
                 <div class="registration-supported">
