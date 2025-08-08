@@ -9,11 +9,43 @@ use App\Models\User;
 $app = require_once __DIR__ . '/bootstrap/app.php';
 $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
-echo "=== REGENERATE COLLECTIVE INVOICE ===\n\n";
+echo "=== REGENERATE INVOICE (COLLECTIVE & INDIVIDUAL) ===\n\n";
+echo "Pilihan:\n";
+echo "1. Regenerate invoice kolektif (AMAZING-COLLECTIVE-)\n";
+echo "2. Regenerate invoice individual (AMAZING-REG-)\n";
+echo "3. Update kategori peserta tertentu\n";
+echo "4. Cek data berdasarkan User ID\n\n";
 
-// Input primary user ID atau external ID
-echo "Masukkan Primary User ID atau External ID: ";
-$input = trim(fgets(STDIN));
+echo "Pilih opsi (1-4): ";
+$option = trim(fgets(STDIN));
+
+switch ($option) {
+    case '1':
+        regenerateCollectiveInvoice();
+        break;
+    case '2': 
+        regenerateIndividualInvoice();
+        break;
+    case '3':
+        updateParticipantCategory();
+        break;
+    case '4':
+        checkUserData();
+        break;
+    default:
+        echo "❌ Pilihan tidak valid\n";
+        exit;
+}
+
+function regenerateCollectiveInvoice() {
+    echo "\n=== REGENERATE COLLECTIVE INVOICE ===\n";
+    echo "Masukkan Primary User ID atau External ID: ";
+    $input = trim(fgets(STDIN));
+    
+    if (empty($input)) {
+        echo "❌ Input tidak boleh kosong\n";
+        exit;
+    }
 
 try {
     $xenditService = new XenditService();
@@ -40,8 +72,34 @@ try {
 
     if ($users->isEmpty()) {
         echo "❌ Tidak ditemukan user dengan ID/External ID: {$input}\n";
-        exit;
+        return;
     }
+
+    // Check if any user already paid
+    $paidUsers = $users->where('payment_status', 'paid');
+    if (!$paidUsers->isEmpty()) {
+        echo "⚠️  PERINGATAN: Ada {$paidUsers->count()} peserta yang sudah PAID:\n";
+        foreach ($paidUsers as $user) {
+            echo "   - {$user->name} (ID: {$user->id})\n";
+        }
+        echo "\nLanjutkan regenerasi? Ini akan reset status pembayaran mereka! (y/N): ";
+        $confirm = trim(fgets(STDIN));
+        if (strtolower($confirm) !== 'y') {
+            echo "❌ Regenerasi dibatalkan\n";
+            return;
+        }
+    }
+
+    processCollectiveRegeneration($users, $xenditService);
+    
+} catch (\Exception $e) {
+    echo "❌ Error: " . $e->getMessage() . "\n";
+    echo "File: " . $e->getFile() . "\n";
+    echo "Line: " . $e->getLine() . "\n";
+}
+}
+
+function processCollectiveRegeneration($users, $xenditService) {
 
     echo "✅ Ditemukan {$users->count()} peserta dalam grup kolektif:\n\n";
     
