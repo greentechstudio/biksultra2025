@@ -12,12 +12,14 @@ $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 echo "=== INVOICE MANAGEMENT TOOL ===\n\n";
 echo "Pilihan:\n";
-echo "1. Regenerate invoice kolektif (AMAZING-COLLECTIVE-)\n";
-echo "2. Regenerate invoice individual (AMAZING-REG-)\n";
+echo "1. Regenerate invoice kolektif (AMAZING-COLLECTIVE- atau grup dengan Invoice ID sama)\n";
+echo "2. Regenerate invoice individual (AMAZING-REG- tunggal)\n";
 echo "3. Update kategori peserta tertentu + regenerate invoice\n";
-echo "4. Cek data berdasarkan User ID\n\n";
+echo "4. Cek data berdasarkan User ID\n";
+echo "5. Cari grup berdasarkan Invoice ID (untuk kolektif AMAZING-REG-)\n";
+echo "6. Cari grup berdasarkan Primary User ID\n\n";
 
-echo "Pilih opsi (1-4): ";
+echo "Pilih opsi (1-6): ";
 $option = trim(fgets(STDIN));
 
 switch ($option) {
@@ -32,6 +34,12 @@ switch ($option) {
         break;
     case '4':
         checkUserData();
+        break;
+    case '5':
+        findGroupByInvoiceId();
+        break;
+    case '6':
+        findGroupByPrimaryUserId();
         break;
     default:
         echo "❌ Pilihan tidak valid\n";
@@ -370,6 +378,179 @@ function checkUserData() {
             echo "   Active: " . ($user->ticketType->is_active ? 'YES' : 'NO') . "\n";
         }
 
+    } catch (\Exception $e) {
+        echo "❌ Error: " . $e->getMessage() . "\n";
+    }
+}
+
+// Fungsi untuk mencari grup berdasarkan Xendit Invoice ID
+function findGroupByInvoiceId() {
+    echo "\n=== 🔍 CARI GRUP BERDASARKAN XENDIT INVOICE ID ===\n";
+    echo "Masukkan Xendit Invoice ID (contoh: 670b2c43f37063005b7e92d8): ";
+    $invoiceId = trim(fgets(STDIN));
+    
+    if (empty($invoiceId)) {
+        echo "❌ Invoice ID tidak boleh kosong\n";
+        return;
+    }
+    
+    // Cari semua user dengan invoice ID yang sama
+    $users = \App\Models\User::where('xendit_invoice_id', $invoiceId)
+                            ->orderBy('id')
+                            ->get();
+    
+    if ($users->isEmpty()) {
+        echo "❌ Tidak ditemukan data dengan Invoice ID: $invoiceId\n";
+        return;
+    }
+    
+    echo "\n✅ Ditemukan " . $users->count() . " peserta dengan Invoice ID: $invoiceId\n";
+    echo "=== DETAIL GRUP ===\n";
+    
+    foreach ($users as $index => $user) {
+        echo ($index + 1) . ". ID: {$user->id} | Nama: {$user->name} | Email: {$user->email}\n";
+        echo "   External ID: {$user->xendit_external_id}\n";
+        echo "   Ticket Type ID: {$user->ticket_type_id}\n";
+        echo "   Status: {$user->payment_status}\n";
+        echo "   Dibuat: {$user->created_at}\n";
+        echo "   ----------------------------------------\n";
+    }
+    
+    // Analisis apakah ini collective registration
+    $externalIds = $users->pluck('xendit_external_id')->unique();
+    if ($externalIds->count() == 1) {
+        $externalId = $externalIds->first();
+        if (strpos($externalId, 'AMAZING-COLLECTIVE-') === 0) {
+            echo "📊 ANALISIS: Ini adalah COLLECTIVE REGISTRATION dengan format standar\n";
+        } elseif (strpos($externalId, 'AMAZING-REG-') === 0) {
+            echo "📊 ANALISIS: Ini adalah COLLECTIVE REGISTRATION dengan format AMAZING-REG-\n";
+            echo "💡 Format External ID sama untuk semua peserta menunjukkan ini grup kolektif\n";
+        }
+    } else {
+        echo "📊 ANALISIS: Format External ID berbeda-beda, kemungkinan registrasi individual yang kebetulan sama invoice ID\n";
+    }
+    
+    echo "\nApakah Anda ingin regenerate invoice untuk grup ini? (y/n): ";
+    $confirm = trim(fgets(STDIN));
+    
+    if (strtolower($confirm) === 'y') {
+        regenerateInvoiceForGroup($users);
+    }
+}
+
+function regenerateInvoiceForGroup($users) {
+    if ($users->isEmpty()) {
+        echo "❌ Tidak ada data user untuk diproses\n";
+        return;
+    }
+    
+    $firstUser = $users->first();
+    $invoiceId = $firstUser->xendit_invoice_id;
+    
+    echo "\n=== 🔄 REGENERATING INVOICE UNTUK GRUP ===\n";
+    echo "Invoice ID: $invoiceId\n";
+    echo "Jumlah peserta: " . $users->count() . "\n";
+    
+    try {
+        $xenditService = new XenditService();
+        
+        // Bersihkan invoice lama
+        foreach ($users as $user) {
+            $user->update([
+                'xendit_invoice_id' => null,
+                'xendit_invoice_url' => null,
+                'payment_status' => 'pending'
+            ]);
+        }
+        
+        // Tentukan apakah ini collective atau individual
+        $externalIds = $users->pluck('xendit_external_id')->unique();
+        if ($externalIds->count() == 1) {
+            // Collective registration - satu invoice untuk semua
+            $primaryUser = $users->first();
+            $paymentResult = $xenditService->createCollectiveInvoice($primaryUser, $users->toArray());
+            
+            if ($paymentResult['success']) {
+                echo "✅ Collective invoice berhasil dibuat!\n";
+                echo "   Invoice ID: {$paymentResult['invoice_id']}\n";
+                echo "   Invoice URL: {$paymentResult['invoice_url']}\n";
+            } else {
+                echo "❌ Gagal membuat collective invoice: {$paymentResult['message']}\n";
+            }
+        } else {
+            // Individual registrations - invoice terpisah untuk masing-masing
+            foreach ($users as $user) {
+                $paymentResult = $xenditService->createInvoice($user);
+                if ($paymentResult['success']) {
+                    echo "✅ Invoice individual berhasil dibuat untuk: {$user->name}\n";
+                } else {
+                    echo "❌ Gagal membuat invoice untuk: {$user->name}\n";
+                }
+            }
+        }
+        
+    } catch (\Exception $e) {
+        echo "❌ Error: " . $e->getMessage() . "\n";
+    }
+}
+
+// Fungsi untuk mencari grup berdasarkan Primary User ID  
+function findGroupByPrimaryUserId() {
+    echo "\n=== 🔍 CARI GRUP BERDASARKAN PRIMARY USER ID ===\n";
+    echo "Masukkan Primary User ID: ";
+    $primaryUserId = trim(fgets(STDIN));
+    
+    if (!is_numeric($primaryUserId)) {
+        echo "❌ User ID harus berupa angka\n";
+        return;
+    }
+    
+    try {
+        $primaryUser = User::find($primaryUserId);
+        if (!$primaryUser) {
+            echo "❌ User dengan ID {$primaryUserId} tidak ditemukan\n";
+            return;
+        }
+        
+        echo "\n📋 PRIMARY USER:\n";
+        echo "   ID: {$primaryUser->id}\n";
+        echo "   Nama: {$primaryUser->name}\n";
+        echo "   External ID: {$primaryUser->xendit_external_id}\n";
+        echo "   Invoice ID: {$primaryUser->xendit_invoice_id}\n";
+        
+        // Cari external ID pattern
+        $externalId = $primaryUser->xendit_external_id;
+        if (strpos($externalId, 'AMAZING-COLLECTIVE-') === 0) {
+            // Format collective standar
+            $pattern = $externalId;
+            echo "   Format: COLLECTIVE (standar)\n\n";
+        } elseif (strpos($externalId, 'AMAZING-REG-') === 0) {
+            // Format collective dengan AMAZING-REG-
+            $pattern = $externalId;
+            echo "   Format: COLLECTIVE (AMAZING-REG-)\n\n";
+        } else {
+            echo "   Format: Individual atau tidak dikenal\n\n";
+            return;
+        }
+        
+        // Cari grup berdasarkan external ID yang sama
+        $groupUsers = User::where('xendit_external_id', $pattern)
+                         ->orderBy('id')
+                         ->get();
+        
+        echo "✅ Ditemukan " . $groupUsers->count() . " peserta dalam grup:\n";
+        foreach ($groupUsers as $index => $user) {
+            echo "   " . ($index + 1) . ". ID: {$user->id} | {$user->name} | {$user->email}\n";
+            echo "      Ticket Type: {$user->ticket_type_id} | Status: {$user->payment_status}\n";
+        }
+        
+        echo "\nApakah Anda ingin regenerate invoice untuk grup ini? (y/n): ";
+        $confirm = trim(fgets(STDIN));
+        
+        if (strtolower($confirm) === 'y') {
+            processCollectiveRegeneration($groupUsers, new XenditService());
+        }
+        
     } catch (\Exception $e) {
         echo "❌ Error: " . $e->getMessage() . "\n";
     }
