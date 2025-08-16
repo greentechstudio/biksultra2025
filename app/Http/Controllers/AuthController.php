@@ -2138,10 +2138,10 @@ class AuthController extends Controller
             // Get the number of forms submitted
             $participants = $request->input('participants', []);
             
-            // VALIDATION: Minimum 5 participants for collective registration
+            // VALIDATION: Minimum 10 participants for collective registration
             if (empty($participants)) {
                 return redirect()->back()
-                    ->withErrors(['participants' => 'Registrasi kolektif minimal harus ada 5 peserta'])
+                    ->withErrors(['participants' => 'Registrasi kolektif minimal harus ada 10 peserta'])
                     ->withInput();
             }
 
@@ -2153,9 +2153,9 @@ class AuthController extends Controller
                 }
             }
 
-            if ($validParticipants < 5) {
+            if ($validParticipants < 10) {
                 return redirect()->back()
-                    ->withErrors(['participants' => "Registrasi kolektif minimal harus ada 5 peserta. Saat ini hanya {$validParticipants} peserta yang lengkap."])
+                    ->withErrors(['participants' => "Registrasi kolektif minimal harus ada 10 peserta. Saat ini hanya {$validParticipants} peserta yang lengkap."])
                     ->withInput();
             }
 

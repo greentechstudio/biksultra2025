@@ -12,7 +12,7 @@ $app->make(\Illuminate\Contracts\Console\Kernel::class)->bootstrap();
 
 echo "=== INVOICE MANAGEMENT TOOL ===\n\n";
 echo "Pilihan:\n";
-echo "1. Regenerate invoice kolektif (AMAZING-COLLECTIVE- format)\n";
+echo "1. Regenerate invoice kolektif (External ID atau timestamp-based grouping)\n";
 echo "2. Regenerate invoice individual (AMAZING-REG- tunggal)\n";
 echo "3. Update kategori peserta tertentu + regenerate invoice\n";
 echo "4. Cek data berdasarkan User ID\n";
@@ -66,14 +66,29 @@ function regenerateCollectiveInvoice() {
                          ->orderBy('created_at', 'asc')
                          ->get();
         } else {
+            // First try exact match
             $users = User::where('xendit_external_id', $input)
                          ->orderBy('created_at', 'asc')
                          ->get();
             
+            // If no exact match, try LIKE pattern
             if ($users->isEmpty()) {
                 $users = User::where('xendit_external_id', 'LIKE', "{$input}%")
                              ->orderBy('created_at', 'asc')
                              ->get();
+            }
+            
+            // If still empty, try timestamp-based grouping for AMAZING-REG format
+            if ($users->isEmpty() && preg_match('/AMAZING-REG-(\d+)-(\d+)/', $input, $matches)) {
+                $timestamp = $matches[2];
+                echo "🔍 Mencari grup berdasarkan timestamp: $timestamp\n";
+                $users = User::where('xendit_external_id', 'LIKE', "AMAZING-REG-%-$timestamp")
+                             ->orderBy('id')
+                             ->get();
+                
+                if (!$users->isEmpty()) {
+                    echo "✅ Ditemukan " . $users->count() . " peserta dengan timestamp yang sama\n";
+                }
             }
         }
 
@@ -386,7 +401,6 @@ function checkUserData() {
 // Fungsi untuk mencari grup berdasarkan Xendit Invoice ID
 function findGroupByInvoiceId() {
     echo "\n=== 🔍 CARI GRUP BERDASARKAN XENDIT INVOICE ID ===\n";
-    echo "💡 KONSEP: Same Invoice ID = Same Group = 1 Payment untuk semua peserta\n";
     echo "Masukkan Xendit Invoice ID (contoh: 670b2c43f37063005b7e92d8): ";
     $invoiceId = trim(fgets(STDIN));
     
@@ -417,24 +431,18 @@ function findGroupByInvoiceId() {
         echo "   ----------------------------------------\n";
     }
     
-    // Analisis: Jika sama xendit_invoice_id = 1 kelompok collective
-    echo "📊 ANALISIS GRUP:\n";
-    echo "   ✅ Semua peserta memiliki xendit_invoice_id yang SAMA: $invoiceId\n";
-    echo "   🎯 Ini menunjukkan mereka adalah 1 KELOMPOK COLLECTIVE\n";
-    echo "   💡 PRINSIP: Same Invoice ID = Same Group = 1 Payment untuk semua\n";
-    
+    // Analisis apakah ini collective registration
     $externalIds = $users->pluck('xendit_external_id')->unique();
     if ($externalIds->count() == 1) {
         $externalId = $externalIds->first();
         if (strpos($externalId, 'AMAZING-COLLECTIVE-') === 0) {
-            echo "   � Format External ID: COLLECTIVE (standar)\n";
+            echo "📊 ANALISIS: Ini adalah COLLECTIVE REGISTRATION dengan format standar\n";
         } elseif (strpos($externalId, 'AMAZING-REG-') === 0) {
-            echo "   📝 Format External ID: AMAZING-REG- (collective non-standar)\n";
-        } else {
-            echo "   � Format External ID: Custom format\n";
+            echo "📊 ANALISIS: Ini adalah COLLECTIVE REGISTRATION dengan format AMAZING-REG-\n";
+            echo "💡 Format External ID sama untuk semua peserta menunjukkan ini grup kolektif\n";
         }
     } else {
-        echo "   📝 External ID berbeda-beda, tapi tetap 1 grup karena invoice ID sama\n";
+        echo "📊 ANALISIS: Format External ID berbeda-beda, kemungkinan registrasi individual yang kebetulan sama invoice ID\n";
     }
     
     echo "\nApakah Anda ingin regenerate invoice untuk grup ini? (y/n): ";
@@ -452,16 +460,16 @@ function regenerateInvoiceForGroup($users) {
     }
     
     $firstUser = $users->first();
-    $oldInvoiceId = $firstUser->xendit_invoice_id;
+    $invoiceId = $firstUser->xendit_invoice_id;
     
     echo "\n=== 🔄 REGENERATING INVOICE UNTUK GRUP ===\n";
-    echo "Old Invoice ID: $oldInvoiceId\n";
+    echo "Invoice ID: $invoiceId\n";
     echo "Jumlah peserta: " . $users->count() . "\n";
     
     try {
         $xenditService = new XenditService();
         
-        // Bersihkan invoice lama untuk semua peserta
+        // Bersihkan invoice lama
         foreach ($users as $user) {
             $user->update([
                 'xendit_invoice_id' => null,
@@ -469,70 +477,31 @@ function regenerateInvoiceForGroup($users) {
                 'payment_status' => 'pending'
             ]);
         }
-        echo "🧹 Membersihkan invoice lama untuk semua peserta...\n";
         
-        // SELALU buat 1 collective invoice untuk grup yang sama xendit_invoice_id
-        // Karena xendit_invoice_id yang sama = 1 kelompok = 1 invoice
-        echo "🎯 Membuat 1 collective invoice untuk seluruh grup...\n";
-        
-        // Hitung total amount dan siapkan participant details
-        $totalAmount = 0;
-        $participantDetails = [];
-        
-        foreach ($users as $user) {
-            $validatedPrice = $xenditService->getCollectivePrice($user->race_category);
-            if ($validatedPrice !== false) {
-                $totalAmount += $validatedPrice;
-                
-                // Update price jika diperlukan
-                if ($user->registration_fee != $validatedPrice) {
-                    echo "💰 Updating price untuk {$user->name}: Rp " . number_format($user->registration_fee, 0, ',', '.') . 
-                         " → Rp " . number_format($validatedPrice, 0, ',', '.') . "\n";
-                    $user->update(['registration_fee' => $validatedPrice]);
-                }
-                
-                $participantDetails[] = [
-                    'name' => $user->name,
-                    'category' => $user->race_category,
-                    'fee' => $validatedPrice
-                ];
+        // Tentukan apakah ini collective atau individual
+        $externalIds = $users->pluck('xendit_external_id')->unique();
+        if ($externalIds->count() == 1) {
+            // Collective registration - satu invoice untuk semua
+            $primaryUser = $users->first();
+            $paymentResult = $xenditService->createCollectiveInvoice($primaryUser, $users->toArray());
+            
+            if ($paymentResult['success']) {
+                echo "✅ Collective invoice berhasil dibuat!\n";
+                echo "   Invoice ID: {$paymentResult['invoice_id']}\n";
+                echo "   Invoice URL: {$paymentResult['invoice_url']}\n";
             } else {
-                echo "❌ Cannot validate price for category: {$user->race_category}\n";
-                return;
+                echo "❌ Gagal membuat collective invoice: {$paymentResult['message']}\n";
             }
-        }
-        
-        // Buat collective invoice
-        $primaryUser = $users->first();
-        $description = "Amazing Sultra Run - Collective Registration Regenerated (" . $users->count() . " peserta)";
-        
-        $paymentResult = $xenditService->createCollectiveInvoice(
-            $primaryUser,
-            $participantDetails,
-            $totalAmount,
-            $description
-        );
-        
-        if ($paymentResult['success']) {
-            // Update semua peserta dengan invoice baru yang sama
-            foreach ($users as $user) {
-                $user->update([
-                    'xendit_invoice_id' => $paymentResult['invoice_id'],
-                    'xendit_invoice_url' => $paymentResult['invoice_url'],
-                    'payment_description' => $description,
-                    'status' => 'registered'
-                ]);
-            }
-            
-            echo "✅ Collective invoice berhasil dibuat!\n";
-            echo "   📋 New Invoice ID: {$paymentResult['invoice_id']}\n";
-            echo "   💰 Total Amount: Rp " . number_format($totalAmount, 0, ',', '.') . "\n";
-            echo "   🔗 Invoice URL: {$paymentResult['invoice_url']}\n";
-            echo "\n🎯 PENTING: Semua {$users->count()} peserta sekarang menggunakan invoice yang SAMA\n";
-            echo "   Group leader dapat menggunakan link pembayaran untuk bayar semua peserta sekaligus.\n";
-            
         } else {
-            echo "❌ Gagal membuat collective invoice: {$paymentResult['message']}\n";
+            // Individual registrations - invoice terpisah untuk masing-masing
+            foreach ($users as $user) {
+                $paymentResult = $xenditService->createInvoice($user);
+                if ($paymentResult['success']) {
+                    echo "✅ Invoice individual berhasil dibuat untuk: {$user->name}\n";
+                } else {
+                    echo "❌ Gagal membuat invoice untuk: {$user->name}\n";
+                }
+            }
         }
         
     } catch (\Exception $e) {

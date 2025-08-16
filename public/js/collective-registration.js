@@ -60,8 +60,8 @@ function generateInitialForms() {
     container.innerHTML = '';
     participantCount = 0;
     
-    // Generate 5 initial forms
-    for (let i = 0; i < 5; i++) {
+    // Generate 10 initial forms
+    for (let i = 0; i < 10; i++) {
         addParticipantForm();
     }
     
@@ -458,10 +458,10 @@ function addParticipantForm() {
 }
 
 function removeParticipantForm(index) {
-    // Check if we have minimum 5 participants
-    if (participantCount <= 5) {
+    // Check if we have minimum 10 participants
+    if (participantCount <= 10) {
         // Show warning message
-        showWarningMessage('Minimal 5 peserta diperlukan untuk registrasi kolektif. Form tidak dapat dihapus.');
+        showWarningMessage('Minimal 10 peserta diperlukan untuk registrasi kolektif. Form tidak dapat dihapus.');
         return;
     }
     
@@ -1083,10 +1083,10 @@ function updateMinimumParticipantsIndicator() {
     const indicator = document.createElement('div');
     indicator.className = 'minimum-participants-indicator text-xs mt-1';
     
-    if (participantCount === 5) {
+    if (participantCount === 10) {
         indicator.innerHTML = '<span class="text-amber-600 font-medium"><i class="fas fa-info-circle mr-1"></i>Minimum tercapai (tidak dapat menghapus form)</span>';
-    } else if (participantCount > 5) {
-        indicator.innerHTML = `<span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Form dapat dihapus (${participantCount - 5} di atas minimum)</span>`;
+    } else if (participantCount > 10) {
+        indicator.innerHTML = `<span class="text-green-600 font-medium"><i class="fas fa-check-circle mr-1"></i>Form dapat dihapus (${participantCount - 10} di atas minimum)</span>`;
     }
     
     statusContainer.appendChild(indicator);
