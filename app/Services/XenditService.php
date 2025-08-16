@@ -572,7 +572,7 @@ class XenditService
         }
 
         // SECURITY: Validate participant count
-        if (count($participants) < 10 || count($participants) > 100) { // Max 100 participants
+        if (count($participants) < 5 || count($participants) > 100) { // Min 5, Max 100 participants
             \Log::warning('Invalid participant count for collective registration', [
                 'primary_user_id' => $primaryUser->id,
                 'participant_count' => count($participants)
