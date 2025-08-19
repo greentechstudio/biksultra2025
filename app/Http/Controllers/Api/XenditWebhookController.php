@@ -48,19 +48,28 @@ class XenditWebhookController extends Controller
             $payload = $request->all();
             
             // Process the webhook
-            $user = $this->xenditService->processWebhook($payload);
+            $processedUsers = $this->xenditService->processWebhook($payload);
             
-            if (!$user) {
+            if (!$processedUsers) {
                 return response()->json(['error' => 'Failed to process webhook'], 400);
             }
 
+            // Ensure we have an array of users
+            $users = is_array($processedUsers) ? $processedUsers : [$processedUsers];
+
             // Send WhatsApp notification if payment is successful
             if (strtolower($payload['status']) === 'paid') {
-                $this->sendPaymentSuccessNotification($user, $payload);
+                foreach ($users as $user) {
+                    $this->sendPaymentSuccessNotification($user, $payload);
+                }
             } elseif (strtolower($payload['status']) === 'expired') {
-                $this->sendPaymentExpiredNotification($user, $payload);
+                foreach ($users as $user) {
+                    $this->sendPaymentExpiredNotification($user, $payload);
+                }
             } elseif (strtolower($payload['status']) === 'failed') {
-                $this->sendPaymentFailedNotification($user, $payload);
+                foreach ($users as $user) {
+                    $this->sendPaymentFailedNotification($user, $payload);
+                }
             }
 
             return response()->json(['success' => true]);
