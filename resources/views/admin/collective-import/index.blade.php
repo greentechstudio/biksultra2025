@@ -161,7 +161,12 @@
                                     <li>Name, BIB Name, Email</li>
                                     <li>WhatsApp Number</li>
                                     <li>Birth Place, Birth Date</li>
-                                    <li>Gender (Pria/Wanita)</li>
+                                    <li>Gender: Supports multiple formats</li>
+                                    <ul class="ml-4 list-disc list-inside text-xs text-gray-500">
+                                        <li>Indonesian: Laki-laki, Perempuan, Pria, Wanita, L, P</li>
+                                        <li>English: Male, Female, Man, Woman, M, F</li>
+                                        <li>Numbers: 1 (Male), 2 (Female)</li>
+                                    </ul>
                                     <li>Address, City, Province</li>
                                     <li>Race Category, Jersey Size</li>
                                     <li>Blood Type, Emergency Contact</li>

@@ -235,7 +235,7 @@ class CollectiveImportController extends Controller
         // Custom gender validation with normalization
         $normalizedGender = $this->normalizeGender($data['gender']);
         if (!$normalizedGender) {
-            $errors[] = "Row {$rowNumber}: Gender must be 'Pria', 'Wanita', 'Laki-laki', 'Perempuan', 'Male', 'Female', 'L', 'P', 'M', or 'F'";
+            $errors[] = "Row {$rowNumber}: Gender must be 'Laki-laki', 'Perempuan', 'Pria', 'Wanita', 'Male', 'Female', 'L', 'P', 'M', or 'F'";
         } else {
             $data['gender'] = $normalizedGender;
         }
@@ -376,7 +376,7 @@ class CollectiveImportController extends Controller
             'WhatsApp Number *',
             'Birth Place *',
             'Birth Date * (YYYY-MM-DD)',
-            'Gender * (Pria/Wanita/Male/Female/L/P)',
+            'Gender * (Laki-laki/Perempuan/Male/Female/L/P)',
             'Address *',
             'City *',
             'Province *',
@@ -478,32 +478,32 @@ class CollectiveImportController extends Controller
     {
         $gender = trim(strtolower($gender));
         
-        // Map various gender formats to standard
+        // Map various gender formats to standard database values
         $genderMap = [
             // Indonesian - Male
-            'pria' => 'Pria',
-            'laki-laki' => 'Pria',
-            'laki' => 'Pria',
-            'l' => 'Pria',
+            'pria' => 'Laki-laki',
+            'laki-laki' => 'Laki-laki',
+            'laki' => 'Laki-laki',
+            'l' => 'Laki-laki',
             
             // Indonesian - Female  
-            'wanita' => 'Wanita',
-            'perempuan' => 'Wanita',
-            'p' => 'Wanita',
+            'wanita' => 'Perempuan',
+            'perempuan' => 'Perempuan',
+            'p' => 'Perempuan',
             
             // English - Male
-            'male' => 'Pria',
-            'm' => 'Pria',
-            'man' => 'Pria',
+            'male' => 'Laki-laki',
+            'm' => 'Laki-laki',
+            'man' => 'Laki-laki',
             
             // English - Female
-            'female' => 'Wanita',
-            'f' => 'Wanita',
-            'woman' => 'Wanita',
+            'female' => 'Perempuan',
+            'f' => 'Perempuan',
+            'woman' => 'Perempuan',
             
             // Numbers (sometimes used)
-            '1' => 'Pria',
-            '2' => 'Wanita',
+            '1' => 'Laki-laki',
+            '2' => 'Perempuan',
         ];
         
         return $genderMap[$gender] ?? null;

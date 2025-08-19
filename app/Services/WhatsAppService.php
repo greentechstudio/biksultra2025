@@ -15,7 +15,7 @@ class WhatsAppService
     public function __construct()
     {
         $this->apiKey = env('WHATSAPP_API_KEY', 'tZiKYy1sHXasOj0hDGZnRfAnAYo2Ec');
-        $this->sender = env('WHATSAPP_SENDER', '');
+        $this->sender = env('WHATSAPP_SENDER', '628114040707');
         $this->apiUrl = 'https://wamd.system112.org/send-message';
         $this->queueService = app(WhatsAppQueueService::class);
     }
