@@ -11,8 +11,6 @@ use Illuminate\Support\Facades\Validator;
 use App\Models\User;
 use App\Models\TicketType;
 use App\Services\XenditService;
-use Maatwebsite\Excel\Facades\Excel;
-use PhpOffice\PhpExcel\IOFactory;
 
 class CollectiveImportController extends Controller
 {
@@ -47,12 +45,12 @@ class CollectiveImportController extends Controller
     }
 
     /**
-     * Process Excel import
+     * Process Excel/CSV import
      */
     public function import(Request $request)
     {
         $request->validate([
-            'excel_file' => 'required|file|mimes:xlsx,xls|max:10240', // Max 10MB
+            'excel_file' => 'required|file|mimes:csv|max:10240', // CSV only for now
             'group_name' => 'required|string|max:100',
             'generate_invoice' => 'boolean'
         ]);
@@ -64,13 +62,14 @@ class CollectiveImportController extends Controller
             $groupName = $request->input('group_name');
             $generateInvoice = $request->boolean('generate_invoice');
             
-            // Read Excel file
-            $spreadsheet = IOFactory::load($file->getPathname());
-            $worksheet = $spreadsheet->getActiveSheet();
-            $rows = $worksheet->toArray();
+            // Read file content
+            $rows = $this->parseFile($file);
 
-            // Remove header row
-            array_shift($rows);
+            if (empty($rows)) {
+                return redirect()->back()
+                    ->withErrors(['import' => ['No valid data found in file']])
+                    ->withInput();
+            }
 
             $importedUsers = [];
             $errors = [];
@@ -286,6 +285,67 @@ class CollectiveImportController extends Controller
         } catch (\Exception $e) {
             return null;
         }
+    }
+
+    /**
+     * Parse uploaded file (CSV, Excel)
+     */
+    private function parseFile($file)
+    {
+        $extension = strtolower($file->getClientOriginalExtension());
+        
+        try {
+            if ($extension === 'csv') {
+                return $this->parseCsvFile($file);
+            } else if (in_array($extension, ['xlsx', 'xls'])) {
+                // For Excel files, try to convert to CSV first or use simple parsing
+                return $this->parseExcelAsText($file);
+            }
+            
+            throw new \Exception("Unsupported file format: {$extension}");
+            
+        } catch (\Exception $e) {
+            Log::error('File parsing failed', [
+                'file' => $file->getClientOriginalName(),
+                'extension' => $extension,
+                'error' => $e->getMessage()
+            ]);
+            throw $e;
+        }
+    }
+
+    /**
+     * Parse CSV file
+     */
+    private function parseCsvFile($file)
+    {
+        $rows = [];
+        $handle = fopen($file->getPathname(), 'r');
+        
+        if ($handle !== false) {
+            // Skip header row
+            $header = fgetcsv($handle);
+            
+            while (($row = fgetcsv($handle)) !== false) {
+                // Skip empty rows
+                if (!empty(array_filter($row))) {
+                    $rows[] = $row;
+                }
+            }
+            fclose($handle);
+        }
+        
+        return $rows;
+    }
+
+    /**
+     * Parse Excel file as text (simple approach)
+     */
+    private function parseExcelAsText($file)
+    {
+        // For now, ask users to save Excel as CSV
+        // This is a limitation but avoids complex dependencies
+        throw new \Exception('Please save your Excel file as CSV format and upload again. Excel files require additional PHP extensions that are not available.');
     }
 
     /**

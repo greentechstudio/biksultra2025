@@ -96,12 +96,12 @@
                                     </svg>
                                     <div class="flex text-sm text-gray-600">
                                         <label for="excel_file" class="relative cursor-pointer bg-white rounded-md font-medium text-red-600 hover:text-red-500 focus-within:outline-none focus-within:ring-2 focus-within:ring-offset-2 focus-within:ring-red-500">
-                                            <span>Upload Excel file</span>
-                                            <input id="excel_file" name="excel_file" type="file" class="sr-only" accept=".xlsx,.xls" required>
+                                            <span>Upload CSV file</span>
+                                            <input id="excel_file" name="excel_file" type="file" class="sr-only" accept=".csv" required>
                                         </label>
                                         <p class="pl-1">or drag and drop</p>
                                     </div>
-                                    <p class="text-xs text-gray-500">XLSX, XLS up to 10MB</p>
+                                    <p class="text-xs text-gray-500">CSV up to 10MB</p>
                                 </div>
                             </div>
                         </div>
@@ -131,19 +131,19 @@
 
             <!-- Instructions & Template -->
             <div class="space-y-6">
-                <!-- Download Template -->
+                <!-- Excel Template -->
                 <div class="bg-white shadow rounded-lg">
                     <div class="px-6 py-4 border-b border-gray-200">
-                        <h2 class="text-lg font-medium text-gray-900">Excel Template</h2>
+                        <h2 class="text-lg font-medium text-gray-900">CSV Template</h2>
                     </div>
                     <div class="p-6">
-                        <p class="text-sm text-gray-600 mb-4">Download the Excel template to ensure proper format</p>
+                        <p class="text-sm text-gray-600 mb-4">Download the CSV template to ensure proper format</p>
                         <a href="{{ route('admin.collective-import.template') }}" 
                            class="inline-flex items-center px-4 py-2 border border-gray-300 shadow-sm text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500">
                             <svg class="-ml-1 mr-2 h-5 w-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                                 <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
                             </svg>
-                            Download Template
+                            Download CSV Template
                         </a>
                     </div>
                 </div>
@@ -171,6 +171,7 @@
                             <div>
                                 <h4 class="font-medium text-gray-900">Important Notes:</h4>
                                 <ul class="mt-1 list-disc list-inside space-y-1 text-xs">
+                                    <li><strong>CSV format only</strong> - Save Excel as CSV before upload</li>
                                     <li><strong>No minimum participant limit</strong> for admin import</li>
                                     <li>All email addresses must be unique</li>
                                     <li>Birth date format: YYYY-MM-DD</li>
@@ -204,10 +205,11 @@
                                 <h3 class="text-sm font-medium text-blue-800">Admin Privileges</h3>
                                 <div class="mt-2 text-sm text-blue-700">
                                     <ul class="list-disc list-inside space-y-1">
-                                        <li>No minimum participant requirement</li>
+                                        <li><strong>CSV format required</strong> - Easy to create from Excel</li>
                                         <li>Can import 1-100 participants</li>
                                         <li>Bypasses normal collective validation</li>
                                         <li>Auto-generates External IDs</li>
+                                        <li>Excel users: Save as CSV format first</li>
                                     </ul>
                                 </div>
                             </div>
