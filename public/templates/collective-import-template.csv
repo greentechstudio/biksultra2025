@@ -1,0 +1,3 @@
+"Name *","BIB Name *","Email *",Phone,"WhatsApp Number *","Birth Place *","Birth Date * (YYYY-MM-DD)","Gender * (Pria/Wanita)","Address *","City *","Province *","Race Category *","Jersey Size *","Blood Type *","Emergency Contact *","Emergency Phone *","Event Source"
+"John Doe",JOHN,john.doe@example.com,081234567890,6281234567890,Jakarta,1990-01-15,Pria,"Jl. Sudirman No. 1, Jakarta","Jakarta Pusat","DKI Jakarta",10K,L,O,"Jane Doe",081234567891,"Admin Import"
+"Jane Smith",JANE,jane.smith@example.com,081234567892,6281234567892,Surabaya,1992-05-20,Wanita,"Jl. Tunjungan No. 5, Surabaya",Surabaya,"Jawa Timur",5K,M,A,"John Smith",081234567893,"Admin Import"

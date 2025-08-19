@@ -679,4 +679,119 @@ class XenditService
             ];
         }
     }
+
+    /**
+     * Create collective invoice for admin import (bypass minimum participant validation)
+     * 
+     * @param User $primaryUser
+     * @param array $participants Array of User models
+     * @param string $groupName
+     * @return string Invoice URL
+     */
+    public function createCollectiveInvoiceForAdmin($primaryUser, $participants, $groupName = 'Admin Import Group')
+    {
+        \Log::info('Creating collective invoice for admin import', [
+            'primary_user_id' => $primaryUser->id,
+            'participant_count' => count($participants),
+            'group_name' => $groupName
+        ]);
+
+        // ADMIN: No minimum participant validation - allow any number >= 1
+        if (count($participants) < 1 || count($participants) > 100) {
+            \Log::warning('Invalid participant count for admin collective registration', [
+                'primary_user_id' => $primaryUser->id,
+                'participant_count' => count($participants)
+            ]);
+            throw new \Exception('Invalid participant count for admin collective registration. Maximum 100 participants allowed.');
+        }
+
+        try {
+            $externalId = 'AMAZING-ADMIN-COLLECTIVE-' . $primaryUser->id . '-' . time();
+            
+            // Calculate total amount and prepare participant details
+            $totalAmount = 0;
+            $participantDetails = [];
+            
+            foreach ($participants as $user) {
+                $price = $this->getCollectivePrice($user->race_category);
+                if ($price === false) {
+                    throw new \Exception("Invalid race category: {$user->race_category}");
+                }
+                
+                $totalAmount += $price;
+                $participantDetails[] = [
+                    'name' => $user->name,
+                    'email' => $user->email,
+                    'category' => $user->race_category,
+                    'fee' => $price
+                ];
+            }
+
+            // Create invoice
+            $params = [
+                'external_id' => $externalId,
+                'payer_email' => $primaryUser->email,
+                'description' => "Collective Registration - {$groupName} (" . count($participants) . " participants)",
+                'amount' => $totalAmount,
+                'invoice_duration' => 86400, // 24 hours
+                'success_redirect_url' => url('/payment/success'),
+                'failure_redirect_url' => url('/payment/failed'),
+                'should_send_email' => true,
+                'customer' => [
+                    'given_names' => $primaryUser->name,
+                    'email' => $primaryUser->email,
+                    'mobile_number' => $primaryUser->whatsapp_number,
+                ],
+                'customer_notification_preference' => [
+                    'invoice_created' => ['whatsapp', 'email'],
+                    'invoice_reminder' => ['whatsapp', 'email'],
+                    'invoice_paid' => ['whatsapp', 'email'],
+                    'invoice_expired' => ['whatsapp', 'email']
+                ],
+                'items' => []
+            ];
+
+            // Add items for each participant
+            foreach ($participantDetails as $participant) {
+                $params['items'][] = [
+                    'name' => "Registration Fee - {$participant['name']} ({$participant['category']})",
+                    'quantity' => 1,
+                    'price' => $participant['fee'],
+                    'category' => $participant['category']
+                ];
+            }
+
+            $invoice = \Xendit\Invoice::create($params);
+
+            // Update all participants with invoice details
+            foreach ($participants as $user) {
+                $user->update([
+                    'xendit_invoice_id' => $invoice['id'],
+                    'xendit_invoice_url' => $invoice['invoice_url'],
+                    'xendit_external_id' => $externalId,
+                    'payment_status' => 'pending'
+                ]);
+            }
+
+            \Log::info('Admin collective invoice created successfully', [
+                'invoice_id' => $invoice['id'],
+                'external_id' => $externalId,
+                'amount' => $totalAmount,
+                'participant_count' => count($participants),
+                'group_name' => $groupName
+            ]);
+
+            return $invoice['invoice_url'];
+            
+        } catch (\Exception $e) {
+            \Log::error('Failed to create admin collective invoice', [
+                'error' => $e->getMessage(),
+                'primary_user_id' => $primaryUser->id,
+                'participant_count' => count($participants),
+                'group_name' => $groupName
+            ]);
+            
+            throw new \Exception('Failed to create collective invoice: ' . $e->getMessage());
+        }
+    }
 }

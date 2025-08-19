@@ -78,6 +78,10 @@
                     <i class="fas fa-ticket-alt mr-3"></i>
                     Ticket Types
                 </a>
+                <a href="{{ route('admin.collective-import.index') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ request()->routeIs('admin.collective-import.*') ? 'bg-blue-800 text-white' : '' }}">
+                    <i class="fas fa-file-import mr-3"></i>
+                    Collective Import
+                </a>
                 <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ request()->routeIs('admin.settings') ? 'bg-blue-800 text-white' : '' }}">
                     <i class="fas fa-cogs mr-3"></i>
                     Settings

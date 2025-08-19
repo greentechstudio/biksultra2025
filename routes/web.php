@@ -219,6 +219,11 @@ Route::middleware('auth')->group(function () {
         Route::post('/whatsapp-queue/force-cleanup', [WhatsAppQueueController::class, 'forceCleanup'])->name('whatsapp-queue.force-cleanup');
         Route::post('/whatsapp-queue/force-reminders', [WhatsAppQueueController::class, 'forceReminders'])->name('whatsapp-queue.force-reminders');
         
+        // Collective Import Routes
+        Route::get('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'index'])->name('collective-import.index');
+        Route::post('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'import'])->name('collective-import.import');
+        Route::get('/collective-import/template', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'downloadTemplate'])->name('collective-import.template');
+        
         // Ticket Types Management
         Route::get('/ticket-types', [\App\Http\Controllers\Admin\TicketTypeController::class, 'index'])->name('ticket-types.index');
         Route::get('/ticket-types/create', [\App\Http\Controllers\Admin\TicketTypeController::class, 'create'])->name('ticket-types.create');
