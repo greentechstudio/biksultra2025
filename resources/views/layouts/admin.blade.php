@@ -78,14 +78,28 @@
                     <i class="fas fa-ticket-alt mr-3"></i>
                     Ticket Types
                 </a>
+                @if(Route::has('admin.collective-import.index'))
                 <a href="{{ route('admin.collective-import.index') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ request()->routeIs('admin.collective-import.*') ? 'bg-blue-800 text-white' : '' }}">
                     <i class="fas fa-file-import mr-3"></i>
                     Collective Import
                 </a>
+                @else
+                <a href="{{ url('/admin/collective-import') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ str_contains(request()->path(), 'collective-import') ? 'bg-blue-800 text-white' : '' }}">
+                    <i class="fas fa-file-import mr-3"></i>
+                    Collective Import
+                </a>
+                @endif
+                @if(Route::has('admin.collective-groups.index'))
                 <a href="{{ route('admin.collective-groups.index') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ request()->routeIs('admin.collective-groups.*') ? 'bg-blue-800 text-white' : '' }}">
                     <i class="fas fa-users mr-3"></i>
                     Collective Groups
                 </a>
+                @else
+                <a href="{{ url('/admin/collective-groups') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ str_contains(request()->path(), 'collective-groups') ? 'bg-blue-800 text-white' : '' }}">
+                    <i class="fas fa-users mr-3"></i>
+                    Collective Groups
+                </a>
+                @endif
                 <a href="{{ route('admin.settings') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ request()->routeIs('admin.settings') ? 'bg-blue-800 text-white' : '' }}">
                     <i class="fas fa-cogs mr-3"></i>
                     Settings
