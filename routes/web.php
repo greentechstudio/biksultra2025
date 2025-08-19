@@ -220,12 +220,12 @@ Route::middleware('auth')->group(function () {
         Route::post('/whatsapp-queue/force-reminders', [WhatsAppQueueController::class, 'forceReminders'])->name('whatsapp-queue.force-reminders');
         
         // Collective Import Routes
-        Route::get('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'index'])->name('collective-import.index');
-        Route::post('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'import'])->name('collective-import.import');
-        Route::get('/collective-import/template', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'downloadTemplate'])->name('collective-import.template');
+        Route::get('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'index'])->name('admin.collective-import.index');
+        Route::post('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'import'])->name('admin.collective-import.import');
+        Route::get('/collective-import/template', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'downloadTemplate'])->name('admin.collective-import.template');
         
         // Collective Groups Management
-        Route::get('/collective-groups', [AdminDashboardController::class, 'collectiveGroups'])->name('collective-groups.index');
+        Route::get('/collective-groups', [AdminDashboardController::class, 'collectiveGroups'])->name('admin.collective-groups.index');
         
         // Ticket Types Management
         Route::get('/ticket-types', [\App\Http\Controllers\Admin\TicketTypeController::class, 'index'])->name('ticket-types.index');
