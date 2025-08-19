@@ -706,17 +706,35 @@ class XenditService
         }
 
         try {
-            $externalId = 'AMAZING-ADMIN-COLLECTIVE-' . $primaryUser->id . '-' . time();
+            // Use existing external ID if all participants have the same one (collective import)
+            // Otherwise generate new one
+            $existingExternalIds = array_unique(array_filter(array_map(function($user) {
+                return $user->xendit_external_id;
+            }, $participants)));
+            
+            if (count($existingExternalIds) === 1 && strpos($existingExternalIds[0], 'AMAZING-ADMIN-COLLECTIVE-') === 0) {
+                // Use existing collective external ID from CSV import
+                $externalId = $existingExternalIds[0];
+                \Log::info('Using existing collective external ID for admin import', [
+                    'external_id' => $externalId,
+                    'participant_count' => count($participants)
+                ]);
+            } else {
+                // Generate new external ID for manual collective creation
+                $externalId = 'AMAZING-ADMIN-COLLECTIVE-' . $primaryUser->id . '-' . time();
+                \Log::info('Generated new collective external ID for admin', [
+                    'external_id' => $externalId,
+                    'participant_count' => count($participants)
+                ]);
+            }
             
             // Calculate total amount and prepare participant details
             $totalAmount = 0;
             $participantDetails = [];
             
             foreach ($participants as $user) {
-                $price = $this->getCollectivePrice($user->race_category);
-                if ($price === false) {
-                    throw new \Exception("Invalid race category: {$user->race_category}");
-                }
+                // SECURITY: Use official price validation method for consistency
+                $price = $this->validateAndGetOfficialPrice($user);
                 
                 $totalAmount += $price;
                 $participantDetails[] = [
@@ -776,12 +794,18 @@ class XenditService
 
             // Update all participants with invoice details
             foreach ($participants as $user) {
-                $user->update([
+                $updateData = [
                     'xendit_invoice_id' => $invoice['id'],
                     'xendit_invoice_url' => $invoice['invoice_url'],
-                    'xendit_external_id' => $externalId,
                     'payment_status' => 'pending'
-                ]);
+                ];
+                
+                // Only update external ID if it's different (to preserve CSV import collective IDs)
+                if ($user->xendit_external_id !== $externalId) {
+                    $updateData['xendit_external_id'] = $externalId;
+                }
+                
+                $user->update($updateData);
             }
 
             \Log::info('Admin collective invoice created successfully', [

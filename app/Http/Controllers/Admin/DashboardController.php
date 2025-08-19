@@ -84,6 +84,93 @@ class DashboardController extends Controller
         $users = User::where('role', '!=', 'admin')->paginate(20);
         return view('admin.users', compact('users'));
     }
+    
+    public function collectiveGroups()
+    {
+        // Get all collective groups
+        $collectiveUsers = User::where('role', '!=', 'admin')
+            ->where(function($query) {
+                $query->where('xendit_external_id', 'LIKE', 'AMAZING-COLLECTIVE-%')
+                      ->orWhere('xendit_external_id', 'LIKE', 'AMAZING-ADMIN-COLLECTIVE-%');
+            })
+            ->with('raceCategory')
+            ->orderBy('created_at', 'desc')
+            ->get()
+            ->groupBy('xendit_external_id');
+
+        // Get collective groups from AMAZING-REG format (timestamp-based grouping)
+        $regCollectiveUsers = User::where('role', '!=', 'admin')
+            ->where('xendit_external_id', 'LIKE', 'AMAZING-REG-%')
+            ->get()
+            ->filter(function($user) {
+                // Check if this user belongs to a collective group by finding others with same timestamp
+                if (preg_match('/AMAZING-REG-\d+-(\d+)/', $user->xendit_external_id, $matches)) {
+                    $timestamp = $matches[1];
+                    $groupCount = User::where('xendit_external_id', 'LIKE', "AMAZING-REG-%-{$timestamp}")
+                                     ->count();
+                    return $groupCount > 1; // Only include if it's part of a group
+                }
+                return false;
+            })
+            ->groupBy(function($user) {
+                // Group by timestamp extracted from external ID
+                if (preg_match('/AMAZING-REG-\d+-(\d+)/', $user->xendit_external_id, $matches)) {
+                    return 'TIMESTAMP-GROUP-' . $matches[1];
+                }
+                return 'unknown';
+            });
+
+        $groups = [];
+        
+        // Process standard collective groups
+        foreach ($collectiveUsers as $externalId => $users) {
+            $groups[] = [
+                'external_id' => $externalId,
+                'type' => str_contains($externalId, 'ADMIN') ? 'Admin Import' : 'Regular Collective',
+                'users' => $users,
+                'count' => $users->count(),
+                'total_amount' => $users->sum('payment_amount'),
+                'payment_status' => $users->first()->payment_status,
+                'invoice_id' => $users->first()->xendit_invoice_id,
+                'invoice_url' => $users->first()->xendit_invoice_url,
+                'created_at' => $users->first()->created_at,
+                'primary_user_id' => $this->extractPrimaryUserId($externalId)
+            ];
+        }
+        
+        // Process REG-format collective groups
+        foreach ($regCollectiveUsers as $groupKey => $users) {
+            if ($users->count() > 1) { // Only groups with multiple users
+                $groups[] = [
+                    'external_id' => $groupKey,
+                    'type' => 'REG Collective',
+                    'users' => $users,
+                    'count' => $users->count(),
+                    'total_amount' => $users->sum('payment_amount'),
+                    'payment_status' => $users->first()->payment_status,
+                    'invoice_id' => $users->first()->xendit_invoice_id,
+                    'invoice_url' => $users->first()->xendit_invoice_url,
+                    'created_at' => $users->first()->created_at,
+                    'primary_user_id' => $users->sortBy('id')->first()->id
+                ];
+            }
+        }
+        
+        // Sort by creation date
+        usort($groups, function($a, $b) {
+            return $b['created_at'] <=> $a['created_at'];
+        });
+        
+        return view('admin.collective-groups', compact('groups'));
+    }
+    
+    private function extractPrimaryUserId($externalId) 
+    {
+        if (preg_match('/AMAZING-(?:ADMIN-)?COLLECTIVE-(\d+)-/', $externalId, $matches)) {
+            return $matches[1];
+        }
+        return null;
+    }
 
     public function recentRegistrations(Request $request)
     {

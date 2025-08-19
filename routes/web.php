@@ -224,6 +224,9 @@ Route::middleware('auth')->group(function () {
         Route::post('/collective-import', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'import'])->name('collective-import.import');
         Route::get('/collective-import/template', [\App\Http\Controllers\Admin\CollectiveImportController::class, 'downloadTemplate'])->name('collective-import.template');
         
+        // Collective Groups Management
+        Route::get('/collective-groups', [AdminDashboardController::class, 'collectiveGroups'])->name('collective-groups.index');
+        
         // Ticket Types Management
         Route::get('/ticket-types', [\App\Http\Controllers\Admin\TicketTypeController::class, 'index'])->name('ticket-types.index');
         Route::get('/ticket-types/create', [\App\Http\Controllers\Admin\TicketTypeController::class, 'create'])->name('ticket-types.create');

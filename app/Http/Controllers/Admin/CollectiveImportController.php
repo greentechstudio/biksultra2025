@@ -75,7 +75,9 @@ class CollectiveImportController extends Controller
             $errors = [];
             $timestamp = time();
             $rowNumber = 2; // Start from row 2 (after header)
+            $primaryUserId = null;
 
+            // First pass: Create all users with temporary external IDs
             foreach ($rows as $row) {
                 // Skip empty rows
                 if (empty(array_filter($row))) {
@@ -95,11 +97,17 @@ class CollectiveImportController extends Controller
                     // Create user
                     $user = User::create($userData['data']);
                     $importedUsers[] = $user;
+                    
+                    // Set primary user as the first successfully created user
+                    if ($primaryUserId === null) {
+                        $primaryUserId = $user->id;
+                    }
 
-                    Log::info('User imported via Excel', [
+                    Log::info('User imported via CSV', [
                         'user_id' => $user->id,
                         'group_name' => $groupName,
-                        'external_id' => $user->xendit_external_id
+                        'row_number' => $rowNumber,
+                        'is_primary' => ($primaryUserId === $user->id)
                     ]);
 
                 } catch (\Exception $e) {
@@ -107,6 +115,24 @@ class CollectiveImportController extends Controller
                 }
                 
                 $rowNumber++;
+            }
+            
+            // Second pass: Update all users with collective external ID
+            if (!empty($importedUsers) && $primaryUserId) {
+                $collectiveExternalId = 'AMAZING-ADMIN-COLLECTIVE-' . $primaryUserId . '-' . $timestamp;
+                
+                foreach ($importedUsers as $user) {
+                    $user->update([
+                        'xendit_external_id' => $collectiveExternalId
+                    ]);
+                }
+                
+                Log::info('Updated all imported users with collective external ID', [
+                    'collective_external_id' => $collectiveExternalId,
+                    'user_count' => count($importedUsers),
+                    'primary_user_id' => $primaryUserId,
+                    'group_name' => $groupName
+                ]);
             }
 
             if (!empty($errors)) {
@@ -256,12 +282,53 @@ class CollectiveImportController extends Controller
             $data['race_category'] = $normalizedCategory;
         }
 
+        // Get ticket type ID for the race category
+        $ticketTypeId = null;
+        if (empty($errors) && $normalizedCategory) {
+            try {
+                // Try to find collective ticket type first
+                $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($normalizedCategory) {
+                    $query->where('name', $normalizedCategory);
+                })
+                ->where('is_active', true)
+                ->where(function($query) {
+                    $query->where('name', 'LIKE', '%kolektif%')
+                          ->orWhere('name', 'LIKE', '%Kolektif%')
+                          ->orWhere('name', 'LIKE', '%collective%')
+                          ->orWhere('name', 'LIKE', '%Collective%');
+                })
+                ->first();
+                
+                // If no collective ticket found, use any active ticket for the category
+                if (!$ticketType) {
+                    $ticketType = \App\Models\TicketType::whereHas('raceCategory', function($query) use ($normalizedCategory) {
+                        $query->where('name', $normalizedCategory);
+                    })
+                    ->where('is_active', true)
+                    ->first();
+                }
+                
+                if ($ticketType) {
+                    $ticketTypeId = $ticketType->id;
+                    // Set payment amount based on ticket type price
+                    $data['payment_amount'] = $ticketType->price;
+                    $data['registration_fee'] = $ticketType->price;
+                } else {
+                    $errors[] = "Row {$rowNumber}: No valid ticket type found for race category '{$normalizedCategory}'";
+                }
+                
+            } catch (\Exception $e) {
+                $errors[] = "Row {$rowNumber}: Error finding ticket type for category '{$normalizedCategory}': " . $e->getMessage();
+            }
+        }
+
         // Add additional fields for user creation
         if (empty($errors)) {
             $data = array_merge($data, [
                 'password' => Hash::make('password123'), // Default password
                 'email_verified_at' => now(),
                 'role' => 'user',
+                'ticket_type_id' => $ticketTypeId,
                 'registration_number' => 'ADMIN-IMPORT-' . $timestamp . '-' . $rowNumber,
                 'xendit_external_id' => 'AMAZING-ADMIN-IMPORT-' . $timestamp . '-' . $rowNumber,
                 'payment_status' => 'pending',
@@ -520,6 +587,30 @@ class CollectiveImportController extends Controller
         foreach ($availableCategories as $validCategory) {
             if (strcasecmp($category, $validCategory) === 0) {
                 return $validCategory;
+            }
+        }
+        
+        // Special mappings for common variations
+        $categoryMappings = [
+            '21K' => 'HM 21K',
+            '21k' => 'HM 21K',
+            'Half Marathon' => 'HM 21K',
+            'Half' => 'HM 21K',
+            'HM' => 'HM 21K',
+            '42K' => 'FM 42K',  // Future mapping if needed
+            '42k' => 'FM 42K',
+            'Full Marathon' => 'FM 42K',
+            'Full' => 'FM 42K',
+            'FM' => 'FM 42K',
+        ];
+        
+        if (isset($categoryMappings[$category])) {
+            // Check if the mapped category exists in available categories
+            $mappedCategory = $categoryMappings[$category];
+            foreach ($availableCategories as $validCategory) {
+                if (strcasecmp($mappedCategory, $validCategory) === 0) {
+                    return $validCategory;
+                }
             }
         }
         
