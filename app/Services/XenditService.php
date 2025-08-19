@@ -761,7 +761,18 @@ class XenditService
                 ];
             }
 
-            $invoice = \Xendit\Invoice::create($params);
+            // Create invoice using HTTP client (consistent with rest of the service)
+            $response = Http::withBasicAuth($this->apiKey, '')
+                ->withHeaders([
+                    'Content-Type' => 'application/json'
+                ])
+                ->post($this->baseUrl . '/v2/invoices', $params);
+
+            if (!$response->successful()) {
+                throw new \Exception('Failed to create invoice: ' . $response->body());
+            }
+
+            $invoice = $response->json();
 
             // Update all participants with invoice details
             foreach ($participants as $user) {
