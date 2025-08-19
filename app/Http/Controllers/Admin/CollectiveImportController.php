@@ -215,7 +215,7 @@ class CollectiveImportController extends Controller
             'whatsapp_number' => 'required|string|max:15',
             'birth_place' => 'required|string|max:255',
             'birth_date' => 'required|date',
-            'gender' => 'required|in:Pria,Wanita',
+            'gender' => 'required|string|max:10',
             'address' => 'required|string|max:500',
             'regency_name' => 'required|string|max:255',
             'province_name' => 'required|string|max:255',
@@ -232,14 +232,28 @@ class CollectiveImportController extends Controller
             }
         }
 
+        // Custom gender validation with normalization
+        $normalizedGender = $this->normalizeGender($data['gender']);
+        if (!$normalizedGender) {
+            $errors[] = "Row {$rowNumber}: Gender must be 'Pria', 'Wanita', 'Laki-laki', 'Perempuan', 'Male', 'Female', 'L', 'P', 'M', or 'F'";
+        } else {
+            $data['gender'] = $normalizedGender;
+        }
+
         // Check if email exists
         if (User::where('email', $data['email'])->exists()) {
             $errors[] = "Row {$rowNumber}: Email {$data['email']} already exists";
         }
 
-        // Validate race category exists
-        if (!DB::table('race_categories')->where('name', $data['race_category'])->where('active', 1)->exists()) {
-            $errors[] = "Row {$rowNumber}: Race category '{$data['race_category']}' not found or inactive";
+        // Get available race categories
+        $raceCategories = \App\Models\RaceCategory::where('active', 1)->pluck('name')->toArray();
+        
+        // Normalize race category
+        $normalizedCategory = $this->normalizeRaceCategory($data['race_category'], $raceCategories);
+        if (!$normalizedCategory) {
+            $errors[] = "Row {$rowNumber}: Race category '{$data['race_category']}' tidak valid. Kategori tersedia: " . implode(', ', $raceCategories);
+        } else {
+            $data['race_category'] = $normalizedCategory;
         }
 
         // Add additional fields for user creation
@@ -362,7 +376,7 @@ class CollectiveImportController extends Controller
             'WhatsApp Number *',
             'Birth Place *',
             'Birth Date * (YYYY-MM-DD)',
-            'Gender * (Pria/Wanita)',
+            'Gender * (Pria/Wanita/Male/Female/L/P)',
             'Address *',
             'City *',
             'Province *',
@@ -455,5 +469,72 @@ class CollectiveImportController extends Controller
             ->header('Content-Type', 'text/csv')
             ->header('Content-Disposition', 'attachment; filename="collective-import-template.csv"')
             ->header('Cache-Control', 'no-cache, must-revalidate');
+    }
+
+    /**
+     * Normalize gender input to standard format
+     */
+    private function normalizeGender($gender)
+    {
+        $gender = trim(strtolower($gender));
+        
+        // Map various gender formats to standard
+        $genderMap = [
+            // Indonesian - Male
+            'pria' => 'Pria',
+            'laki-laki' => 'Pria',
+            'laki' => 'Pria',
+            'l' => 'Pria',
+            
+            // Indonesian - Female  
+            'wanita' => 'Wanita',
+            'perempuan' => 'Wanita',
+            'p' => 'Wanita',
+            
+            // English - Male
+            'male' => 'Pria',
+            'm' => 'Pria',
+            'man' => 'Pria',
+            
+            // English - Female
+            'female' => 'Wanita',
+            'f' => 'Wanita',
+            'woman' => 'Wanita',
+            
+            // Numbers (sometimes used)
+            '1' => 'Pria',
+            '2' => 'Wanita',
+        ];
+        
+        return $genderMap[$gender] ?? null;
+    }
+    
+    /**
+     * Normalize race category input to valid database value
+     */
+    private function normalizeRaceCategory($category, $availableCategories)
+    {
+        $category = trim($category);
+        
+        // Direct match first (case insensitive)
+        foreach ($availableCategories as $validCategory) {
+            if (strcasecmp($category, $validCategory) === 0) {
+                return $validCategory;
+            }
+        }
+        
+        // Partial match for common abbreviations
+        $category_lower = strtolower($category);
+        foreach ($availableCategories as $validCategory) {
+            $valid_lower = strtolower($validCategory);
+            
+            // Check if input is contained in valid category or vice versa
+            if (strpos($valid_lower, $category_lower) !== false || 
+                strpos($category_lower, $valid_lower) !== false) {
+                return $validCategory;
+            }
+        }
+        
+        return null;
     }
 }
