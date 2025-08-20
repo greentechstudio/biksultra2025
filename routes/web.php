@@ -70,10 +70,10 @@ Route::get('/register-kolektif', [AuthController::class, 'showRegisterKolektif']
 Route::post('/register-kolektif', [AuthController::class, 'registerKolektif'])->name('register.kolektif.post')->middleware('guest');
 Route::get('/register-kolektif/success', [AuthController::class, 'collectiveSuccess'])->name('register.kolektif.success');
 
-// Wakaf Registration
-Route::get('/wakaf-register', [AuthController::class, 'showWakafRegister'])->name('register.wakaf')->middleware('guest');
-Route::post('/wakaf-register', [AuthController::class, 'registerWakaf'])->name('register.wakaf.post')->middleware('guest');
-Route::get('/wakaf-success', [AuthController::class, 'wakafSuccess'])->name('wakaf.success');
+// Wakaf Registration - TEMPORARILY DISABLED (dapat dibuka kembali jika diperlukan)
+// Route::get('/wakaf-register', [AuthController::class, 'showWakafRegister'])->name('register.wakaf')->middleware('guest');
+// Route::post('/wakaf-register', [AuthController::class, 'registerWakaf'])->name('register.wakaf.post')->middleware('guest');
+// Route::get('/wakaf-success', [AuthController::class, 'wakafSuccess'])->name('wakaf.success');
 
 Route::get('/login', [AuthController::class, 'showLogin'])->name('login')->middleware('guest');
 Route::post('/login', [AuthController::class, 'login'])->middleware('guest');

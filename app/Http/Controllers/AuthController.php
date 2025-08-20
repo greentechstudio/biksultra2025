@@ -104,7 +104,9 @@ class AuthController extends Controller
 
     /**
      * Show the wakaf registration form (only 5K category with wakaf ticket type)
+     * TEMPORARILY DISABLED - dapat dibuka kembali jika diperlukan
      */
+    /*
     public function showWakafRegister()
     {
         $jerseySizes = JerseySize::active()->get();
@@ -119,6 +121,7 @@ class AuthController extends Controller
 
         return view('auth.register-wakaf', compact('jerseySizes', 'bloodTypes', 'eventSources', 'wakafTicketType'));
     }
+    */
 
     public function register(Request $request)
     {
@@ -2763,7 +2766,9 @@ class AuthController extends Controller
 
     /**
      * Process wakaf registration (same as regular registration but restricted to wakaf ticket type)
+     * TEMPORARILY DISABLED - dapat dibuka kembali jika diperlukan
      */
+    /*
     public function registerWakaf(Request $request)
     {
         // Log request received
@@ -3037,10 +3042,13 @@ class AuthController extends Controller
                 ->withInput();
         }
     }
+    */
 
     /**
      * Display wakaf registration success page
+     * TEMPORARILY DISABLED - dapat dibuka kembali jika diperlukan
      */
+    /*
     public function wakafSuccess()
     {
         // Check if we have success data in session
@@ -3057,6 +3065,7 @@ class AuthController extends Controller
 
         return view('auth.wakaf-success', compact('successData'));
     }
+    */
 
     /**
      * Validate regency ID from Redis cache
