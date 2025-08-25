@@ -14,7 +14,7 @@
             
             <div class="registration-form">
                 <h3>Terimakasih!</h3>
-                <p>Pengambilan Racepack akan dijadwalkan pada tanggal 5 dan 6 Oktober </p>
+                <p>Pengambilan Racepack akan dijadwalkan pada tanggal 5 dan 6 September </p>
                 
                 <div class="registration-buttons" style="display: flex; flex-direction: column; gap: 12px; margin: 20px 0;">
                     {{--  <a href="https://www.amazingsultrarun.com/register" class="cta-button">
