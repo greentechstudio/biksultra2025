@@ -400,8 +400,8 @@ class DashboardController extends Controller
                     $user->gender,
                     $user->blood_type,
                     $user->jersey_size,
-                    $user->emergency_contact,
-                    $user->emergency_phone,
+                    $user->emergency_contact_name,
+                    $user->emergency_contact_phone,
                     $user->created_at->format('Y-m-d H:i:s'),
                     $user->payment_confirmed_at ? $user->payment_confirmed_at->format('Y-m-d H:i:s') : ''
                 ]);
