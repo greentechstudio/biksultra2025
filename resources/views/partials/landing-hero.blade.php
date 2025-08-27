@@ -7,7 +7,9 @@
                 <p class="date">Kendari, 7 September 2025</p>
                 <div class="hashtag">#MelangkahMajuBersama</div>
                 <div class="hero-buttons">
-                    <a href="#" class="cta-button">Download Surat Kuasa</a>
+                    <a href="{{ asset('Surat-Kuasa-Amazing-Sultra-Run.docx') }}" class="cta-button" download="Surat-Kuasa-Amazing-Sultra-Run.docx">
+                        <i class="fas fa-download"></i> Download Surat Kuasa
+                    </a>
                     <a href="{{ route('login') }}" class="login-button">LOGIN</a>
                 </div>
             </div>
