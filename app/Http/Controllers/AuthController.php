@@ -306,7 +306,7 @@ class AuthController extends Controller
         $ticketType->increment('registered_count');
 
         // Generate Xendit external_id for regular registration
-        $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+        $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
         $user->update(['xendit_external_id' => $externalId]);
 
         Log::info('Generated xendit_external_id for regular registration', [
@@ -344,7 +344,7 @@ class AuthController extends Controller
         $paymentResult = $this->xenditService->createInvoice(
             $user,
             null, // Let the service use the user's race category price
-            'Amazing Sultra Run Registration Fee - ' . $user->name
+            config('event.name') . ' Registration Fee - ' . $user->name
         );
 
         if ($paymentResult['success']) {
@@ -547,7 +547,7 @@ class AuthController extends Controller
 
         if ($passwordResult['success']) {
             // Generate Xendit external_id
-            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
             $user->update(['xendit_external_id' => $externalId]);
 
             // Create Xendit invoice
@@ -595,9 +595,9 @@ class AuthController extends Controller
     {
         try {
             // Create activation message
-            $message = "🎉 *SELAMAT DATANG di Amazing Sultra Run!* 🎉\n\n";
+            $message = "🎉 *SELAMAT DATANG di " . config('event.name') . "!* 🎉\n\n";
             $message .= "Halo *{$user->name}*!\n\n";
-            $message .= "Terima kasih telah mendaftar untuk event Amazing Sultra Run!\n\n";
+            $message .= "Terima kasih telah mendaftar untuk event " . config('event.name') . "!\n\n";
             $message .= "📋 *Data Registrasi Anda:*\n";
             $message .= "• Nama: {$user->name}\n";
             $message .= "• Nama BIB: {$user->bib_name}\n";
@@ -612,7 +612,7 @@ class AuthController extends Controller
             $message .= "🌐 Link Login: " . url('/login') . "\n\n";
             $message .= "📱 Untuk informasi lebih lanjut atau bantuan, silakan hubungi admin.\n\n";
             $message .= "Terima kasih dan selamat berlari! 🏃‍♂️🏃‍♀️\n\n";
-            $message .= "_Tim Amazing Sultra Run_";
+            $message .= "_Tim " . config('event.name') . "_";
 
             // Use WhatsApp queue for better performance
             $queueId = $this->whatsappService->queueMessage($user->whatsapp_number, $message, 'high');
@@ -673,7 +673,7 @@ class AuthController extends Controller
                 $participantList .= ($idx + 1) . ". " . $participant['name'] . " - " . $participant['category'] . " (Rp " . number_format($participant['fee'], 0, ',', '.') . ")\n";
             }
 
-            $message = "🏃‍♂️ *AMAZING SULTRA RUN - PEMBAYARAN KOLEKTIF*\n\n";
+            $message = "🏃‍♂️ *" . strtoupper(config('event.name')) . " - PEMBAYARAN KOLEKTIF*\n\n";
             $message .= "Halo " . $groupLeader->name . " (Group Leader)! 👋\n\n";
             $message .= "Registrasi kolektif berhasil untuk " . count($participantDetails) . " peserta:\n\n";
             $message .= $participantList;
@@ -688,7 +688,7 @@ class AuthController extends Controller
             $message .= "• Batas waktu pembayaran: 24 jam\n\n";
             $message .= "Anggota lain tidak akan menerima pesan invoice. Silakan koordinasikan pembayaran dengan tim Anda.\n\n";
             $message .= "Terima kasih! 🙏\n";
-            $message .= "Tim Amazing Sultra Run";
+            $message .= "Tim " . config('event.name');
 
             // Queue the message with high priority ONLY to Group Leader
             $queueId = $this->whatsappService->queueMessage($groupLeader->whatsapp_number, $message, 'high');
@@ -745,7 +745,7 @@ class AuthController extends Controller
                 $participantList .= ($index + 1) . ". " . $participant['name'] . " - " . $participant['category'] . " (Rp " . number_format($participant['fee'], 0, ',', '.') . ")\n";
             }
 
-            $message = "🏃‍♂️ *AMAZING SULTRA RUN - PEMBAYARAN KOLEKTIF*\n\n";
+            $message = "🏃‍♂️ *" . strtoupper(config('event.name')) . " - PEMBAYARAN KOLEKTIF*\n\n";
             $message .= "Halo " . $user->name . "! 👋\n\n";
             $message .= "Registrasi kolektif berhasil untuk " . count($participantDetails) . " peserta:\n\n";
             $message .= $participantList;
@@ -758,7 +758,7 @@ class AuthController extends Controller
             $message .= "• Batas waktu pembayaran: 24 jam\n";
             $message .= "• Jersey akan dikirim ke alamat grup leader\n\n";
             $message .= "Terima kasih! 🙏\n";
-            $message .= "Tim Amazing Sultra Run";
+            $message .= "Tim " . config('event.name');
 
             $this->whatsappService->sendMessage($user->whatsapp_number, $message);
 
@@ -967,7 +967,7 @@ class AuthController extends Controller
             $ticketType->increment('registered_count');
 
             // Generate Xendit external_id for API registration
-            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
             $user->update(['xendit_external_id' => $externalId]);
 
             Log::info('User created successfully', [
@@ -1026,7 +1026,7 @@ class AuthController extends Controller
                 $paymentResult = $this->xenditService->createInvoice(
                     $user,
                     null, // Never pass custom amount - always use database price
-                    'Amazing Sultra Run Registration Fee - ' . $user->name
+                    config('event.name') . ' Registration Fee - ' . $user->name
                 );
 
                 if ($paymentResult['success']) {
@@ -1165,7 +1165,7 @@ class AuthController extends Controller
 
             $message = "🎯 *LINK PEMBAYARAN REGISTRASI* 🎯\n\n";
             $message .= "Halo *{$user->name}*,\n\n";
-            $message .= "Terima kasih telah mendaftar di Amazing Sultra Run! 🏃‍♂️\n\n";
+            $message .= "Terima kasih telah mendaftar di " . config('event.name') . "! 🏃‍♂️\n\n";
             $message .= "📋 *Detail Pembayaran:*\n";
             $message .= "• Kategori: {$user->race_category}\n";
             $message .= "• Biaya Registrasi: Rp {$amount}\n";
@@ -1381,7 +1381,7 @@ class AuthController extends Controller
         // Generate and send password via WhatsApp
         try {
             // Generate Xendit external_id for simple API registration
-            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
             $user->update(['xendit_external_id' => $externalId]);
 
             // Create Xendit invoice for simple API registration
@@ -1560,7 +1560,7 @@ class AuthController extends Controller
             }
 
             // Generate Xendit external_id for ultra simple API registration
-            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
             $user->update(['xendit_external_id' => $externalId]);
 
             // Create Xendit invoice for ultra simple API registration
@@ -2483,7 +2483,7 @@ class AuthController extends Controller
         
         // Generate Xendit external_id for ALL users (required for database integrity)
         foreach ($users as $index => $user) {
-            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
             $user->update(['xendit_external_id' => $externalId]);
 
             Log::info('Generated xendit_external_id for collective registration user', [
@@ -2566,7 +2566,7 @@ class AuthController extends Controller
         if (!empty($users)) {
             try {
                 $firstUser = $users[0]; // Use first user as the primary payer
-                $collectiveDescription = "Amazing Sultra Run - Registrasi Kolektif (" . count($users) . " peserta)";
+                $collectiveDescription = config('event.name') . " - Registrasi Kolektif (" . count($users) . " peserta)";
                 
                 // SECURITY: Validate total amount before creating invoice
                 if ($totalAmount <= 0) {
@@ -2943,7 +2943,7 @@ class AuthController extends Controller
             $wakafTicketType->increment('registered_count');
 
             // Generate Xendit external_id for wakaf registration
-            $externalId = 'AMAZING-WAKAF-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-WAKAF-' . $user->id . '-' . time();
             $user->update(['xendit_external_id' => $externalId]);
 
             Log::info('Generated xendit_external_id for wakaf registration', [
@@ -3002,7 +3002,7 @@ class AuthController extends Controller
             $invoiceData = $this->xenditService->createInvoice(
                 $user,
                 null, // Let the service use the user's race category price
-                'Amazing Sultra Run Wakaf Registration Fee - ' . $user->name
+                config('event.name') . ' Wakaf Registration Fee - ' . $user->name
             );
 
             if ($invoiceData['success']) {
