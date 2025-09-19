@@ -1724,12 +1724,13 @@ document.addEventListener('DOMContentLoaded', function() {
     let hasReachedEnd = false;
     let autoCloseTimer = null;
     
-    // Show terms modal on page load
-    showTermsModal();
+    // Show terms modal on page load - DISABLED FOR DEBUGGING
+    // showTermsModal();
     
-    // Hide form until terms are accepted
+    // Show form immediately - DEBUGGING MODE
     if (formContainer) {
-        formContainer.style.display = 'none';
+        formContainer.style.display = 'block';
+        isTermsAccepted = true;
     }
     
     function showTermsModal() {
@@ -2018,16 +2019,16 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
-    // WhatsApp number validation
+    // WhatsApp number validation - SIMPLIFIED FOR DEBUGGING
     const whatsappInput = document.getElementById('whatsapp_number');
     const whatsappStatus = document.getElementById('whatsapp-validation-status');
     const submitBtn = form.querySelector('button[type="submit"]');
 
     let validationTimeout;
     let lastValidatedNumber = '';
-    let isValidWhatsApp = false;
+    let isValidWhatsApp = true; // DEBUGGING: Always consider valid
 
-    // Format WhatsApp number input and auto-validate
+    // Format WhatsApp number input - BASIC FORMATTING ONLY
     whatsappInput.addEventListener('input', function() {
         let phoneNumber = this.value.trim();
         
@@ -2047,24 +2048,15 @@ document.addEventListener('DOMContentLoaded', function() {
         phoneNumber = phoneNumber.replace(/\D/g, '');
         this.value = phoneNumber;
         
-        // Reset validation state
-        this.classList.remove('border-green-500', 'border-red-500');
-        this.classList.add('border-gray-300');
-        isValidWhatsApp = false;
-        whatsappStatus.innerHTML = '';
-        
-        // Auto-validate if number is long enough
-        if (phoneNumber.length >= 9) {
-            clearTimeout(validationTimeout);
-            validationTimeout = setTimeout(() => {
-                validateWhatsAppNumber(phoneNumber);
-            }, 1000); // Wait 1 second after user stops typing
-        }
-        
-        // Update submit button state
-        updateSubmitButton();
+        // Reset validation state to success
+        this.classList.remove('border-red-500');
+        this.classList.add('border-green-500');
+        isValidWhatsApp = true;
+        whatsappStatus.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg"><i class="fas fa-check-circle mr-2"></i>Format nomor valid</div>';
     });
 
+    // WhatsApp validation functions - DISABLED FOR DEBUGGING
+    /*
     // Auto-validate on blur (when user leaves the field)
     whatsappInput.addEventListener('blur', function() {
         const phoneNumber = this.value.trim();
@@ -2200,64 +2192,50 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
     }
-
-    // Update submit button state
+    */    // Update submit button state - SIMPLIFIED
     function updateSubmitButton() {
-        updateSubmitButtonState();
+        // Always allow submit for debugging
+        const submitBtn = form.querySelector('button[type="submit"]');
+        if (submitBtn) {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+            submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+        }
     }
 
-    // Handle form submission with reCAPTCHA and WhatsApp validation
+    // Handle form submission - USE NORMAL FORM SUBMISSION
     form.addEventListener('submit', function(e) {
-        e.preventDefault();
+        // ALLOW NORMAL FORM SUBMISSION - DON'T PREVENT DEFAULT
+        console.log('Form submitting normally to:', form.action);
         
-        // Check if WhatsApp number is definitively invalid (not just service down)
-        const phoneNumber = whatsappInput.value.trim();
-        if (phoneNumber.length >= 9 && !isValidWhatsApp && 
-            whatsappInput.classList.contains('border-red-500')) {
-            alert('Nomor WhatsApp tidak valid atau tidak terdaftar. Silakan periksa kembali nomor yang Anda masukkan.');
-            if (phoneNumber !== lastValidatedNumber) {
-                validateWhatsAppNumber(phoneNumber);
+        // Optional: Simple validation before submit
+        const requiredFields = form.querySelectorAll('[required]');
+        let hasError = false;
+
+        requiredFields.forEach(field => {
+            if (!field.value.trim()) {
+                field.classList.add('border-red-500');
+                hasError = true;
             }
-            return;
+        });
+
+        if (hasError) {
+            e.preventDefault();
+            alert('Mohon lengkapi semua field yang wajib diisi.');
+            return false;
         }
         
-        // Disable submit button
+        // Show loading state
         submitBtn.disabled = true;
         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-2"></i>Memproses...';
         submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
         
-        // Execute reCAPTCHA
-        if (typeof grecaptcha !== 'undefined') {
-            grecaptcha.ready(function() {
-                grecaptcha.execute('{{ config("services.recaptcha.site_key") }}', {action: 'register'}).then(function(token) {
-                    // Add reCAPTCHA token to form
-                    let recaptchaInput = document.querySelector('input[name="g-recaptcha-response"]');
-                    if (!recaptchaInput) {
-                        recaptchaInput = document.createElement('input');
-                        recaptchaInput.type = 'hidden';
-                        recaptchaInput.name = 'g-recaptcha-response';
-                        form.appendChild(recaptchaInput);
-                    }
-                    recaptchaInput.value = token;
-                    
-                    // Submit form via API
-                    submitRegistration();
-                }).catch(function(error) {
-                    console.error('reCAPTCHA error:', error);
-                    alert('Gagal memverifikasi reCAPTCHA. Silakan coba lagi.');
-                    
-                    // Re-enable submit button
-                    submitBtn.disabled = false;
-                    submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
-                    submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-                });
-            });
-        } else {
-            // If reCAPTCHA not loaded, submit anyway
-            submitRegistration();
-        }
+        // Let form submit normally
+        return true;
     });
 
+    // AJAX SUBMISSION DISABLED - USING NORMAL FORM POST
+    /*
     // Submit registration via API
     function submitRegistration() {
         const formData = new FormData(form);
@@ -2334,6 +2312,7 @@ document.addEventListener('DOMContentLoaded', function() {
             submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
         });
     }
+    */
 
     // Load reCAPTCHA script
     const script = document.createElement('script');
