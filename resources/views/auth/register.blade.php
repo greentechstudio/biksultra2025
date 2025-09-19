@@ -4,6 +4,772 @@
 
 @section('content')
 <style>
+/* Import Modern Typography */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Poppins:wght@300;400;500;600;700&display=swap');
+
+/* Modern Minimalist Design System */
+:root {
+    --primary-color: #2563eb;
+    --primary-hover: #1d4ed8;
+    --primary-light: #dbeafe;
+    --secondary-color: #64748b;
+    --text-dark: #0f172a;
+    --text-medium: #475569;
+    --text-light: #64748b;
+    --background: #ffffff;
+    --surface: #f8fafc;
+    --border: #e2e8f0;
+    --border-focus: #3b82f6;
+    --shadow-sm: 0 1px 2px 0 rgb(0 0 0 / 0.05);
+    --shadow-md: 0 4px 6px -1px rgb(0 0 0 / 0.1), 0 2px 4px -2px rgb(0 0 0 / 0.1);
+    --shadow-lg: 0 10px 15px -3px rgb(0 0 0 / 0.1), 0 4px 6px -4px rgb(0 0 0 / 0.1);
+    --radius-sm: 0.5rem;
+    --radius-md: 0.75rem;
+    --radius-lg: 1rem;
+}
+
+/* Base Typography */
+* {
+    font-family: 'Inter', 'Poppins', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+}
+
+/* Main Container */
+.registration-container {
+    min-height: 100vh;
+    display: flex;
+    background: var(--surface);
+}
+
+/* Hero Section (Left Side) */
+.hero-section {
+    flex: 0.5;
+    background: linear-gradient(135deg, var(--primary-color) 0%, var(--primary-hover) 100%);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 3rem;
+    color: white;
+    overflow: hidden;
+}
+
+.hero-content {
+    text-align: center;
+    max-width: 500px;
+    z-index: 2;
+    position: relative;
+}
+
+.hero-title {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    letter-spacing: -0.02em;
+    line-height: 1.1;
+}
+
+.hero-subtitle {
+    font-size: 1.25rem;
+    opacity: 0.9;
+    margin-bottom: 2rem;
+    font-weight: 400;
+    line-height: 1.6;
+}
+
+.hero-features {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    margin-top: 2rem;
+}
+
+.hero-feature {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.75rem;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: var(--radius-sm);
+    backdrop-filter: blur(10px);
+}
+
+.hero-feature-icon {
+    width: 2rem;
+    height: 2rem;
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+/* Background Pattern */
+.hero-section::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-image: 
+        radial-gradient(circle at 20% 50%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 80% 20%, rgba(255, 255, 255, 0.1) 0%, transparent 50%),
+        radial-gradient(circle at 40% 80%, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+    z-index: 1;
+}
+
+/* Form Section (Right Side) */
+.form-section-container {
+    flex: 1;
+    background: var(--background);
+    overflow-y: auto;
+    max-height: 100vh;
+    display: flex;
+    align-items: stretch;
+}
+
+/* Form Container */
+.form-container {
+    max-width: 700px;
+    margin: 0 auto;
+    padding: 3rem 2.5rem;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+/* Form Header - Top Section */
+.form-header {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2.5rem;
+    border-bottom: 2px solid var(--border);
+    flex-shrink: 0;
+}
+
+.form-header h1 {
+    font-size: 2.5rem;
+    font-weight: 800;
+    margin-bottom: 1rem;
+    color: var(--text-dark);
+    letter-spacing: -0.025em;
+    line-height: 1.2;
+}
+
+.form-header p {
+    font-size: 1.125rem;
+    color: var(--text-medium);
+    font-weight: 400;
+    line-height: 1.5;
+}
+
+/* Form Content - Middle Section */
+#registrationForm {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Form Sections Container */
+.form-sections-container {
+    flex: 1;
+    margin-bottom: 2rem;
+}
+
+/* Submit Section - Bottom Section */
+.submit-section {
+    flex-shrink: 0;
+    margin-top: auto;
+    padding-top: 3rem;
+    border-top: 2px solid var(--border);
+}
+
+/* Submit Button */
+.submit-button {
+    width: 100%;
+    padding: 1.25rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-button:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+/* Login Link */
+.login-link {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 1.5rem;
+    border-top: 1px solid var(--border);
+}
+
+.login-link p {
+    color: var(--text-medium);
+    font-size: 0.95rem;
+    margin: 0;
+}
+
+.login-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 600;
+    transition: color 0.2s ease;
+}
+
+.login-link a:hover {
+    color: var(--primary-hover);
+    text-decoration: underline;
+}
+
+/* Form Sections */
+.form-section {
+    background: var(--background);
+    border-radius: var(--radius-lg);
+    padding: 2.5rem;
+    margin-bottom: 2rem;
+    border: 2px solid var(--border);
+    box-shadow: var(--shadow-md);
+    transition: all 0.3s ease;
+    opacity: 0;
+    transform: translateY(20px);
+    animation: fadeInUp 0.6s ease forwards;
+}
+
+.form-section:hover {
+    box-shadow: var(--shadow-lg);
+    border-color: var(--border-focus);
+    transform: translateY(-2px);
+}
+
+/* Animation for form sections */
+@keyframes fadeInUp {
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.section-title {
+    display: flex;
+    align-items: center;
+    margin-bottom: 2rem;
+    padding-bottom: 1.5rem;
+    border-bottom: 2px solid var(--border);
+}
+
+.section-icon {
+    width: 3rem;
+    height: 3rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    border-radius: var(--radius-md);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1.5rem;
+    color: white;
+    font-size: 1.5rem;
+    box-shadow: var(--shadow-sm);
+}
+
+.section-title h2 {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: var(--text-dark);
+    margin: 0;
+    letter-spacing: -0.025em;
+}
+
+/* Input Styling */
+.input-group {
+    margin-bottom: 2rem;
+}
+
+.input-label {
+    display: block;
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--text-dark);
+    margin-bottom: 0.75rem;
+    letter-spacing: -0.01em;
+}
+
+.required-mark {
+    color: #dc2626;
+    margin-left: 0.25rem;
+    font-weight: 700;
+}
+
+.modern-input {
+    width: 100%;
+    padding: 1rem 1.25rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    background: var(--background);
+    font-size: 1rem;
+    color: var(--text-dark);
+    transition: all 0.3s ease;
+    outline: none;
+    font-weight: 400;
+}
+
+.modern-input:hover {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+}
+
+.modern-input:focus {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 4px rgb(59 130 246 / 0.15);
+    transform: translateY(-1px);
+}
+
+.modern-input::placeholder {
+    color: var(--text-light);
+    font-weight: 400;
+}
+
+/* Select Styling */
+.modern-select {
+    background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='m6 8 4 4 4-4'/%3e%3c/svg%3e");
+    background-position: right 1rem center;
+    background-repeat: no-repeat;
+    background-size: 1.5em 1.5em;
+    padding-right: 3rem;
+    appearance: none;
+}
+
+/* Textarea Styling */
+.modern-textarea {
+    resize: vertical;
+    min-height: 6rem;
+    font-family: inherit;
+}
+
+/* Grid Layout */
+.form-grid {
+    display: grid;
+    gap: 2rem;
+    width: 100%;
+}
+
+.form-grid-2 {
+    grid-template-columns: 1fr;
+}
+
+@media (min-width: 768px) {
+    .form-grid-2 {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+/* Input Group Styling */
+.input-group {
+    margin-bottom: 2rem;
+    width: 100%;
+}
+
+.input-group:last-child {
+    margin-bottom: 0;
+}
+
+/* Phone Input Group */
+.phone-input-group {
+    display: flex;
+    border: 2px solid var(--border);
+    border-radius: var(--radius-md);
+    transition: all 0.3s ease;
+    overflow: hidden;
+}
+
+.phone-input-group:hover {
+    border-color: var(--secondary-color);
+    box-shadow: 0 0 0 3px rgba(100, 116, 139, 0.1);
+}
+
+.phone-input-group:focus-within {
+    border-color: var(--border-focus);
+    box-shadow: 0 0 0 4px rgb(59 130 246 / 0.15);
+}
+
+.phone-prefix {
+    background: var(--surface);
+    padding: 1rem 1.25rem;
+    border-right: 2px solid var(--border);
+    font-weight: 600;
+    color: var(--text-medium);
+    white-space: nowrap;
+    display: flex;
+    align-items: center;
+}
+
+.phone-input {
+    flex: 1;
+    border: none;
+    padding: 1rem 1.25rem;
+    outline: none;
+    background: transparent;
+    font-size: 1rem;
+    color: var(--text-dark);
+}
+
+/* Submit Button */
+.submit-button {
+    width: 100%;
+    padding: 1.25rem 2.5rem;
+    background: linear-gradient(135deg, var(--primary-color), var(--primary-hover));
+    color: white;
+    border: none;
+    border-radius: var(--radius-md);
+    font-size: 1.125rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: var(--shadow-md);
+    position: relative;
+    overflow: hidden;
+}
+
+.submit-button:hover {
+    background: linear-gradient(135deg, var(--primary-hover), var(--primary-color));
+    box-shadow: var(--shadow-lg);
+    transform: translateY(-2px);
+}
+
+.submit-button:active {
+    transform: translateY(0);
+}
+
+/* Info Text */
+.info-text {
+    font-size: 0.9rem;
+    color: var(--text-light);
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: flex-start;
+    gap: 0.5rem;
+    line-height: 1.5;
+}
+
+.info-icon {
+    color: var(--primary-color);
+    margin-top: 0.125rem;
+    flex-shrink: 0;
+}
+
+/* Error Messages */
+.error-message {
+    color: #dc2626;
+    font-size: 0.9rem;
+    margin-top: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    font-weight: 500;
+}
+
+/* Login Link */
+.login-link {
+    text-align: center;
+    margin-top: 2rem;
+    padding-top: 2rem;
+    border-top: 1px solid var(--border);
+}
+
+.login-link a {
+    color: var(--primary-color);
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.login-link a:hover {
+    text-decoration: underline;
+}
+
+/* Desktop Layout (1024px and up) */
+@media (min-width: 1024px) {
+    .registration-container {
+        min-height: 100vh;
+    }
+    
+    .hero-section {
+        position: sticky;
+        top: 0;
+        height: 100vh;
+    }
+    
+    .form-section-container {
+        max-height: 100vh;
+        overflow-y: auto;
+    }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 1023px) {
+    .registration-container {
+        flex-direction: column;
+    }
+    
+    .hero-section {
+        flex: none;
+        min-height: 40vh;
+        padding: 2rem 1.5rem;
+        position: relative;
+    }
+    
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1.125rem;
+    }
+    
+    .hero-features {
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 0.75rem;
+        justify-content: center;
+    }
+    
+    .hero-feature {
+        flex: 1;
+        min-width: 250px;
+        max-width: 300px;
+    }
+    
+    .form-section-container {
+        flex: none;
+        max-height: none;
+        overflow-y: visible;
+    }
+    
+    .form-container {
+        min-height: auto;
+        padding: 2rem 1.5rem;
+        max-width: 600px;
+    }
+    
+    .form-section {
+        padding: 2rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .section-title {
+        margin-bottom: 1.5rem;
+        padding-bottom: 1.25rem;
+    }
+    
+    .section-icon {
+        width: 2.5rem;
+        height: 2.5rem;
+        font-size: 1.25rem;
+        margin-right: 1.25rem;
+    }
+    
+    .section-title h2 {
+        font-size: 1.375rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .registration-container {
+        flex-direction: column;
+        min-height: auto;
+    }
+    
+    .hero-section {
+        min-height: 40vh;
+        padding: 2rem 1.5rem;
+    }
+    
+    .hero-title {
+        font-size: 2rem;
+    }
+    
+    .hero-subtitle {
+        font-size: 1rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .hero-features {
+        flex-direction: column;
+        gap: 0.75rem;
+    }
+    
+    .hero-feature {
+        min-width: auto;
+        max-width: none;
+    }
+    
+    .form-section-container {
+        max-height: none;
+        overflow-y: visible;
+    }
+    
+    .form-container {
+        padding: 2rem 1.5rem;
+        max-width: 100%;
+        min-height: auto;
+    }
+    
+    .form-header {
+        margin-bottom: 2rem;
+        padding-bottom: 1.5rem;
+    }
+    
+    .form-header h1 {
+        font-size: 1.875rem;
+    }
+    
+    .form-sections-container {
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-section {
+        padding: 1.75rem;
+        margin-bottom: 1.5rem;
+    }
+    
+    .form-grid {
+        grid-template-columns: 1fr;
+        gap: 1.5rem;
+    }
+    
+    .submit-section {
+        padding-top: 2rem;
+        margin-top: 1.5rem;
+    }
+}
+
+/* Tablet and medium screens balance */
+@media (min-width: 768px) and (max-width: 1024px) {
+    .hero-title {
+        font-size: 2.5rem;
+    }
+    
+    .form-container {
+        padding: 2.5rem 2rem;
+        max-width: 650px;
+    }
+    
+    .form-section {
+        padding: 2rem;
+    }
+}
+
+/* Large screens optimization */
+@media (min-width: 1200px) {
+    .hero-title {
+        font-size: 3.5rem;
+    }
+    
+    .form-container {
+        max-width: 800px;
+        padding: 4rem 3rem;
+    }
+    
+    .form-section {
+        padding: 3rem;
+    }
+    
+    .submit-section {
+        padding-top: 3.5rem;
+    }
+}
+    
+    .form-header h1 {
+        font-size: 2rem;
+    }
+    
+    .form-header p {
+        font-size: 1rem;
+    }
+    
+    .form-section {
+        padding: 1.5rem;
+        margin-bottom: 1.25rem;
+    }
+    
+    .section-title {
+        margin-bottom: 1.25rem;
+        padding-bottom: 1rem;
+    }
+    
+    .section-icon {
+        width: 2.25rem;
+        height: 2.25rem;
+        font-size: 1.125rem;
+        margin-right: 1rem;
+    }
+    
+    .section-title h2 {
+        font-size: 1.25rem;
+    }
+    
+    .input-group {
+        margin-bottom: 1.5rem;
+    }
+    
+    .modern-input, .phone-input {
+        padding: 0.875rem 1rem;
+    }
+    
+    .phone-prefix {
+        padding: 0.875rem 1rem;
+    }
+    
+    .form-grid {
+        gap: 1.5rem;
+    }
+}
+
+/* Additional styles for terms modal */
+    transition: all 0.3s ease;
+}
+
+@keyframes gradientMove {
+    0%, 100% { background-position: 0% 50%; }
+    50% { background-position: 100% 50%; }
+}
+
+.submit-button:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 15px 35px rgba(237, 61, 38, 0.4);
+}
+
+.submit-button::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+    transition: left 0.5s;
+}
+
+.submit-button:hover::before {
+    left: 100%;
+}
+
 /* Additional styles for terms modal */
 #termsContent::-webkit-scrollbar {
     width: 8px;
@@ -95,7 +861,7 @@
                     </div>
                     <div class="mt-3 text-center sm:mt-0 sm:ml-4 sm:text-left w-full">
                         <h3 class="text-lg leading-6 font-bold text-gray-900 mb-4" id="modal-title">
-                            Syarat dan Ketentuan Amazing Sultra Run 2025
+                            Syarat dan Ketentuan BIK NIGHT RUN 2025
                         </h3>
                         
                         <!-- Progress Bar -->
@@ -124,7 +890,7 @@
                                         <div class="ml-3">
                                             <h4 class="font-bold text-blue-900 mb-2">SYARAT & KETENTUAN</h4>
                                             <p class="text-sm text-blue-700">
-                                                Dengan mengambil bagian dalam Amazing Sultra Run 2025 (selanjutnya disebut "Acara") termasuk tetapi tidak terbatas pada mendaftar melalui website lomba, seorang pendaftar (selanjutnya disebut "PESERTA") menerima dan menyetujui untuk mematuhi dan terikat atas segala aturan dan peraturan, syarat dan ketentuan Acara yang diterapkan oleh Penyelenggara dan AMAZING SULTRA RUN (selanjutnya disebut sebagai "AMAZING SULTRA RUN").
+                                                Dengan mengambil bagian dalam BIK NIGHT RUN 2025 (selanjutnya disebut "Acara") termasuk tetapi tidak terbatas pada mendaftar melalui website lomba, seorang pendaftar (selanjutnya disebut "PESERTA") menerima dan menyetujui untuk mematuhi dan terikat atas segala aturan dan peraturan, syarat dan ketentuan Acara yang diterapkan oleh Penyelenggara dan BIK NIGHT RUN (selanjutnya disebut sebagai "BIK NIGHT RUN").
                                             </p>
                                         </div>
                                     </div>
@@ -132,7 +898,7 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>1)</strong> PESERTA memastikan dan menyatakan kebenaran segala informasi yang diberikan pada saat melakukan pendaftaran. Penyelenggara dan AMAZING SULTRA RUN memiliki hak untuk mewajibkan PESERTA menunjukkan dokumen pengenal resmi (seperti KTP, paspor atau SIM) agar dapat berpartisipasi di Acara ini, jika dipandang perlu. Jika menurut Penyelenggara dan AMAZING SULTRA RUN ditemukan ketidakcocokan, PESERTA dapat didiskualifikasi dari Acara.
+                                        <strong>1)</strong> PESERTA memastikan dan menyatakan kebenaran segala informasi yang diberikan pada saat melakukan pendaftaran. Penyelenggara dan BIK NIGHT RUN memiliki hak untuk mewajibkan PESERTA menunjukkan dokumen pengenal resmi (seperti KTP, paspor atau SIM) agar dapat berpartisipasi di Acara ini, jika dipandang perlu. Jika menurut Penyelenggara dan BIK NIGHT RUN ditemukan ketidakcocokan, PESERTA dapat didiskualifikasi dari Acara.
                                     </p>
                                 </div>
                                 
@@ -144,7 +910,7 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>3)</strong> Sehubungan dengan risiko-risiko yang ditanggung oleh PESERTA, maka PESERTA melepaskan, mengabaikan, dan setuju untuk tidak menuntut Penyelenggara/promotor, AMAZING SULTRA RUN, para peserta, Sponsor Acara and agen PR Acara, rekanan yang berpartisipasi, organisasi yang menjamin, (atau afiliasi lainnya), pejabat resmi, pemilik kendaraan, pengemudi, para sponsor, pemasang iklan, para pemilik, para penyewa, pemberi sewa dari lokasi lomba,yang menyelenggarakan Acara dan para petugas, para agen, dan para karyawan (untuk keperluan yang disebutkan ini akan disebut sebagai Pers) dari segala kewajiban kepada diri anda, perwakilan pribadi anda, pihak yang ditunjuk, dan para pelaksanan, dari segala dan seluruh klaim, tuntutan, kerugian atau kerusakan dari PESERTA atau kerusakan properti, terlepas hal tersebut terjadi atau disebabkan atau diduga sebagai akibat baik keseluruhan maupun sebagian karena kelalaian Pers atau lainnya.
+                                        <strong>3)</strong> Sehubungan dengan risiko-risiko yang ditanggung oleh PESERTA, maka PESERTA melepaskan, mengabaikan, dan setuju untuk tidak menuntut Penyelenggara/promotor, BIK NIGHT RUN, para peserta, Sponsor Acara and agen PR Acara, rekanan yang berpartisipasi, organisasi yang menjamin, (atau afiliasi lainnya), pejabat resmi, pemilik kendaraan, pengemudi, para sponsor, pemasang iklan, para pemilik, para penyewa, pemberi sewa dari lokasi lomba,yang menyelenggarakan Acara dan para petugas, para agen, dan para karyawan (untuk keperluan yang disebutkan ini akan disebut sebagai Pers) dari segala kewajiban kepada diri anda, perwakilan pribadi anda, pihak yang ditunjuk, dan para pelaksanan, dari segala dan seluruh klaim, tuntutan, kerugian atau kerusakan dari PESERTA atau kerusakan properti, terlepas hal tersebut terjadi atau disebabkan atau diduga sebagai akibat baik keseluruhan maupun sebagian karena kelalaian Pers atau lainnya.
                                     </p>
                                 </div>
                                 
@@ -156,7 +922,7 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>5)</strong> PESERTA memahami bahwa uang pendaftaran yang dibayarkan PESERTA kepada Penyelenggara Acara, Penyelenggara Acara akan mengeluarkan biaya yang besar dan pengeluaran untuk penyelenggaraan Acara. Dengan ini PESERTA menyetujui bahwa jika terjadi kondisi dimana lomba dibatalkan disebabkan oleh kondisi yang di luar kuasa penyelanggara Acara dan AMAZING SULTRA RUN termasuk tapi tidak terbatas pada badai, hujan, pasang laut atau cuaca, angin, atau kuasa Tuhan atau tindakan terorisme atau kondisi-kondisi lainnya, uang pendaftaran PESERTA tidak dapat dikembalikan.
+                                        <strong>5)</strong> PESERTA memahami bahwa uang pendaftaran yang dibayarkan PESERTA kepada Penyelenggara Acara, Penyelenggara Acara akan mengeluarkan biaya yang besar dan pengeluaran untuk penyelenggaraan Acara. Dengan ini PESERTA menyetujui bahwa jika terjadi kondisi dimana lomba dibatalkan disebabkan oleh kondisi yang di luar kuasa penyelanggara Acara dan BIK NIGHT RUN termasuk tapi tidak terbatas pada badai, hujan, pasang laut atau cuaca, angin, atau kuasa Tuhan atau tindakan terorisme atau kondisi-kondisi lainnya, uang pendaftaran PESERTA tidak dapat dikembalikan.
                                     </p>
                                 </div>
                                 
@@ -198,7 +964,7 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>12)</strong> Penutupan jalan akan berakhir setelah dua (2) jam sejak lomba dimulai. PESERTA yang meneruskan lomba diperbolehkan untuk melanjutkan lomba tetapi dengan menanggung sendiri atas risiko yang mungkin muncul: (a) Penyelenggara dan/atau AMAZING SULTRA RUN memiliki hak untuk sewaktu-waktu mengakhiri penutupan jalan lebih awal dari yang dijadwalkan atas kebijakan Penyelenggara dan/atau AMAZING SULTRA RUN; dan (b) Mengakhiri penutupan jalan berdasarkan persetujuan dari pihak pemerintah yang berwenang jika penutupan jalan berakhir lebih awal.
+                                        <strong>12)</strong> Penutupan jalan akan berakhir setelah dua (2) jam sejak lomba dimulai. PESERTA yang meneruskan lomba diperbolehkan untuk melanjutkan lomba tetapi dengan menanggung sendiri atas risiko yang mungkin muncul: (a) Penyelenggara dan/atau BIK NIGHT RUN memiliki hak untuk sewaktu-waktu mengakhiri penutupan jalan lebih awal dari yang dijadwalkan atas kebijakan Penyelenggara dan/atau BIK NIGHT RUN; dan (b) Mengakhiri penutupan jalan berdasarkan persetujuan dari pihak pemerintah yang berwenang jika penutupan jalan berakhir lebih awal.
                                     </p>
                                 </div>
                                 
@@ -228,7 +994,7 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>17)</strong> Para pemenang podium diminta untuk menunjukkan tanda pengenal yang sah dan diakui Penyelenggara dan AMAZING SULTRA RUN untuk mengklaim penghargaan dan hadiah.
+                                        <strong>17)</strong> Para pemenang podium diminta untuk menunjukkan tanda pengenal yang sah dan diakui Penyelenggara dan BIK NIGHT RUN untuk mengklaim penghargaan dan hadiah.
                                     </p>
                                 </div>
                                 
@@ -240,7 +1006,7 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>19)</strong> Segala hadiah diberikan berdasarkan persediaan dimana Penyelenggara dan AMAZING SULTRA RUN memiliki hak untuk membatalkan, mengubah, mengganti atau membatalkan segala hadiah sewaktu-waktu dengan atau tanpa melakukan pemberitahuan kepada Peserta.
+                                        <strong>19)</strong> Segala hadiah diberikan berdasarkan persediaan dimana Penyelenggara dan BIK NIGHT RUN memiliki hak untuk membatalkan, mengubah, mengganti atau membatalkan segala hadiah sewaktu-waktu dengan atau tanpa melakukan pemberitahuan kepada Peserta.
                                     </p>
                                 </div>
                                 
@@ -258,19 +1024,19 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>22)</strong> Dengan berpartisipasi di Acara ini, PESERTA setuju untuk ambil bagian dalam segala promosi atau publikasi yang akan dilakukan oleh AMAZING SULTRA RUN dan dengan ini PESERTA dan tanpa syarat memberikan hak kepada AMAZING SULTRA RUN untuk merekam dan menggunakan performa peserta, penampilan, kesukaan, nama, suara dan/atau hal tertentu dari PESERTA (jika dimungkinkan) di segala cara yang AMAZING SULTRA RUN anggap pantas. PESERTA mengetahui bahwa AMAZING SULTRA RUN akan memiliki kebebasan untuk mempublikasi dan menggunakan segala bentuk rekaman yang dibuat oleh AMAZING SULTRA RUN, termasuk tapi tidak terbatas pada rekaman telefon, rekaman suara, rekaman visual dan foto (jika ada), untuk keperluan promosi dan publikasi Acara (sekarang atau di masa yang akan datang). Jika dimungkinkan, setiap PESERTA mengabaikan segala bentuk hak cipta intelektual yang PESERTA mungkin dapatkan atau punya di bawah hukum (dan segala aturan lanjutan atau amendemen lebih lanjut) berkaitan dengan rekaman-rekaman yang sudah disebutkan tadi dan bentuk lainnya atau hak moral yang peserta mungkin punya atau dapatkan atas nama hukum.
+                                        <strong>22)</strong> Dengan berpartisipasi di Acara ini, PESERTA setuju untuk ambil bagian dalam segala promosi atau publikasi yang akan dilakukan oleh BIK NIGHT RUN dan dengan ini PESERTA dan tanpa syarat memberikan hak kepada BIK NIGHT RUN untuk merekam dan menggunakan performa peserta, penampilan, kesukaan, nama, suara dan/atau hal tertentu dari PESERTA (jika dimungkinkan) di segala cara yang BIK NIGHT RUN anggap pantas. PESERTA mengetahui bahwa BIK NIGHT RUN akan memiliki kebebasan untuk mempublikasi dan menggunakan segala bentuk rekaman yang dibuat oleh BIK NIGHT RUN, termasuk tapi tidak terbatas pada rekaman telefon, rekaman suara, rekaman visual dan foto (jika ada), untuk keperluan promosi dan publikasi Acara (sekarang atau di masa yang akan datang). Jika dimungkinkan, setiap PESERTA mengabaikan segala bentuk hak cipta intelektual yang PESERTA mungkin dapatkan atau punya di bawah hukum (dan segala aturan lanjutan atau amendemen lebih lanjut) berkaitan dengan rekaman-rekaman yang sudah disebutkan tadi dan bentuk lainnya atau hak moral yang peserta mungkin punya atau dapatkan atas nama hukum.
                                     </p>
                                 </div>
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>23)</strong> Penyelenggara dan/ atau AMAZING SULTRA RUN memiliki hak untuk membatasi dan/atau menolak pendaftaran PESERTA untuk mengikuti Acara tanpa perlu memberitahukan alasan apa pun.
+                                        <strong>23)</strong> Penyelenggara dan/ atau BIK NIGHT RUN memiliki hak untuk membatasi dan/atau menolak pendaftaran PESERTA untuk mengikuti Acara tanpa perlu memberitahukan alasan apa pun.
                                     </p>
                                 </div>
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>24)</strong> Penyelenggara dan/ atau AMAZING SULTRA RUN memiliki hak untuk mengubah segala syarat-syarat dan ketentuan-ketentuan dan/atau menghentikan Acara berdasarkan kebijakan Penyelenggara dan/ atau AMAZING SULTRA RUN dan itu dilakukan tanpa pemberitahuan sebelumnya.
+                                        <strong>24)</strong> Penyelenggara dan/ atau BIK NIGHT RUN memiliki hak untuk mengubah segala syarat-syarat dan ketentuan-ketentuan dan/atau menghentikan Acara berdasarkan kebijakan Penyelenggara dan/ atau BIK NIGHT RUN dan itu dilakukan tanpa pemberitahuan sebelumnya.
                                     </p>
                                 </div>
                                 
@@ -282,13 +1048,13 @@
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>26)</strong> Sehubungan dengan hal tersebut kami selaku Pihak Amazing Sultra Run 2025 berharap bahwa Peserta dapat mengambil Race Pack pada tgl 05-06 September 2025.
+                                        <strong>26)</strong> Sehubungan dengan hal tersebut kami selaku Pihak BIK NIGHT RUN 2025 berharap bahwa Peserta dapat mengambil Race Pack pada tgl 05-06 September 2025.
                                     </p>
                                 </div>
                                 
                                 <div>
                                     <p class="mb-3 text-justify">
-                                        <strong>27)</strong> Dengan adanya hal tersebut maka Peserta membebaskan Pihak Penyelenggara AMAZING SULTRA RUN 2025 dari segala jenis tanggung jawab dan/atau ganti rugi dalam bentuk apapun.
+                                        <strong>27)</strong> Dengan adanya hal tersebut maka Peserta membebaskan Pihak Penyelenggara BIK NIGHT RUN 2025 dari segala jenis tanggung jawab dan/atau ganti rugi dalam bentuk apapun.
                                     </p>
                                 </div>
                                 
@@ -299,7 +1065,7 @@
                                         </div>
                                         <div class="ml-3">
                                             <p class="text-sm text-red-700">
-                                                <strong>PENTING:</strong> Dengan mendaftar dalam Amazing Sultra Run 2025, peserta dianggap telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku di atas.
+                                                <strong>PENTING:</strong> Dengan mendaftar dalam BIK NIGHT RUN 2025, peserta dianggap telah membaca, memahami, dan menyetujui seluruh syarat dan ketentuan yang berlaku di atas.
                                             </p>
                                         </div>
                                     </div>
@@ -307,7 +1073,7 @@
                                 
                                 <div class="text-center mt-6 pt-4 border-t border-gray-300">
                                     <p class="text-sm text-gray-600 font-medium">
-                                        Amazing Sultra Run 2025
+                                        BIK NIGHT RUN 2025
                                     </p>
                                     <p class="text-sm text-gray-600">
                                         Untuk informasi lebih lanjut, hubungi panitia melalui kontak yang tersedia.
@@ -335,236 +1101,309 @@
     </div>
 </div>
 
-<div class="form-container">
-    <div class="w-full max-w-4xl mx-auto">
-        <div class="glass-effect rounded-2xl overflow-hidden form-card">
-            <!-- Header -->
-            <div class="custom-gradient-header text-white p-6 sm:p-6 p-4">
-                <!-- Mobile Layout (320px and up) -->
-                <div class="block sm:hidden">
-                    <!-- Mobile Header - Stacked Layout -->
-                    <div class="text-center mb-4">
-                        <div class="flex justify-center items-center space-x-4 mb-3">
-                            <img src="{{ asset('images/logoprov.png') }}" alt="Logo Provinsi" class="h-10 w-auto object-contain">
-                            <img src="{{ asset('images/pesonaindonesia.png') }}" alt="Pesona Indonesia" class="h-10 w-auto object-contain">
-                        </div>
-                        <h1 class="text-xl font-bold mb-1">
-                            <i class="fas fa-running mr-2"></i>Registrasi Event Lari
-                        </h1>
-                        <p class="text-gray-200 text-sm">Daftar untuk mengikuti event lari</p>
+<div class="registration-container">
+    <!-- Hero Section (Left Side) -->
+    <div class="hero-section">
+        <div class="hero-content">
+            <div class="hero-title">
+                BIK SULTRA RUN 2025
+            </div>
+            <div class="hero-subtitle">
+                Dalam rangka Bulan inklusi keuangan nasional 2025
+            </div>
+            
+            <div class="hero-features">
+                <div class="hero-feature">
+                    <div class="hero-feature-icon">
+                        <i class="fas fa-running"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold">Multiple Categories</div>
+                        <div class="text-sm opacity-90">Fun Run, 5K, 10K, Half Marathon</div>
                     </div>
                 </div>
                 
-                <!-- Desktop Layout (sm and up) -->
-                <div class="hidden sm:block">
-                    <div class="flex items-center justify-between">
-                        <!-- Logo Kiri -->
-                        <div class="flex-shrink-0">
-                            <img src="{{ asset('images/logoprov.png') }}" alt="Logo Provinsi" class="h-16 w-auto object-contain">
-                        </div>
-                        
-                        <!-- Konten Tengah -->
-                        <div class="text-center flex-1 mx-6">
-                            <h1 class="text-3xl font-bold mb-2">
-                                <i class="fas fa-running mr-3"></i>Registrasi Event Lari
-                            </h1>
-                            <p class="text-gray-200">Daftar untuk mengikuti event lari</p>
-                        </div>
-                        
-                        <!-- Logo Kanan -->
-                        <div class="flex-shrink-0">
-                            <img src="{{ asset('images/pesonaindonesia.png') }}" alt="Pesona Indonesia" class="h-16 w-auto object-contain">
-                        </div>
+                <div class="hero-feature">
+                    <div class="hero-feature-icon">
+                        <i class="fas fa-medal"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold">Official Certificate</div>
+                        <div class="text-sm opacity-90">Digital certificate for all finishers</div>
+                    </div>
+                </div>
+                
+                <div class="hero-feature">
+                    <div class="hero-feature-icon">
+                        <i class="fas fa-tshirt"></i>
+                    </div>
+                    <div>
+                        <div class="font-semibold">Race Pack</div>
+                        <div class="text-sm opacity-90">Jersey, bib number, and goodies</div>
                     </div>
                 </div>
             </div>
+        </div>
+    </div>
+    
+    <!-- Form Section (Right Side) -->
+    <div class="form-section-container">
+        <div class="form-container">
+            <!-- TOP SECTION - Header -->
+            <div class="form-header">
+                <h1>Registrasi Night Run</h1>
+                <p>Bergabunglah dengan petualangan lari malam yang tak terlupakan</p>
+            </div>
             
-            <!-- Form Content -->
-            <div class="p-8 sm:p-8 p-4">
-                <form id="registrationForm" method="POST" action="{{ route('register') }}" class="space-y-8 sm:space-y-8 space-y-6">
-                    @csrf
+            <!-- MIDDLE SECTION - Form Content -->
+            <form id="registrationForm" method="POST" action="{{ route('register') }}">
+                @csrf
+                
+                <div class="form-sections-container">
+                
+                <!-- Personal Information Section -->
+                <div class="form-section" style="animation-delay: 0.1s;">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-user"></i>
+                        </div>
+                        <h2>Informasi Pribadi</h2>
+                    </div>
                     
-                    <!-- Basic Information -->
-                    <div class="bg-gray-50 rounded-lg p-6">
-                        <div class="flex items-center mb-6">
-                            <div class="bg-red-100 rounded-full p-3 mr-4">
-                                <i class="fas fa-user text-custom-red"></i>
-                            </div>
-                            <h2 class="text-xl font-semibold text-gray-800">Informasi Pribadi</h2>
-                        </div>
-                        
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="name" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Lengkap <span class="text-red-500">*</span>
-                                </label>
-                                <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('name') border-red-500 @enderror" 
-                                       id="name" name="name" value="{{ old('name') }}" required>
-                                @error('name')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                                @enderror
-                            </div>
-
-                            <div>
-                                <label for="gender" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Jenis Kelamin <span class="text-red-500">*</span>
-                                </label>
-                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('gender') border-red-500 @enderror" 
-                                        id="gender" name="gender" required>
-                                    <option value="">Pilih Jenis Kelamin</option>
-                                    <option value="Laki-laki" {{ old('gender') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
-                                <option value="Perempuan" {{ old('gender') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
-                            </select>
-                            @error('gender')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                        </div>
-
-                        <div>
-                            <label for="birth_place" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tempat Lahir <span class="text-red-500">*</span>
+                    <div class="form-grid form-grid-2">
+                        <div class="input-group">
+                            <label for="name" class="input-label">
+                                Nama Lengkap <span class="required-mark">*</span>
                             </label>
                             <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('birth_place') border-red-500 @enderror" 
-                                   id="birth_place" name="birth_place" value="{{ old('birth_place') }}" required>
-                            @error('birth_place')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                   class="modern-input @error('name') border-red-500 @enderror" 
+                                   id="name" name="name" value="{{ old('name') }}" 
+                                   placeholder="Masukkan nama lengkap sesuai KTP" required>
+                            @error('name')
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="birth_date" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tanggal Lahir <span class="text-red-500">*</span>
+                        <div class="input-group">
+                            <label for="no_ktp" class="input-label">
+                                No KTP <span class="required-mark">*</span>
                             </label>
-                            <input type="date" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('birth_date') border-red-500 @enderror" 
-                                   id="birth_date" name="birth_date" value="{{ old('birth_date') }}" 
-                                   max="{{ date('Y-m-d', strtotime('-10 years')) }}" required>
-                            @error('birth_date')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <input type="text" 
+                                   class="modern-input @error('no_ktp') border-red-500 @enderror" 
+                                   id="no_ktp" name="no_ktp" value="{{ old('no_ktp') }}" 
+                                   placeholder="Masukkan nomor KTP (16 digit)"
+                                   pattern="[0-9]{16}"
+                                   maxlength="16"
+                                   title="Nomor KTP harus 16 digit angka"
+                                   required>
+                            @error('no_ktp')
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
-                            <p class="mt-2 text-sm text-gray-600">Minimal umur 10 tahun</p>
-                        </div>
-
-                        <div>
-                            <label for="regency_search" class="block text-sm font-medium text-gray-700 mb-2">
-                                Kota/Kabupaten Tempat Tinggal Saat Ini <span class="text-red-500">*</span>
-                            </label>
-                            <div class="location-autocomplete-container">
-                                <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('regency_name') border-red-500 @enderror" 
-                                       id="regency_search" 
-                                       name="regency_search"
-                                       value="{{ old('regency_name') }}" 
-                                       placeholder="Ketik nama kota/kabupaten tempat tinggal saat ini..."
-                                       data-location-autocomplete
-                                       data-hidden-input="#regency_id"
-                                       autocomplete="off"
-                                       required>
-                                <input type="hidden" id="regency_id" name="regency_id" value="{{ old('regency_id') }}">
-                                <input type="hidden" id="regency_name" name="regency_name" value="{{ old('regency_name') }}">
-                                <input type="hidden" id="province_name" name="province_name" value="{{ old('province_name') }}">
+                            <div class="info-text">
+                                <i class="fas fa-info-circle info-icon"></i>
+                                Masukkan 16 digit nomor KTP tanpa tanda baca
                             </div>
-                            @error('regency_name')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            @error('regency_id')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
-                            @enderror
-                            <p class="mt-2 text-sm text-gray-600">
-                                <i class="fas fa-info-circle mr-1"></i>
-                                Ketik minimal 2 karakter untuk mencari kota/kabupaten tempat tinggal saat ini
-                            </p>
                         </div>
                     </div>
 
-                    <div class="mt-6">
-                        <label for="address" class="block text-sm font-medium text-gray-700 mb-2">
-                            Alamat Lengkap <span class="text-red-500">*</span>
+                    <div class="input-group">
+                        <label for="gender" class="input-label">
+                            Jenis Kelamin <span class="required-mark">*</span>
                         </label>
-                        <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('address') border-red-500 @enderror" 
-                                  id="address" name="address" rows="3" required>{{ old('address') }}</textarea>
+                        <select class="modern-input modern-select @error('gender') border-red-500 @enderror" 
+                                id="gender" name="gender" required>
+                            <option value="">Pilih jenis kelamin</option>
+                            <option value="Laki-laki" {{ old('gender') == 'Laki-laki' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="Perempuan" {{ old('gender') == 'Perempuan' ? 'selected' : '' }}>Perempuan</option>
+                        </select>
+                        @error('gender')
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </div>
+                        @enderror
+                    </div>
+
+                    <div class="form-grid form-grid-2">
+                        <div class="input-group">
+                            <label for="birth_place" class="input-label">
+                                Tempat Lahir <span class="required-mark">*</span>
+                            </label>
+                            <input type="text" 
+                                   class="modern-input @error('birth_place') border-red-500 @enderror" 
+                                   id="birth_place" name="birth_place" value="{{ old('birth_place') }}" 
+                                   placeholder="Contoh: Jakarta" required>
+                            @error('birth_place')
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                        </div>
+
+                        <div class="input-group">
+                            <label for="birth_date" class="input-label">
+                                Tanggal Lahir <span class="required-mark">*</span>
+                            </label>
+                            <input type="date" 
+                                   class="modern-input @error('birth_date') border-red-500 @enderror" 
+                                   id="birth_date" name="birth_date" value="{{ old('birth_date') }}" 
+                                   max="{{ date('Y-m-d', strtotime('-10 years')) }}" required>
+                            @error('birth_date')
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
+                            @enderror
+                            <div class="info-text">
+                                <i class="fas fa-info-circle info-icon"></i>
+                                Minimal umur 10 tahun
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="regency_search" class="input-label">
+                            Kota/Kabupaten Tempat Tinggal <span class="required-mark">*</span>
+                        </label>
+                        <div class="location-autocomplete-container">
+                            <input type="text" 
+                                   class="modern-input @error('regency_name') border-red-500 @enderror" 
+                                   id="regency_search" 
+                                   name="regency_search"
+                                   value="{{ old('regency_name') }}" 
+                                   placeholder="Ketik nama kota/kabupaten tempat tinggal..."
+                                   data-location-autocomplete
+                                   data-hidden-input="#regency_id"
+                                   autocomplete="off"
+                                   required>
+                            <input type="hidden" id="regency_id" name="regency_id" value="{{ old('regency_id') }}">
+                            <input type="hidden" id="regency_name" name="regency_name" value="{{ old('regency_name') }}">
+                            <input type="hidden" id="province_name" name="province_name" value="{{ old('province_name') }}">
+                        </div>
+                        @error('regency_name')
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </div>
+                        @enderror
+                        @error('regency_id')
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </div>
+                        @enderror
+                        <div class="info-text">
+                            <i class="fas fa-info-circle info-icon"></i>
+                            Ketik minimal 2 karakter untuk mencari
+                        </div>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="address" class="input-label">
+                            Alamat Lengkap <span class="required-mark">*</span>
+                        </label>
+                        <textarea class="modern-input modern-textarea @error('address') border-red-500 @enderror" 
+                                  id="address" name="address" rows="3" 
+                                  placeholder="Masukkan alamat lengkap tempat tinggal" required>{{ old('address') }}</textarea>
                         @error('address')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </div>
                         @enderror
                     </div>
                 </div>
 
-                <!-- Race Information -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <div class="flex items-center mb-6">
-                        <div class="bg-yellow-100 rounded-full p-3 mr-4">
-                            <i class="fas fa-trophy text-yellow-600"></i>
+                <!-- Race Information Section -->
+                <div class="form-section" style="animation-delay: 0.2s;">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-trophy"></i>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Informasi Lomba</h2>
+                        <h2>Informasi Lomba</h2>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div>
-                            <label for="race_category" class="block text-sm font-medium text-gray-700 mb-2">
-                                Kategori Lomba <span class="text-red-500">*</span>
+                    
+                    <div class="form-grid form-grid-2">
+                        <div class="input-group">
+                            <label for="race_category" class="input-label">
+                                Kategori Lomba <span class="required-mark">*</span>
                             </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('race_category') border-red-500 @enderror" 
+                            <select class="modern-input modern-select @error('race_category') border-red-500 @enderror" 
                                     id="race_category" name="race_category" required>
-                                <option value="">Pilih Kategori</option>
-                                <option value="5K" {{ old('race_category') == '5K' ? 'selected' : '' }}>5K </option>
-                                <option value="10K" {{ old('race_category') == '10K' ? 'selected' : '' }}>10K </option>
-                                <option value="21K" {{ old('race_category') == '21K' ? 'selected' : '' }}>21K - Half Marathon</option>
+                                <option value="">Pilih kategori lomba</option>
+                                <option value="5K" {{ old('race_category') == '5K' ? 'selected' : '' }}>5K</option>
+                                <!-- <option value="10K" {{ old('race_category') == '10K' ? 'selected' : '' }}>10K</option>
+                                <option value="21K" {{ old('race_category') == '21K' ? 'selected' : '' }}>21K - Half Marathon</option> -->
                             </select>
                             @error('race_category')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="jersey_size" class="block text-sm font-medium text-gray-700 mb-2">
-                                Ukuran Jersey <span class="text-red-500">*</span>
+                        <div class="input-group">
+                            <label for="jersey_size" class="input-label">
+                                Ukuran Jersey <span class="required-mark">*</span>
                             </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('jersey_size') border-red-500 @enderror" 
+                            <select class="modern-input modern-select @error('jersey_size') border-red-500 @enderror" 
                                     id="jersey_size" name="jersey_size" required>
-                                <option value="">Pilih Ukuran</option>
-                                <option value="S" {{ old('jersey_size') == 'S' ? 'selected' : '' }}>S</option>
-                                <option value="M" {{ old('jersey_size') == 'M' ? 'selected' : '' }}>M</option>
-                                <option value="L" {{ old('jersey_size') == 'L' ? 'selected' : '' }}>L</option>
-                                <option value="XL" {{ old('jersey_size') == 'XL' ? 'selected' : '' }}>XL</option>
-                                <option value="XXL" {{ old('jersey_size') == 'XXL' ? 'selected' : '' }}>XXL</option>
+                                <option value="">Pilih ukuran jersey</option>
+                                @foreach($jerseySizes as $size)
+                                    <option value="{{ $size->name }}" {{ old('jersey_size') == $size->name ? 'selected' : '' }}>
+                                        {{ $size->name }}
+                                    </option>
+                                @endforeach
                             </select>
                             @error('jersey_size')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
                     </div>
 
-                    <div class="mt-6">
-                        <label for="bib_name" class="block text-sm font-medium text-gray-700 mb-2">
-                            Nama BIB <span class="text-red-500">*</span>
+                    <div class="input-group">
+                        <label for="bib_name" class="input-label">
+                            Nama BIB <span class="required-mark">*</span>
                         </label>
                         <input type="text" 
-                               class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('bib_name') border-red-500 @enderror" 
+                               class="modern-input @error('bib_name') border-red-500 @enderror" 
                                id="bib_name" name="bib_name" value="{{ old('bib_name') }}" 
                                placeholder="Nama yang akan tercetak di BIB" maxlength="20" required>
                         @error('bib_name')
-                            <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                            <div class="error-message">
+                                <i class="fas fa-exclamation-circle"></i>
+                                {{ $message }}
+                            </div>
                         @enderror
-                        <p class="mt-2 text-sm text-gray-600">
-                            <i class="fas fa-info-circle mr-1"></i>
-                            Nama yang akan dicetak di nomor BIB Anda (maksimal 20 karakter)
-                        </p>
+                        <div class="info-text">
+                            <i class="fas fa-info-circle info-icon"></i>
+                            Maksimal 20 karakter untuk nama di BIB
+                        </div>
                     </div>
                 </div>
 
                 <!-- Ticket Type Information -->
-                <div class="bg-blue-50 rounded-lg p-6 hidden" id="ticketInfo">
-                    <div class="flex items-center mb-6">
-                        <div class="bg-blue-100 rounded-full p-3 mr-4">
-                            <i class="fas fa-ticket-alt text-blue-600"></i>
+                <div class="form-section hidden" id="ticketInfo" style="animation-delay: 0.3s;">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-ticket-alt"></i>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Informasi Tiket</h2>
+                        <h2>Informasi Tiket</h2>
                     </div>
                     
-                    <div class="bg-white rounded-lg p-6 shadow-sm">
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+                    <div class="bg-white rounded-lg p-6 border border-gray-200">
+                        <div class="form-grid form-grid-2">
                             <div>
                                 <div class="ticket-type-info">
                                     <h3 class="text-lg font-semibold text-gray-800 ticket-type-name">-</h3>
@@ -602,130 +1441,147 @@
                 </div>
 
                 <!-- Contact Information -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <div class="flex items-center mb-6">
-                        <div class="bg-green-100 rounded-full p-3 mr-4">
-                            <i class="fas fa-phone text-green-600"></i>
+                <div class="form-section" style="animation-delay: 0.4s;">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-phone"></i>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Informasi Kontak</h2>
+                        <h2>Informasi Kontak</h2>
                     </div>
                     
-                    <div class="space-y-6">
-                        <div>
-                            <label for="email" class="block text-sm font-medium text-gray-700 mb-2">
-                                Email <span class="text-red-500">*</span>
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="email" class="input-label">
+                                Email <span class="required-mark">*</span>
                             </label>
                             <input type="email" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('email') border-red-500 @enderror" 
-                                   id="email" name="email" value="{{ old('email') }}" required>
+                                   class="modern-input @error('email') border-red-500 @enderror" 
+                                   id="email" name="email" value="{{ old('email') }}" 
+                                   placeholder="contoh@email.com" required>
                             @error('email')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="whatsapp_number" class="block text-sm font-medium text-gray-700 mb-2">
-                                No Kontak WhatsApp <span class="text-red-500">*</span>
-                                <small class="text-gray-500">(akan divalidasi otomatis)</small>
+                        <div class="input-group">
+                            <label for="whatsapp_number" class="input-label">
+                                No Kontak WhatsApp <span class="required-mark">*</span>
+                                <small style="color: var(--text-light);">(akan divalidasi otomatis)</small>
                             </label>
-                            <div class="flex">
-                                <span class="inline-flex items-center px-3 text-sm text-gray-900 bg-gray-200 border border-r-0 border-gray-300 rounded-l-lg">
-                                    +62
-                                </span>
+                            <div class="phone-input-group">
+                                <span class="phone-prefix">+62</span>
                                 <input type="text" 
-                                       class="flex-1 px-4 py-3 border-2 border-gray-300 rounded-r-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('whatsapp_number') border-red-500 @enderror" 
+                                       class="phone-input @error('whatsapp_number') border-red-500 @enderror" 
                                        id="whatsapp_number" name="whatsapp_number" value="{{ old('whatsapp_number') }}" 
                                        placeholder="8114000805" required>
                             </div>
                             @error('whatsapp_number')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
-                            <p class="mt-2 text-sm text-gray-600">
-                                <i class="fas fa-info-circle mr-1"></i>
+                            <div class="info-text">
+                                <i class="fas fa-info-circle info-icon"></i>
                                 Masukkan nomor tanpa awalan 0 atau +62. Contoh: 8114000805 (awalan akan dihapus otomatis)
-                            </p>
+                            </div>
                             <!-- WhatsApp validation status -->
                             <div id="whatsapp-validation-status" class="mt-2"></div>
                         </div>
 
-                        <div>
-                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-2">
+                        <div class="input-group">
+                            <label for="phone" class="input-label">
                                 Nomor HP Alternatif
                             </label>
                             <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('phone') border-red-500 @enderror" 
+                                   class="modern-input @error('phone') border-red-500 @enderror" 
                                    id="phone" name="phone" value="{{ old('phone') }}" 
                                    placeholder="Contoh: 081234567890">
                             @error('phone')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="emergency_contact_name" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nama Kontak Darurat <span class="text-red-500">*</span>
+                        <div class="form-grid form-grid-2">
+                            <div class="input-group">
+                                <label for="emergency_contact_name" class="input-label">
+                                    Nama Kontak Darurat <span class="required-mark">*</span>
                                 </label>
                                 <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_name') border-red-500 @enderror" 
+                                       class="modern-input @error('emergency_contact_name') border-red-500 @enderror" 
                                        id="emergency_contact_name" name="emergency_contact_name" value="{{ old('emergency_contact_name') }}" 
                                        placeholder="Nama kontak darurat" required>
                                 @error('emergency_contact_name')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ $message }}
+                                    </div>
                                 @enderror
                             </div>
-                            <div>
-                                <label for="emergency_contact_phone" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Nomor Kontak Darurat <span class="text-red-500">*</span>
+                            <div class="input-group">
+                                <label for="emergency_contact_phone" class="input-label">
+                                    Nomor Kontak Darurat <span class="required-mark">*</span>
                                 </label>
                                 <input type="tel" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('emergency_contact_phone') border-red-500 @enderror" 
+                                       class="modern-input @error('emergency_contact_phone') border-red-500 @enderror" 
                                        id="emergency_contact_phone" name="emergency_contact_phone" value="{{ old('emergency_contact_phone') }}" 
                                        placeholder="08xxxxxxxxxx" 
                                        pattern="[0-9+\-\s]+"
                                        title="Hanya angka, tanda +, -, dan spasi yang diperbolehkan"
                                        required>
                                 @error('emergency_contact_phone')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ $message }}
+                                    </div>
                                 @enderror
-                                <p class="mt-2 text-sm text-gray-600">
-                                    <i class="fas fa-info-circle mr-1"></i>
+                                <div class="info-text">
+                                    <i class="fas fa-info-circle info-icon"></i>
                                     Format: 08xxxxxxxxxx atau +628xxxxxxxxxx
-                                </p>
+                                </div>
                             </div>
                         </div>
                     </div>
                 </div>
 
                 <!-- Additional Information -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <div class="flex items-center mb-6">
-                        <div class="bg-purple-100 rounded-full p-3 mr-4">
-                            <i class="fas fa-info-circle text-purple-600"></i>
+                <div class="form-section" style="animation-delay: 0.5s;">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-info-circle"></i>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Informasi Tambahan</h2>
+                        <h2>Informasi Tambahan</h2>
                     </div>
-
-                    <div class="space-y-6">
-                        <div>
-                            <label for="group_community" class="block text-sm font-medium text-gray-700 mb-2">
+                    
+                    <div class="form-grid">
+                        <div class="input-group">
+                            <label for="group_community" class="input-label">
                                 Group Lari/Komunitas/Instansi
                             </label>
                             <input type="text" 
-                                   class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('group_community') border-red-500 @enderror" 
+                                   class="modern-input @error('group_community') border-red-500 @enderror" 
                                    id="group_community" name="group_community" value="{{ old('group_community') }}" 
                                    placeholder="Nama komunitas/instansi (opsional)">
                             @error('group_community')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            <div>
-                                <label for="blood_type" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Golongan Darah <span class="text-red-500">*</span>
+                        <div class="form-grid form-grid-2">
+                            <div class="input-group">
+                                <label for="blood_type" class="input-label">
+                                    Golongan Darah <span class="required-mark">*</span>
                                 </label>
-                                <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('blood_type') border-red-500 @enderror" 
+                                <select class="modern-input modern-select @error('blood_type') border-red-500 @enderror" 
                                         id="blood_type" name="blood_type" required>
                                     <option value="">Pilih Golongan Darah</option>
                                     @foreach($bloodTypes as $type)
@@ -735,39 +1591,49 @@
                                     @endforeach
                                 </select>
                                 @error('blood_type')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ $message }}
+                                    </div>
                                 @enderror
                             </div>
-                            <div>
-                                <label for="occupation" class="block text-sm font-medium text-gray-700 mb-2">
-                                    Pekerjaan <span class="text-red-500">*</span>
+                            <div class="input-group">
+                                <label for="occupation" class="input-label">
+                                    Pekerjaan <span class="required-mark">*</span>
                                 </label>
                                 <input type="text" 
-                                       class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('occupation') border-red-500 @enderror" 
-                                       id="occupation" name="occupation" value="{{ old('occupation') }}" required>
+                                       class="modern-input @error('occupation') border-red-500 @enderror" 
+                                       id="occupation" name="occupation" value="{{ old('occupation') }}" 
+                                       placeholder="Masukkan pekerjaan Anda" required>
                                 @error('occupation')
-                                    <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                    <div class="error-message">
+                                        <i class="fas fa-exclamation-circle"></i>
+                                        {{ $message }}
+                                    </div>
                                 @enderror
                             </div>
                         </div>
 
-                        <div>
-                            <label for="medical_history" class="block text-sm font-medium text-gray-700 mb-2">
+                        <div class="input-group">
+                            <label for="medical_history" class="input-label">
                                 Riwayat Penyakit
                             </label>
-                            <textarea class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('medical_history') border-red-500 @enderror" 
+                            <textarea class="modern-input modern-textarea @error('medical_history') border-red-500 @enderror" 
                                       id="medical_history" name="medical_history" rows="3" 
                                       placeholder="Sebutkan riwayat penyakit yang relevan (opsional)">{{ old('medical_history') }}</textarea>
                             @error('medical_history')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
 
-                        <div>
-                            <label for="event_source" class="block text-sm font-medium text-gray-700 mb-2">
-                                Tau Event Ini Darimana? <span class="text-red-500">*</span>
+                        <div class="input-group">
+                            <label for="event_source" class="input-label">
+                                Tau Event Ini Darimana? <span class="required-mark">*</span>
                             </label>
-                            <select class="w-full px-4 py-3 border-2 border-gray-300 rounded-lg focus:ring-2 focus:ring-custom-red focus:border-custom-red transition-colors @error('event_source') border-red-500 @enderror" 
+                            <select class="modern-input modern-select @error('event_source') border-red-500 @enderror" 
                                     id="event_source" name="event_source" required>
                                 <option value="">Pilih Sumber Informasi</option>
                                 @foreach($eventSources as $source)
@@ -777,23 +1643,26 @@
                                 @endforeach
                             </select>
                             @error('event_source')
-                                <p class="mt-2 text-sm text-red-600">{{ $message }}</p>
+                                <div class="error-message">
+                                    <i class="fas fa-exclamation-circle"></i>
+                                    {{ $message }}
+                                </div>
                             @enderror
                         </div>
                     </div>
                 </div>
 
                 <!-- Account Information -->
-                <div class="bg-gray-50 rounded-lg p-6">
-                    <div class="flex items-center mb-6">
-                        <div class="bg-indigo-100 rounded-full p-3 mr-4">
-                            <i class="fas fa-key text-indigo-600"></i>
+                <div class="form-section" style="animation-delay: 0.6s;">
+                    <div class="section-title">
+                        <div class="section-icon">
+                            <i class="fas fa-key"></i>
                         </div>
-                        <h2 class="text-xl font-semibold text-gray-800">Informasi Akun</h2>
-                    </div
+                        <h2>Informasi Akun</h2>
+                    </div>
                     
                     <!-- Password Auto-Generation Info -->
-                    <div class="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
+                    <div class="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-4 mb-6">
                         <div class="flex items-start">
                             <i class="fas fa-magic text-blue-600 mt-1 mr-3"></i>
                             <div>
@@ -812,22 +1681,25 @@
                     <input type="hidden" name="use_random_password" value="1">
                     <input type="hidden" name="password_type" value="simple">
                 </div>
+                </div>
 
-                <!-- Submit Button -->
-                <div class="text-center">
-                    <button type="submit" class="w-full btn-custom-primary text-white font-bold py-4 px-8 rounded-lg">
-                        <i class="fas fa-running mr-2"></i>Daftar Event Lari
-                    </button>
-                    
-                    <p class="mt-4 text-sm text-gray-600">
-                        <i class="fas fa-info-circle mr-1"></i>
-                        Setelah registrasi, password akan dikirim ke WhatsApp Anda untuk login
-                    </p>
-                    
-                    <p class="mt-4 text-center text-gray-600">
-                        Sudah punya akun? 
-                        <a href="{{ route('login') }}" class="text-blue-600 hover:text-blue-800 font-medium">Login di sini</a>
-                    </p>
+                <!-- BOTTOM SECTION - Submit & Account Info -->
+                <div class="submit-section">
+                    <div class="text-center">
+                        <button type="submit" class="submit-button">
+                            <i class="fas fa-running mr-2"></i>
+                            Daftar Event Lari
+                        </button>
+                        
+                        <div class="info-text mt-6 justify-center text-center">
+                            <i class="fas fa-info-circle info-icon"></i>
+                            <span>Setelah registrasi, password akan dikirim ke WhatsApp Anda untuk login</span>
+                        </div>
+                        
+                        <div class="login-link">
+                            <p>Sudah punya akun? <a href="{{ route('login') }}">Login di sini</a></p>
+                        </div>
+                    </div>
                 </div>
             </form>
         </div>

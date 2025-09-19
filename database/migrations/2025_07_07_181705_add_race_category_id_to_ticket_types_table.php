@@ -15,7 +15,8 @@ return new class extends Migration
             $table->unsignedBigInteger('race_category_id')->after('id');
             $table->foreign('race_category_id')->references('id')->on('race_categories');
             
-            // Remove the old category string column
+            // Drop the index first, then remove the old category string column
+            $table->dropIndex(['category', 'is_active']); // Drop the composite index
             $table->dropColumn('category');
         });
     }
@@ -29,8 +30,9 @@ return new class extends Migration
             $table->dropForeign(['race_category_id']);
             $table->dropColumn('race_category_id');
             
-            // Add back the old category string column
+            // Add back the old category string column and recreate the index
             $table->string('category')->after('name');
+            $table->index(['category', 'is_active']);
         });
     }
 };

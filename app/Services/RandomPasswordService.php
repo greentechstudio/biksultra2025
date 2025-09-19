@@ -140,7 +140,7 @@ class RandomPasswordService
     {
         $message = "🔐 *PASSWORD LOGIN ANDA* 🔐\n\n";
         $message .= "Halo *{$user->name}*,\n\n";
-        $message .= "Password login Anda untuk Amazing Sultra Run Dashboard:\n\n";
+        $message .= "Password login Anda untuk " . config('event.name') . " " . config('event.year') . " Dashboard:\n\n";
         $message .= "📧 *Email*: {$user->email}\n";
         $message .= "🔑 *Password*: `{$password}`\n\n";
         $message .= "⚠️ *PENTING:*\n";

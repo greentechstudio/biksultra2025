@@ -34,8 +34,12 @@ class XenditService
      * SECURITY: Price is ALWAYS taken from ticket_types.price database
      * Any provided amount parameter is validated against database price
      */
-    public function createInvoice(User $user, $amount = null, $description = 'Amazing Sultra Run Registration Fee')
+    public function createInvoice(User $user, $amount = null, $description = null)
     {
+        // Set default description if not provided
+        if ($description === null) {
+            $description = config('event.name') . ' ' . config('event.year') . ' Registration Fee';
+        }
         // SECURITY: Validate first - these exceptions should NOT be caught
         if (empty($this->apiKey)) {
             throw new \Exception('Xendit API key is not configured');
@@ -113,7 +117,7 @@ class XenditService
                 'currency' => 'IDR',
                 'items' => [
                     [
-                        'name' => 'Amazing Sultra Run Registration - ' . $user->race_category,
+                        'name' => config('event.name') . ' ' . config('event.year') . ' Registration - ' . $user->race_category,
                         'quantity' => 1,
                         'price' => $amount,
                         'category' => 'Registration Fee'
@@ -357,7 +361,7 @@ class XenditService
             foreach ($users as $user) {
                 $message = "🎉 *PEMBAYARAN BERHASIL!* 🎉\n\n";
                 $message .= "Halo *{$user->name}*!\n\n";
-                $message .= "Pembayaran kolektif untuk Amazing Sultra Run telah berhasil dikonfirmasi!\n\n";
+                $message .= "Pembayaran kolektif untuk " . config('event.name') . " " . config('event.year') . " telah berhasil dikonfirmasi!\n\n";
                 $message .= "📋 *Detail Registrasi:*\n";
                 $message .= "• Nama: {$user->name}\n";
                 $message .= "• Kategori: {$user->race_category}\n";
@@ -367,7 +371,7 @@ class XenditService
                 $message .= "📱 Untuk informasi lebih lanjut, silakan login ke:\n";
                 $message .= "🔗 " . url('/login') . "\n\n";
                 $message .= "Terima kasih dan selamat berlari! 🏃‍♂️🏃‍♀️\n\n";
-                $message .= "_Tim Amazing Sultra Run_";
+                $message .= "_Tim " . config('event.name') . " " . config('event.year') . "_";
 
                 // Use WhatsApp service to send message
                 try {
@@ -553,8 +557,12 @@ class XenditService
      * Create invoice for collective registration payment
      * SECURITY: Price is validated for each participant beforehand
      */
-    public function createCollectiveInvoice(User $primaryUser, array $participants, float $totalAmount, string $description = 'Amazing Sultra Run - Collective Registration')
+    public function createCollectiveInvoice(User $primaryUser, array $participants, float $totalAmount, string $description = null)
     {
+        // Set default description if not provided
+        if ($description === null) {
+            $description = config('event.name') . ' ' . config('event.year') . ' - Collective Registration';
+        }
         // SECURITY: Validate configuration
         if (empty($this->apiKey)) {
             throw new \Exception('Xendit API key is not configured');

@@ -66,8 +66,8 @@
         <!-- Sidebar -->
         <div id="sidebar" class="w-64 bg-blue-900 text-white fixed h-full overflow-y-auto z-50 md:translate-x-0 sidebar-mobile">
             <div class="p-4">
-                <h1 class="text-xl font-bold">ASR Admin</h1>
-                <p class="text-sm text-blue-200">Amazing Sultra Run</p>
+                <h1 class="text-xl font-bold">E+ Dashboard</h1>
+                <p class="text-sm text-blue-200">Dashboard E+ Event</p>
             </div>
             <nav class="mt-8 pb-24">
                 <a href="{{ route('admin.dashboard') }}" class="flex items-center px-4 py-2 text-blue-200 hover:bg-blue-800 hover:text-white {{ request()->routeIs('admin.dashboard') ? 'bg-blue-800 text-white' : '' }}">

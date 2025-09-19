@@ -173,8 +173,8 @@
         <div class="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-72 h-72 bg-white rounded-full mix-blend-multiply filter blur-xl opacity-20 animate-pulse"></div>
     </div>
     
-    <div class="relative min-h-screen flex items-center justify-center py-8 px-4">
-        <div class="w-full max-w-6xl mx-auto relative z-10">
+    <div class="relative min-h-screen flex items-center justify-center">
+        <div class="w-full mx-auto relative z-10">
             @yield('content')
         </div>
     </div>

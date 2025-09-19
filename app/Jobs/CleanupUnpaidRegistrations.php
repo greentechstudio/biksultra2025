@@ -122,7 +122,7 @@ class CleanupUnpaidRegistrations implements ShouldQueue
         
         $message = "⚠️ *PEMBERITAHUAN PENGHAPUSAN DATA* ⚠️\n\n";
         $message .= "Halo *{$user->name}*,\n\n";
-        $message .= "Data registrasi Anda di Amazing Sultra Run telah dihapus karena tidak melakukan pembayaran dalam 24 jam.\n\n";
+        $message .= "Data registrasi Anda di " . config('event.name') . " " . config('event.year') . " telah dihapus karena tidak melakukan pembayaran dalam 24 jam.\n\n";
         $message .= "📋 *Detail Registrasi:*\n";
         $message .= "• Nama: {$user->name}\n";
         $message .= "• Email: {$user->email}\n";
@@ -138,7 +138,7 @@ class CleanupUnpaidRegistrations implements ShouldQueue
         $message .= "• Lakukan pembayaran segera setelah registrasi\n\n";
         $message .= "📞 Butuh bantuan? Hubungi: +62811-4000-805\n\n";
         $message .= "Terima kasih atas pengertian Anda.\n\n";
-        $message .= "_Pesan otomatis - Amazing Sultra Run_";
+        $message .= "_Pesan otomatis - " . config('event.name') . " " . config('event.year') . "_";
 
         return $whatsappService->queueMessage($user->whatsapp_number, $message, 'high');
     }

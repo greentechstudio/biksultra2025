@@ -138,6 +138,7 @@ class AuthController extends Controller
 
         $validationRules = [
             'name' => 'required|string|max:255',
+            'no_ktp' => 'required|string|size:16|regex:/^[0-9]{16}$/|unique:users,no_ktp',
             'bib_name' => 'required|string|max:255',
             'email' => 'required|string|email|max:255|unique:users',
             'phone' => 'nullable|string|max:15',
@@ -201,8 +202,8 @@ class AuthController extends Controller
         // Use temporary password initially
         $temporaryPassword = 'temp_password_' . time();
 
-        // Generate unique registration number
-        $registrationNumber = $this->generateRegistrationNumber();
+        // Generate unique registration number based on race category
+        $registrationNumber = $this->generateRegistrationNumber($request->race_category);
 
         // Get and validate ticket type
         $ticketType = \App\Models\TicketType::getCurrentTicketType($request->race_category);
@@ -248,6 +249,7 @@ class AuthController extends Controller
 
         $user = User::create([
             'name' => $request->name,
+            'no_ktp' => $request->no_ktp,
             'bib_name' => $request->bib_name,
             'email' => $request->email,
             'phone' => $request->phone,
@@ -896,8 +898,8 @@ class AuthController extends Controller
 
             $ticketTypeId = $ticketType ? $ticketType->id : null;
 
-            // Generate unique registration number
-            $registrationNumber = $this->generateRegistrationNumber();
+            // Generate unique registration number based on race category
+            $registrationNumber = $this->generateRegistrationNumber($request->category);
 
             // Prepare user data for creation
             $userData = [
@@ -1119,23 +1121,40 @@ class AuthController extends Controller
     }
 
     /**
-     * Generate unique registration number
+     * Generate unique registration number based on race category
      */
-    private function generateRegistrationNumber()
+    private function generateRegistrationNumber($raceCategory)
     {
-        $prefix = 'ASR' . date('Y'); // ASR2025
-        $counter = 1;
-
-        // Get the last registration number for this year
+        // Determine prefix based on race category
+        $prefix = '';
+        switch($raceCategory) {
+            case '5K':
+                $prefix = '5';
+                break;
+            case '10K':
+                $prefix = '1';
+                break;
+            case '21K':
+                $prefix = '2';
+                break;
+            default:
+                $prefix = '5'; // Default to 5K
+                break;
+        }
+        
+        // Get the last registration number for this category (all time)
         $lastUser = User::where('registration_number', 'like', $prefix . '%')
             ->orderBy('registration_number', 'desc')
             ->first();
 
+        $counter = 1;
         if ($lastUser) {
+            // Extract the last 4 digits and increment
             $lastNumber = intval(substr($lastUser->registration_number, -4));
             $counter = $lastNumber + 1;
         }
 
+        // Generate registration number: 50001 for 5K, 10001 for 10K, 20001 for 21K
         return $prefix . sprintf('%04d', $counter);
     }
 
@@ -1297,8 +1316,8 @@ class AuthController extends Controller
                 'bib_name' => 'nullable|string|max:255'
             ]);
 
-            // Generate unique registration number
-            $registrationNumber = $this->generateRegistrationNumber();
+            // Generate unique registration number based on race category
+            $registrationNumber = $this->generateRegistrationNumber($request->category);
 
             // Format phone number
             $phoneNumber = $this->formatPhoneNumber($request->phone);
@@ -1477,8 +1496,8 @@ class AuthController extends Controller
                 'bib_name' => 'nullable|string|max:255'
             ]);
 
-            // Generate unique registration number
-            $registrationNumber = $this->generateRegistrationNumber();
+            // Generate unique registration number based on race category
+            $registrationNumber = $this->generateRegistrationNumber($request->category);
 
             // Format phone number
             $phoneNumber = $this->formatPhoneNumber($request->phone);
@@ -2223,8 +2242,8 @@ class AuthController extends Controller
                         continue;
                     }
 
-                    // Generate unique registration number
-                    $registrationNumber = $this->generateRegistrationNumber();
+                    // Generate unique registration number based on race category
+                    $registrationNumber = $this->generateRegistrationNumber($participant['race_category']);
 
                     // Format phone numbers
                     $whatsappNumber = $this->formatPhoneNumber($participant['whatsapp_number']);

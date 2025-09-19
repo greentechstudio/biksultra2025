@@ -110,7 +110,7 @@ class SendPaymentReminders implements ShouldQueue
         
         $message = "⏰ *PENGINGAT PEMBAYARAN* ⏰\n\n";
         $message .= "Halo *{$user->name}*,\n\n";
-        $message .= "Ini adalah pengingat untuk menyelesaikan pembayaran registrasi Amazing Sultra Run Anda.\n\n";
+        $message .= "Ini adalah pengingat untuk menyelesaikan pembayaran registrasi " . config('event.name') . " " . config('event.year') . " Anda.\n\n";
         $message .= "📋 *Detail Registrasi:*\n";
         $message .= "• Nama: {$user->name}\n";
         $message .= "• Kategori: {$user->race_category}\n";
@@ -136,7 +136,7 @@ class SendPaymentReminders implements ShouldQueue
         
         $message .= "📞 Butuh bantuan? Hubungi: +62811-4000-805\n\n";
         $message .= "Terima kasih! 🙏\n\n";
-        $message .= "_Pengingat otomatis #{" . ceil($minutesElapsed / 120) . "} - Amazing Sultra Run_";
+        $message .= "_Pengingat otomatis #{" . ceil($minutesElapsed / 120) . "} - " . config('event.name') . " " . config('event.year') . "_";
 
         $priority = $minutesElapsed >= 1320 ? 'high' : 'normal'; // High priority for last 2 hours
         

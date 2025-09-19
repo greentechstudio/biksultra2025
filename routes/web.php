@@ -55,8 +55,8 @@ Route::get('/debug/whatsapp/{number?}', function($number = '628114000805') {
 });
 
 // Authentication Routes  
-Route::get('/register', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
-Route::post('/register', [AuthController::class, 'register'])->middleware('guest');
+Route::get('/nightrun', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
+Route::post('/nightrun', [AuthController::class, 'register'])->middleware('guest');
 
 // WhatsApp Validation Route
 Route::post('/validate-whatsapp', [AuthController::class, 'validateWhatsAppAjax'])->name('validate-whatsapp');
@@ -140,6 +140,11 @@ Route::prefix('api')->group(function () {
         ->name('payment.status.update');
     Route::get('/payment/pending', [App\Http\Controllers\Api\PaymentStatusController::class, 'getPendingPayments'])
         ->name('payment.pending');
+    
+    // Feature Management API Routes
+    Route::get('/features', [App\Http\Controllers\FeatureController::class, 'index'])->name('api.features.index');
+    Route::get('/features/{feature}', [App\Http\Controllers\FeatureController::class, 'checkFeature'])->name('api.features.check');
+    Route::get('/registration-types', [App\Http\Controllers\FeatureController::class, 'getEnabledRegistrationTypes'])->name('api.registration-types');
 });
 
 // Payment success/failure pages

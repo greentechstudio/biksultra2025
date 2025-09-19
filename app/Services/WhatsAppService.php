@@ -181,7 +181,7 @@ class WhatsAppService
         
         $message = "🎯 *LINK PEMBAYARAN REGISTRASI* 🎯\n\n";
         $message .= "Halo *{$user->name}*,\n\n";
-        $message .= "Terima kasih telah mendaftar di Amazing Sultra Run! 🏃‍♂️\n\n";
+        $message .= "Terima kasih telah mendaftar di " . config('event.name') . " " . config('event.year') . "! 🏃‍♂️\n\n";
         $message .= "📋 *Detail Pembayaran:*\n";
         $message .= "• Nama: {$user->name}\n";
         $message .= "• Kategori: {$user->race_category}\n";
@@ -206,7 +206,7 @@ class WhatsAppService
      */
     public function sendActivationMessage($user)
     {
-        $message = "🎉 *SELAMAT DATANG DI AMAZING SULTRA RUN!* 🎉\n\n";
+        $message = "🎉 *SELAMAT DATANG DI " . strtoupper(config('event.name')) . " " . config('event.year') . "!* 🎉\n\n";
         $message .= "Halo *{$user->name}*,\n\n";
         $message .= "Akun Anda telah berhasil dibuat! 🎯\n\n";
         $message .= "📱 *Detail Login:*\n";
@@ -241,7 +241,7 @@ class WhatsAppService
 
             $message = "🎉 *PEMBAYARAN BERHASIL!* 🎉\n\n";
             $message .= "Halo *{$user->name}*,\n\n";
-            $message .= "✅ Pembayaran registrasi Amazing Sultra Run Anda telah berhasil!\n\n";
+            $message .= "✅ Pembayaran registrasi " . config('event.name') . " " . config('event.year') . " Anda telah berhasil!\n\n";
             $message .= "📋 *Detail Pembayaran:*\n";
             $message .= "• Nama: {$user->name}\n";
             $message .= "• Kategori: {$user->race_category}\n";
@@ -249,7 +249,7 @@ class WhatsAppService
             $message .= "• Metode: {$paymentMethod}\n";
             $message .= "• Waktu: {$paidAt}\n";
             $message .= "• ID Transaksi: " . ($paymentData['external_id'] ?? $user->external_id ?? 'N/A') . "\n\n";
-            $message .= "🏃‍♂️ *Selamat datang di komunitas Amazing Sultra Run!*\n\n";
+            $message .= "🏃‍♂️ *Selamat datang di komunitas " . config('event.name') . " " . config('event.year') . "!*\n\n";
             $message .= "Anda sekarang adalah member resmi kami. Silakan login ke dashboard untuk melengkapi profil dan melihat jadwal latihan.\n\n";
             $message .= "🔗 *Link Dashboard:*\n";
             $message .= url('/dashboard') . "\n\n";

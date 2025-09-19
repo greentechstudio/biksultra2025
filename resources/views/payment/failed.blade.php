@@ -1,6 +1,6 @@
 @extends('layouts.base')
 
-@section('title', 'Pembayaran Gagal - Amazing Sultra Run')
+@section('title', config('event.titles.payment_failed'))
 
 @section('content')
 <div class="payment-success-container">

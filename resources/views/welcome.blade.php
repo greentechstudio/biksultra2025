@@ -1,17 +1,23 @@
-@extends('layouts.landing')
+@extends('layouts.evente')
+
+@section('title', config('event.titles.main'))
 
 @section('content')
 
-<!-- Hero Section -->
-@include('partials.landing-hero')
+@include('partials.evente.hero')
 
-<!-- Registration Section -->
-@include('partials.landing-registration')
+@include('partials.evente.about')
 
-<!-- Categories Section -->
-@include('partials.landing-categories')
+@include('partials.evente.stats')
 
-<!-- Prizes Section -->
-@include('partials.landing-prizes')
+@include('partials.evente.schedule')
+
+@include('partials.evente.countdown')
+
+@include('partials.evente.categories')
+
+@include('partials.evente.partners')
+
+@include('partials.evente.text-slider')
 
 @endsection

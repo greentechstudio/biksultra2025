@@ -1,6 +1,6 @@
 @extends('layouts.base')
 
-@section('title', 'Pembayaran Berhasil - Amazing Sultra Run')
+@section('title', config('event.titles.payment_success'))
 
 @section('content')
 <div class="payment-success-container">
@@ -17,7 +17,7 @@
 
         <!-- Message -->
         <p class="success-message">
-            Terima kasih! Pembayaran registrasi Amazing Sultra Run Anda telah berhasil diproses. 
+            Terima kasih! Pembayaran registrasi {{ config('event.name') }} {{ config('event.year') }} Anda telah berhasil diproses. 
             Anda akan menerima konfirmasi melalui WhatsApp dalam beberapa saat.
         </p>
 

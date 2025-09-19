@@ -33,7 +33,7 @@ class ProcessUnpaidRegistrations extends Command
      */
     public function handle()
     {
-        $this->info('🏃‍♂️ Amazing Sultra Run - Processing Unpaid Registrations');
+        $this->info('🏃‍♂️ ' . config('event.name') . ' ' . config('event.year') . ' - Processing Unpaid Registrations');
         $this->newLine();
 
         $onlyCleanup = $this->option('cleanup');
