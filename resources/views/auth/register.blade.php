@@ -2026,9 +2026,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let validationTimeout;
     let lastValidatedNumber = '';
-    let isValidWhatsApp = true; // DEBUGGING: Always consider valid
+    let isValidWhatsApp = false; // Default to false, must validate
 
-    // Format WhatsApp number input - BASIC FORMATTING ONLY
+    // Format WhatsApp number input
     whatsappInput.addEventListener('input', function() {
         let phoneNumber = this.value.trim();
         
@@ -2048,15 +2048,26 @@ document.addEventListener('DOMContentLoaded', function() {
         phoneNumber = phoneNumber.replace(/\D/g, '');
         this.value = phoneNumber;
         
-        // Reset validation state to success
-        this.classList.remove('border-red-500');
-        this.classList.add('border-green-500');
-        isValidWhatsApp = true;
-        whatsappStatus.innerHTML = '<div class="bg-green-50 border border-green-200 text-green-800 px-4 py-2 rounded-lg"><i class="fas fa-check-circle mr-2"></i>Format nomor valid</div>';
+        // Reset validation state
+        this.classList.remove('border-red-500', 'border-green-500', 'border-yellow-500');
+        this.classList.add('border-gray-300');
+        isValidWhatsApp = false;
+        whatsappStatus.innerHTML = '';
+        
+        // Clear existing timeout
+        clearTimeout(validationTimeout);
+        
+        // Auto-validate if number is long enough
+        if (phoneNumber.length >= 9) {
+            validationTimeout = setTimeout(() => {
+                validateWhatsAppNumber(phoneNumber);
+            }, 1000);
+        } else if (phoneNumber.length > 0) {
+            showValidationStatus('error', 'Nomor WhatsApp minimal 9 digit');
+        }
+        
+        updateSubmitButton();
     });
-
-    // WhatsApp validation functions - DISABLED FOR DEBUGGING
-    /*
     // Auto-validate on blur (when user leaves the field)
     whatsappInput.addEventListener('blur', function() {
         const phoneNumber = this.value.trim();
@@ -2192,14 +2203,24 @@ document.addEventListener('DOMContentLoaded', function() {
             </div>
         `;
     }
-    */    // Update submit button state - SIMPLIFIED
+
+    // Update submit button state based on validation
     function updateSubmitButton() {
-        // Always allow submit for debugging
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
-            submitBtn.disabled = false;
-            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
-            submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+            if (isValidWhatsApp && form.checkValidity()) {
+                submitBtn.disabled = false;
+                submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+                submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
+            } else {
+                submitBtn.disabled = true;
+                submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+                if (!isValidWhatsApp) {
+                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Nomor WhatsApp harus valid';
+                } else {
+                    submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Lengkapi semua field';
+                }
+            }
         }
     }
 
@@ -2218,6 +2239,13 @@ document.addEventListener('DOMContentLoaded', function() {
                 hasError = true;
             }
         });
+
+        // Check WhatsApp validation
+        if (!isValidWhatsApp) {
+            e.preventDefault();
+            alert('Nomor WhatsApp harus valid sebelum dapat mendaftar.');
+            return false;
+        }
 
         if (hasError) {
             e.preventDefault();
@@ -2726,6 +2754,16 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
     }
+    
+    // Initialize submit button state on page load
+    updateSubmitButton();
+    
+    // Add event listeners to all form fields to update submit button
+    const allFormFields = form.querySelectorAll('input, select, textarea');
+    allFormFields.forEach(field => {
+        field.addEventListener('input', updateSubmitButton);
+        field.addEventListener('change', updateSubmitButton);
+    });
 });
 </script>
 
