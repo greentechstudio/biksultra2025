@@ -134,6 +134,56 @@ class RandomPasswordService
     }
     
     /**
+     * Generate password and return it without sending WhatsApp
+     */
+    public function generatePasswordOnly($user, $type = 'simple')
+    {
+        try {
+            // Generate password based on type
+            switch ($type) {
+                case 'complex':
+                    $password = $this->generateRandomPassword(8);
+                    break;
+                case 'memorable':
+                    $password = $this->generateMemorablePassword();
+                    break;
+                case 'simple':
+                default:
+                    $password = $this->generateSimplePassword(6);
+                    break;
+            }
+            
+            // Hash and save password
+            $user->password = Hash::make($password);
+            $user->save();
+            
+            Log::info('Password generated without WhatsApp sending', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'password_type' => $type
+            ]);
+            
+            return [
+                'success' => true,
+                'password' => $password,
+                'message' => 'Password berhasil digenerate'
+            ];
+            
+        } catch (\Exception $e) {
+            Log::error('Failed to generate password', [
+                'user_id' => $user->id,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+            
+            return [
+                'success' => false,
+                'message' => 'Gagal generate password: ' . $e->getMessage()
+            ];
+        }
+    }
+    
+    /**
      * Format WhatsApp message for password
      */
     private function formatPasswordMessage($user, $password)

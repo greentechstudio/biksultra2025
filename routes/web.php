@@ -57,6 +57,7 @@ Route::get('/debug/whatsapp/{number?}', function($number = '628114000805') {
 // Authentication Routes  
 Route::get('/nightrun', [AuthController::class, 'showRegister'])->name('register')->middleware('guest');
 Route::post('/nightrun', [AuthController::class, 'register'])->middleware('guest');
+Route::get('/registration-success', [AuthController::class, 'registrationSuccess'])->name('register.success');
 
 // WhatsApp Validation Route
 Route::post('/validate-whatsapp', [AuthController::class, 'validateWhatsAppAjax'])->name('validate-whatsapp');

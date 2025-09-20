@@ -2339,9 +2339,12 @@ document.addEventListener('DOMContentLoaded', function() {
     const whatsappInput = document.getElementById('whatsapp_number');
     const whatsappStatus = document.getElementById('whatsapp-validation-status');
 
+    // WhatsApp Validation Setting from Backend
+    const whatsappValidationEnabled = {{ config('app.validate_whatsapp', true) ? 'true' : 'false' }};
+
     let validationTimeout;
     let lastValidatedNumber = '';
-    let isValidWhatsApp = false;
+    let isValidWhatsApp = !whatsappValidationEnabled; // If validation disabled, default to true
 
     // Format WhatsApp number input and auto-validate
     whatsappInput.addEventListener('input', function() {
@@ -2417,6 +2420,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Validate WhatsApp number function
     function validateWhatsAppNumber(phoneNumber) {
+        // Check if WhatsApp validation is disabled
+        if (!whatsappValidationEnabled) {
+            isValidWhatsApp = true;
+            lastValidatedNumber = phoneNumber;
+            whatsappInput.classList.add('border-green-500');
+            whatsappInput.classList.remove('border-red-500', 'border-gray-300', 'border-yellow-500');
+            showValidationStatus('success', 'Validasi WhatsApp dilewati (disabled)');
+            return;
+        }
+        
         if (!phoneNumber || phoneNumber.length < 9) {
             showValidationStatus('error', 'Nomor WhatsApp tidak valid');
             return;

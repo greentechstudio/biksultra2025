@@ -409,7 +409,7 @@
                 Amazing Sultra Run
             </div>
             <div class="hero-subtitle">
-                Selamat datang kembali! Masuk ke akun Anda untuk melanjutkan petualangan lari
+                Selamat datang kembali! Masuk ke akun Anda untuk melihat informasi detail tentang akun anda.
             </div>
             
             <div class="hero-features">

@@ -94,7 +94,7 @@ class XenditService
         // Now proceed with invoice creation
         try {
             
-            $externalId = 'AMAZING-REG-' . $user->id . '-' . time();
+            $externalId = 'BIKSULTRA-REG-' . $user->id . '-' . time();
             
             $payload = [
                 'external_id' => $externalId,
@@ -589,7 +589,7 @@ class XenditService
         }
 
         try {
-            $externalId = 'AMAZING-COLLECTIVE-' . $primaryUser->id . '-' . time();
+            $externalId = 'BIKSULTRA-COLLECTIVE-' . $primaryUser->id . '-' . time();
             
             // Build items array for each participant
             $items = [];
@@ -720,7 +720,7 @@ class XenditService
                 return $user->xendit_external_id;
             }, $participants)));
             
-            if (count($existingExternalIds) === 1 && strpos($existingExternalIds[0], 'AMAZING-ADMIN-COLLECTIVE-') === 0) {
+            if (count($existingExternalIds) === 1 && strpos($existingExternalIds[0], 'BIKSULTRA-ADMIN-COLLECTIVE-') === 0) {
                 // Use existing collective external ID from CSV import
                 $externalId = $existingExternalIds[0];
                 \Log::info('Using existing collective external ID for admin import', [
@@ -729,7 +729,7 @@ class XenditService
                 ]);
             } else {
                 // Generate new external ID for manual collective creation
-                $externalId = 'AMAZING-ADMIN-COLLECTIVE-' . $primaryUser->id . '-' . time();
+                $externalId = 'BIKSULTRA-ADMIN-COLLECTIVE-' . $primaryUser->id . '-' . time();
                 \Log::info('Generated new collective external ID for admin', [
                     'external_id' => $externalId,
                     'participant_count' => count($participants)

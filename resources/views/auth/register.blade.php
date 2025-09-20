@@ -1118,8 +1118,8 @@
                         <i class="fas fa-running"></i>
                     </div>
                     <div>
-                        <div class="font-semibold">Multiple Categories</div>
-                        <div class="text-sm opacity-90">Fun Run, 5K, 10K, Half Marathon</div>
+                        <div class="font-semibold">Kategori</div>
+                        <div class="text-sm opacity-90">5K Kategori</div>
                     </div>
                 </div>
                 
@@ -1128,8 +1128,8 @@
                         <i class="fas fa-medal"></i>
                     </div>
                     <div>
-                        <div class="font-semibold">Official Certificate</div>
-                        <div class="text-sm opacity-90">Digital certificate for all finishers</div>
+                        <div class="font-semibold">Medali</div>
+                        <div class="text-sm opacity-90">Medali untuk finisher 5K</div>
                     </div>
                 </div>
                 
@@ -1139,7 +1139,7 @@
                     </div>
                     <div>
                         <div class="font-semibold">Race Pack</div>
-                        <div class="text-sm opacity-90">Jersey, bib number, and goodies</div>
+                        <div class="text-sm opacity-90">BIB, Jersey, dan goodies</div>
                     </div>
                 </div>
             </div>
@@ -1693,7 +1693,7 @@
                         
                         <div class="info-text mt-6 justify-center text-center">
                             <i class="fas fa-info-circle info-icon"></i>
-                            <span>Setelah registrasi, password akan dikirim ke WhatsApp Anda untuk login</span>
+                            <span>Setelah registrasi, Chek Email anda</span>
                         </div>
                         
                         <div class="login-link">
@@ -2019,6 +2019,9 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     });
 
+    // WhatsApp Validation Setting from Backend
+    const whatsappValidationEnabled = {{ config('app.validate_whatsapp', true) ? 'true' : 'false' }};
+    
     // WhatsApp number validation - SIMPLIFIED FOR DEBUGGING
     const whatsappInput = document.getElementById('whatsapp_number');
     const whatsappStatus = document.getElementById('whatsapp-validation-status');
@@ -2026,7 +2029,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
     let validationTimeout;
     let lastValidatedNumber = '';
-    let isValidWhatsApp = false; // Default to false, must validate
+    let isValidWhatsApp = !whatsappValidationEnabled; // If validation disabled, default to true
 
     // Format WhatsApp number input
     whatsappInput.addEventListener('input', function() {
@@ -2107,6 +2110,16 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Validate WhatsApp number function
     function validateWhatsAppNumber(phoneNumber) {
+        // Check if WhatsApp validation is disabled
+        if (!whatsappValidationEnabled) {
+            isValidWhatsApp = true;
+            lastValidatedNumber = phoneNumber;
+            whatsappInput.classList.add('border-green-500');
+            whatsappInput.classList.remove('border-red-500', 'border-gray-300', 'border-yellow-500');
+            showValidationStatus('success', 'Validasi Nomor WhatsApp');
+            return;
+        }
+        
         if (!phoneNumber || phoneNumber.length < 9) {
             showValidationStatus('error', 'Nomor WhatsApp tidak valid');
             return;
@@ -2208,14 +2221,17 @@ document.addEventListener('DOMContentLoaded', function() {
     function updateSubmitButton() {
         const submitBtn = form.querySelector('button[type="submit"]');
         if (submitBtn) {
-            if (isValidWhatsApp && form.checkValidity()) {
+            // If WhatsApp validation is disabled, always consider it valid
+            const whatsappValid = !whatsappValidationEnabled || isValidWhatsApp;
+            
+            if (whatsappValid && form.checkValidity()) {
                 submitBtn.disabled = false;
                 submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
                 submitBtn.innerHTML = '<i class="fas fa-running mr-2"></i>Daftar Event Lari';
             } else {
                 submitBtn.disabled = true;
                 submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
-                if (!isValidWhatsApp) {
+                if (!whatsappValid && whatsappValidationEnabled) {
                     submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Nomor WhatsApp harus valid';
                 } else {
                     submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Lengkapi semua field';
@@ -2240,8 +2256,8 @@ document.addEventListener('DOMContentLoaded', function() {
             }
         });
 
-        // Check WhatsApp validation
-        if (!isValidWhatsApp) {
+        // Check WhatsApp validation (only if enabled)
+        if (whatsappValidationEnabled && !isValidWhatsApp) {
             e.preventDefault();
             alert('Nomor WhatsApp harus valid sebelum dapat mendaftar.');
             return false;
@@ -2471,8 +2487,8 @@ document.addEventListener('DOMContentLoaded', function() {
         
         // Check multiple conditions for disabling submit button
         const shouldDisable = 
-            // WhatsApp validation failed
-            (phoneNumber.length >= 9 && !isValidWhatsApp && whatsappInput.classList.contains('border-red-500')) ||
+            // WhatsApp validation failed (only if validation is enabled)
+            (whatsappValidationEnabled && phoneNumber.length >= 9 && !isValidWhatsApp && whatsappInput.classList.contains('border-red-500')) ||
             // Quota not available
             !isQuotaAvailable ||
             // No category selected
@@ -2484,7 +2500,7 @@ document.addEventListener('DOMContentLoaded', function() {
             
             if (!isQuotaAvailable) {
                 submitBtn.innerHTML = '<i class="fas fa-ban mr-2"></i>Kuota Habis - Registrasi Ditutup';
-            } else if (phoneNumber.length >= 9 && !isValidWhatsApp && whatsappInput.classList.contains('border-red-500')) {
+            } else if (whatsappValidationEnabled && phoneNumber.length >= 9 && !isValidWhatsApp && whatsappInput.classList.contains('border-red-500')) {
                 submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Validasi WhatsApp Diperlukan';
             } else {
                 submitBtn.innerHTML = '<i class="fas fa-exclamation-triangle mr-2"></i>Pilih Kategori Terlebih Dahulu';

@@ -279,12 +279,8 @@ class AuthController extends Controller
             'event_source' => $request->event_source,
         ]);
 
-        // Generate and send random password (always simple type)
-        $passwordResult = $this->randomPasswordService->generateAndSendPassword(
-            $user,
-            $this->whatsappService,
-            'simple'
-        );
+        // Generate password only (tanpa kirim WhatsApp)
+        $passwordResult = $this->randomPasswordService->generatePasswordOnly($user, 'simple');
 
         if (!$passwordResult['success']) {
             // Delete user if password generation failed
@@ -295,10 +291,13 @@ class AuthController extends Controller
                 ->withInput();
         }
 
+        // Store password for email
+        $generatedPassword = $passwordResult['password'];
+
         Log::info('User registered with random password', [
             'user_id' => $user->id,
             'email' => $user->email,
-            'password_sent' => $passwordResult['password_sent'],
+            'password_generated' => true,
             'password_type' => 'simple'
         ]);
 
@@ -315,31 +314,6 @@ class AuthController extends Controller
             'xendit_external_id' => $externalId
         ]);
 
-        // Send WhatsApp activation message and verify account automatically
-        $activationResult = $this->sendActivationMessage($user);
-
-        if ($activationResult['success']) {
-            // Automatically verify WhatsApp if message sent successfully
-            $user->update([
-                'whatsapp_verified' => true,
-                'whatsapp_verified_at' => now(),
-                'status' => 'verified' // Change status to verified
-            ]);
-
-            Log::info('User registered and WhatsApp verified automatically', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'whatsapp' => $user->whatsapp_number
-            ]);
-        } else {
-            Log::warning('User registered but WhatsApp activation failed', [
-                'user_id' => $user->id,
-                'email' => $user->email,
-                'whatsapp' => $user->whatsapp_number,
-                'error' => $activationResult['message']
-            ]);
-        }
-
         // Create Xendit payment invoice
         $paymentResult = $this->xenditService->createInvoice(
             $user,
@@ -348,11 +322,39 @@ class AuthController extends Controller
         );
 
         if ($paymentResult['success']) {
-            // Send payment link via WhatsApp
-            $this->sendPaymentLink($user, $paymentResult['invoice_url']);
+            // Get the correct payment amount from the payment result or user
+            $paymentAmount = $paymentResult['amount'] ?? $user->payment_amount ?? config('xendit.registration_fee', 150000);
+            
+            // Send comprehensive welcome email with login credentials and payment link
+            $emailResult = $this->sendWelcomeEmail(
+                $user, 
+                $generatedPassword, 
+                $paymentResult['invoice_url'], 
+                $paymentAmount
+            );
 
-            return redirect()->route('login')->with('success',
-                'Registrasi berhasil! Link pembayaran telah dikirim ke WhatsApp Anda. Silakan lakukan pembayaran untuk mengaktifkan membership.'
+            // Also send WhatsApp activation message (optional)
+            $activationResult = $this->sendActivationMessage($user);
+            
+            if ($activationResult['success']) {
+                // Automatically verify WhatsApp if message sent successfully
+                $user->update([
+                    'whatsapp_verified' => true,
+                    'whatsapp_verified_at' => now(),
+                    'status' => 'verified' // Change status to verified
+                ]);
+
+                Log::info('User registered with email and WhatsApp notification', [
+                    'user_id' => $user->id,
+                    'email' => $user->email,
+                    'whatsapp' => $user->whatsapp_number,
+                    'email_sent' => $emailResult['success'],
+                    'whatsapp_sent' => $activationResult['success']
+                ]);
+            }
+
+            return redirect()->route('register.success')->with('success',
+                'Registrasi berhasil! Informasi login dan link pembayaran telah dikirim ke email Anda. Silakan cek email dan lakukan pembayaran untuk mengaktifkan membership.'
             );
         } else {
             Log::error('Failed to create payment invoice', [
@@ -360,10 +362,18 @@ class AuthController extends Controller
                 'error' => $paymentResult['error']
             ]);
 
-            return redirect()->route('login')->with('warning',
-                'Registrasi berhasil! Namun link pembayaran gagal dibuat. Silakan hubungi admin untuk bantuan pembayaran.'
+            // Send email without payment link
+            $emailResult = $this->sendWelcomeEmail($user, $generatedPassword);
+
+            return redirect()->route('register.success')->with('warning',
+                'Registrasi berhasil! Informasi login telah dikirim ke email Anda. Namun link pembayaran gagal dibuat. Silakan hubungi admin untuk bantuan pembayaran.'
             );
         }
+    }
+
+    public function registrationSuccess()
+    {
+        return view('auth.registration-success');
     }
 
     public function showLogin()
@@ -601,6 +611,7 @@ class AuthController extends Controller
             $message .= "📋 *Data Registrasi Anda:*\n";
             $message .= "• Nama: {$user->name}\n";
             $message .= "• Nama BIB: {$user->bib_name}\n";
+            $message .= "• No BIB: {$user->registration_number}\n";
             $message .= "• Email: {$user->email}\n";
             $message .= "• Kategori: {$user->race_category}\n";
             $message .= "• Ukuran Jersey: {$user->jersey_size}\n";
@@ -649,6 +660,109 @@ class AuthController extends Controller
             return [
                 'success' => false,
                 'message' => 'Terjadi kesalahan saat mengirim pesan aktivasi: ' . $e->getMessage()
+            ];
+        }
+    }
+
+    /**
+     * Send welcome email to new user with complete information
+     */
+    private function sendWelcomeEmail($user, $password = null, $paymentUrl = null, $paymentAmount = null)
+    {
+        try {
+            // Ensure payment_amount is a number, not an array
+            $cleanPaymentAmount = null;
+            if ($paymentAmount !== null) {
+                if (is_array($paymentAmount)) {
+                    // If it's an array, try to get a reasonable value
+                    $cleanPaymentAmount = isset($paymentAmount['amount']) ? $paymentAmount['amount'] : 
+                                        (isset($paymentAmount[0]) ? $paymentAmount[0] : null);
+                } else {
+                    $cleanPaymentAmount = $paymentAmount;
+                }
+            }
+            
+            // If no payment amount provided, try to get it from the user or use default
+            if ($cleanPaymentAmount === null) {
+                $cleanPaymentAmount = $user->payment_amount ?? config('xendit.registration_fee', 150000);
+            }
+
+            // Create a safe user object with string values only
+            $safeUser = (object)[
+                'name' => (string)($user->name ?? 'N/A'),
+                'email' => (string)($user->email ?? 'N/A'),
+                'bib_name' => (string)($user->bib_name ?? 'N/A'),
+                'registration_number' => (string)($user->registration_number ?? 'Belum tersedia'),
+                'race_category' => (string)($user->race_category ?? 'N/A'),
+                'jersey_size' => (string)($user->jersey_size ?? 'N/A'),
+                'whatsapp_number' => (string)($user->whatsapp_number ?? 'N/A'),
+            ];
+
+            $emailData = [
+                'user' => $safeUser,
+                'password' => $password,
+                'payment_url' => $paymentUrl,
+                'payment_amount' => is_numeric($cleanPaymentAmount) ? (float)$cleanPaymentAmount : 150000,
+                'event_name' => (string)(config('event.name') ?? 'BIK SULTRA'),
+                'event_full_name' => (string)(config('event.full_name') ?? 'Bulan Inklusi Keuangan Sulawesi Tenggara'),
+                'event_year' => (string)(config('event.year') ?? '2025'),
+                'event_organizer' => (string)(config('event.organizer.name') ?? 'OJK SULTRA'),
+                'login_url' => url('/login'),
+                'support_phone' => '+62811-4000-805',
+                'support_email' => 'admin@biksultra.com'
+            ];
+
+            // Debug log the email data types
+            Log::info('Email data prepared for welcome email', [
+                'user_id' => $user->id,
+                'user_email' => $user->email,
+                'user_name' => $user->name,
+                'user_registration_number' => $user->registration_number,
+                'password_provided' => !empty($password),
+                'payment_url_provided' => !empty($paymentUrl),
+                'payment_amount_type' => gettype($emailData['payment_amount']),
+                'payment_amount_value' => $emailData['payment_amount'],
+                'original_payment_amount' => $paymentAmount,
+                'original_payment_amount_type' => gettype($paymentAmount),
+                'config_event_name' => config('event.name'),
+                'config_event_full_name' => config('event.full_name'),
+                'config_event_year' => config('event.year'),
+                'config_event_organizer_name' => config('event.organizer.name'),
+                'email_data_event_organizer' => $emailData['event_organizer']
+            ]);
+
+            // Send email using Laravel's built-in Mail facade
+            \Mail::send('emails.welcome', $emailData, function($message) use ($user) {
+                $message->to($user->email, $user->name)
+                        ->subject('🎉 Selamat Datang di ' . config('event.name') . ' - Info Login & Pembayaran')
+                        ->from(config('mail.from.address'), config('mail.from.name'));
+            });
+
+            Log::info('Welcome email with complete info sent successfully', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'user_name' => $user->name,
+                'has_password' => !empty($password),
+                'has_payment_url' => !empty($paymentUrl),
+                'payment_amount' => $paymentAmount
+            ]);
+
+            return [
+                'success' => true,
+                'message' => 'Email selamat datang dengan info lengkap berhasil dikirim'
+            ];
+
+        } catch (\Exception $e) {
+            Log::error('Failed to send welcome email', [
+                'user_id' => $user->id,
+                'email' => $user->email,
+                'error' => $e->getMessage(),
+                'trace' => $e->getTraceAsString()
+            ]);
+
+            return [
+                'success' => false,
+                'message' => 'Gagal mengirim email selamat datang: ' . $e->getMessage()
             ];
         }
     }
@@ -1161,12 +1275,15 @@ class AuthController extends Controller
     private function sendPaymentLink($user, $invoiceUrl)
     {
         try {
-            $amount = number_format($user->registration_fee, 0, ',', '.');
+            // Get amount from payment_amount field (set by XenditService)
+            $amount = number_format($user->payment_amount ?? 0, 0, ',', '.');
 
             $message = "🎯 *LINK PEMBAYARAN REGISTRASI* 🎯\n\n";
             $message .= "Halo *{$user->name}*,\n\n";
             $message .= "Terima kasih telah mendaftar di " . config('event.name') . "! 🏃‍♂️\n\n";
             $message .= "📋 *Detail Pembayaran:*\n";
+            $message .= "• Nama: {$user->name}\n";
+            $message .= "• No BIB: {$user->registration_number}\n";
             $message .= "• Kategori: {$user->race_category}\n";
             $message .= "• Biaya Registrasi: Rp {$amount}\n";
             $message .= "• Berlaku selama: 24 jam\n\n";
